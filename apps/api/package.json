@@ -4,9 +4,9 @@
   "type": "module",
   "main": "src/server.js",
   "scripts": {
-    "predev": "../../scripts/start-postgres.sh",
+    "predev": "node ../../scripts/start-postgres.js",
     "dev": "nodemon",
-    "prestart": "../../scripts/start-postgres.sh",
+    "prestart": "node ../../scripts/start-postgres.js",
     "start": "node --experimental-specifier-resolution=node src/server.js",
     "build": "echo 'No build needed for Node.js'",
     "lint": "eslint src/",

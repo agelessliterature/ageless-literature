@@ -10,18 +10,35 @@ Full-stack marketplace for rare books and collectibles with real-time messaging,
 **Real-time:** Socket.IO  
 **DevOps:** Docker, PM2
 
+## Prerequisites
+
+- **Node.js** 18+ and npm 9+
+- **Docker Desktop** (for automatic PostgreSQL/Redis setup)
+  - Download: https://www.docker.com/products/docker-desktop
+  - Make sure Docker Desktop is **running** before starting the app
+  - Works on Windows, macOS, and Linux
+
 ## Quick Start
 
 ```bash
-# Install dependencies
+# 1. Install dependencies
 npm install
 
-# Start development
+# 2. Create environment file
+cp .env.example .env
+# Edit .env with your settings (or use defaults for local dev)
+
+# 3. Start Docker Desktop, then run:
 npm run dev
 
 # API: http://localhost:3001
 # Web: http://localhost:3000
 ```
+
+**First time setup:**
+- Docker will automatically start PostgreSQL and Redis
+- Database tables will be created via migrations
+- Use `npm run db:sync` if you need to sync models quickly
 
 ## Environment Setup
 
