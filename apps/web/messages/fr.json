@@ -1,0 +1,259 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "about": "À Propos",
+    "books": "Livres Rares",
+    "collections": "Collections",
+    "connect": "Connexion",
+    "booksellers": "Libraires",
+    "cart": "Panier",
+    "account": "Mon Compte",
+    "signIn": "Se Connecter",
+    "signOut": "Se Déconnecter"
+  },
+  "home": {
+    "hero": {
+      "title": "Découvrez des Livres Rares et de Collection",
+      "subtitle": "Connectez-vous avec des collectionneurs passionnés et des libraires de confiance dans le monde entier",
+      "cta": "Commencer l'Exploration"
+    },
+    "featuredAuctions": {
+      "title": "Enchères en Vedette",
+      "viewAll": "Voir Toutes les Enchères",
+      "bidNow": "Enchérir Maintenant",
+      "ending": "Se Termine",
+      "currentBid": "Enchère Actuelle"
+    },
+    "memberships": {
+      "title": "Rejoignez Notre Communauté",
+      "subtitle": "Choisissez l'adhésion qui correspond à votre parcours de collectionneur",
+      "pageTitle": "Plans d'Adhésion",
+      "pageSubtitle": "Devenez Membre. Collectionnez Plus Intelligemment.",
+      "cta": {
+        "title": "Prêt à améliorer votre collection?",
+        "description": "Ce n'est pas pour tout le monde. Mais si vous êtes prêt à améliorer votre collection—ou enfin apprendre comment—c'est ainsi que vous construisez votre héritage et préservez l'histoire tout en économisant un temps précieux.",
+        "button": "Commencer Aujourd'hui"
+      },
+      "plans": {
+        "silver": {
+          "name": "Argent",
+          "tagline": "Pour moins de 64¢ par jour",
+          "features": [
+            "Cours magistral exclusif sur la collection de livres par des experts avec plus de 25 ans d'expérience. Plus de 45 minutes.",
+            "Demandes privées illimitées de livres rares",
+            "Accès à \"Ma Collection\" et affichez votre collection numériquement",
+            "Soumissions d'offres privées illimitées",
+            "Publications sociales illimitées"
+          ]
+        },
+        "gold": {
+          "name": "Or",
+          "tagline": "Pour moins de $2 par jour",
+          "features": [
+            "ÉCONOMISEZ 67% SUR TOUS LES FRAIS D'ENCHÈRES",
+            "Accès anticipé de 24 heures aux enchères",
+            "Cours magistral exclusif sur la collection de livres par des experts avec plus de 25 ans d'expérience. Plus de 45 minutes.",
+            "Demandes privées illimitées de livres rares",
+            "Accès à \"Ma Collection\" et affichez votre collection numériquement",
+            "Soumissions d'offres privées illimitées",
+            "Publications sociales illimitées",
+            "Accès illimité à notre outil de recherche de livres rares IA",
+            "20% DE RÉDUCTION sur 3 authentifications IA/mois",
+            "Accès aux graphiques de valeur et données d'appréciation des livres de collection"
+          ]
+        },
+        "platinum": {
+          "name": "Platine",
+          "tagline": "Pour moins de $10 par jour",
+          "features": [
+            "RECEVEZ TOUS LES AVANTAGES D'UNE ADHÉSION OR",
+            "Service de Conciergerie - Conseils personnalisés avec un libraire expert qui partage votre passion",
+            "Vous aide à créer la bibliothèque dont vous avez toujours rêvé",
+            "Avec le Service Platine d'AL, vous ne paierez jamais de frais en travaillant directement avec votre libraire assigné",
+            "Au fur et à mesure que votre collection grandit, vous pouvez demander un nouveau libraire à tout moment—sans frais"
+          ]
+        }
+      }
+    },
+    "collectorCta": {
+      "title": "Commencez Votre Collection Aujourd'hui",
+      "description": "Rejoignez des milliers de collectionneurs découvrant des livres rares et précieux",
+      "cta": "Parcourir la Collection"
+    },
+    "booksellerCta": {
+      "title": "Vendez Vos Livres Rares",
+      "description": "Atteignez des collectionneurs sérieux et développez votre entreprise",
+      "cta": "Devenir Vendeur"
+    },
+    "mobileApp": {
+      "title": "Emportez Votre Collection Partout",
+      "description": "Téléchargez notre application mobile pour parcourir, enchérir et gérer votre collection en déplacement",
+      "ios": "Télécharger sur l'App Store",
+      "android": "Télécharger sur Google Play"
+    },
+    "stats": {
+      "rareBooksListed": "Livres rares répertoriés",
+      "trustedBooksellers": "Libraires de confiance",
+      "countriesWorldwide": "Pays dans le monde",
+      "customerSupport": "Support client"
+    }
+  },
+  "account": {
+    "dashboard": "Tableau de bord",
+    "profile": "Profil",
+    "preferences": "Préférences",
+    "password": "Mot de passe",
+    "orders": "Commandes",
+    "bids": "Mes Enchères",
+    "settings": "Paramètres",
+    "membership": "Adhésion",
+    "logout": "Déconnexion",
+    "welcome": "Bon retour",
+    "overview": "Aperçu",
+    "profileDescription": "Gérez vos informations personnelles",
+    "membershipDescription": "Voir et gérer votre adhésion",
+    "preferencesDescription": "Mettez à jour vos paramètres et préférences",
+    "ordersDescription": "Consultez votre historique de commandes",
+    "bidsDescription": "Suivez vos enchères",
+    "settingsDescription": "Gérez les paramètres du compte, les mots de passe et les méthodes de paiement",
+    "totalOrders": "Commandes",
+    "activeBids": "Enchères Actives",
+    "wins": "Gains",
+    "spent": "Dépensé",
+    "loadingAccount": "Chargement du compte..."
+  },
+  "password": {
+    "title": "Changer le Mot de Passe",
+    "subtitle": "Mettez à jour votre mot de passe pour sécuriser votre compte. Nous exigeons maintenant des mots de passe plus forts pour protéger votre compte contre les accès non autorisés.",
+    "currentPasswordSection": "Mot de Passe Actuel",
+    "newPasswordSection": "Nouveau Mot de Passe",
+    "currentPasswordLabel": "Mot de Passe Actuel",
+    "currentPasswordPlaceholder": "Entrez votre mot de passe actuel",
+    "newPasswordLabel": "Nouveau Mot de Passe",
+    "newPasswordPlaceholder": "Entrez votre nouveau mot de passe",
+    "confirmPasswordLabel": "Confirmer le Nouveau Mot de Passe",
+    "confirmPasswordPlaceholder": "Confirmez votre nouveau mot de passe",
+    "requirements": "Exigences du Mot de Passe",
+    "updateButton": "Mettre à Jour le Mot de Passe",
+    "updating": "Mise à Jour...",
+    "cancel": "Annuler"
+  },
+  "profile": {
+    "title": "Modifier le Profil",
+    "fullNameLabel": "Nom Complet",
+    "usernameLabel": "Nom d'Utilisateur",
+    "usernamePlaceholder": "Choisissez un nom d'utilisateur unique",
+    "emailLabel": "Email",
+    "bioLabel": "Bio",
+    "bioPlaceholder": "Parlez-nous de vous",
+    "locationLabel": "Localisation",
+    "locationPlaceholder": "Ville, Pays",
+    "saveButton": "Enregistrer les Modifications",
+    "saving": "Enregistrement...",
+    "cancel": "Annuler"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "close": "Fermer",
+    "submit": "Soumettre"
+  },
+  "preferences": {
+    "title": "Préférences",
+    "subtitle": "Gérez vos préférences de notification et d'affichage",
+    "notifications": "Notifications",
+    "emailNotifications": "Notifications par Email",
+    "bidAlerts": "Alertes d'Enchères",
+    "auctionReminders": "Rappels d'Enchères",
+    "newsletter": "Newsletter",
+    "smsNotifications": "Notifications SMS",
+    "displaySettings": "Paramètres d'Affichage",
+    "currency": "Devise",
+    "currencyUSD": "USD - Dollar Américain",
+    "currencyEUR": "EUR - Euro",
+    "currencyGBP": "GBP - Livre Sterling",
+    "currencyCAD": "CAD - Dollar Canadien",
+    "language": "Langue",
+    "languageDescription": "La langue de votre site. Nous l'utiliserons sur tous les appareils lorsque vous êtes connecté.",
+    "savePreferences": "Enregistrer les Préférences",
+    "cancel": "Annuler",
+    "saving": "Enregistrement..."
+  },
+  "footer": {
+    "explore": "EXPLORER",
+    "aboutUs": "À Propos",
+    "shop": "Boutique",
+    "booksellers": "Libraires",
+    "signInJoin": "Se Connecter/Rejoindre",    "signOut": "Déconnexion",    "policy": "POLITIQUE",
+    "faq": "FAQ",
+    "refundsPolicy": "Politique de Remboursement et de Retour",
+    "termsOfUse": "Conditions d'Utilisation",
+    "privacyPolicy": "Politique de Confidentialité",
+    "followUs": "SUIVEZ-NOUS",
+    "instagram": "Instagram",
+    "tagline": "Préserver l'Histoire, Créer l'Avenir",
+    "copyright": "© 2025 Ageless Literature LLC. Tous droits réservés. États-Unis",
+    "sitemap": "Plan du Site",
+    "accessibility": "Accessibilité"
+  },
+  "auth": {
+    "login": {
+      "title": "Connectez-vous à votre compte",
+      "subtitle": "Ou",
+      "createAccount": "créer un nouveau compte",
+      "email": "Email",
+      "emailPlaceholder": "Entrez votre email",
+      "password": "Mot de passe",
+      "passwordPlaceholder": "Entrez votre mot de passe",
+      "forgotPassword": "Mot de passe oublié?",
+      "signIn": "Se connecter",
+      "signingIn": "Connexion en cours...",
+      "googleSignIn": "Continuer avec Google",
+      "appleSignIn": "Continuer avec Apple",
+      "connecting": "Connexion...",
+      "orContinue": "Ou continuer avec email"
+    },
+    "register": {
+      "title": "Créez votre compte",
+      "subtitle": "Vous avez déjà un compte?",
+      "signIn": "connectez-vous à votre compte existant",
+      "firstName": "Prénom",
+      "firstNamePlaceholder": "Entrez votre prénom",
+      "lastName": "Nom",
+      "lastNamePlaceholder": "Entrez votre nom",
+      "email": "Email",
+      "emailPlaceholder": "Entrez votre email",
+      "password": "Mot de passe",
+      "passwordPlaceholder": "Choisissez un mot de passe fort",
+      "confirmPassword": "Confirmer le mot de passe",
+      "confirmPasswordPlaceholder": "Ressaisissez votre mot de passe",
+      "createAccount": "Créer un compte",
+      "creating": "Création du compte...",
+      "googleSignUp": "Continuer avec Google",
+      "appleSignUp": "Continuer avec Apple",
+      "connecting": "Connexion...",
+      "orCreateWith": "Ou créer un compte avec email"
+    }
+  },
+  "breadcrumbs": {
+    "home": "Accueil",
+    "account": "Compte",
+    "preferences": "Préférences",
+    "profile": "Profil",
+    "password": "Mot de passe",
+    "membership": "Adhésion",
+    "orders": "Commandes",
+    "bids": "Enchères",
+    "settings": "Paramètres",
+    "wishlist": "Liste de souhaits",
+    "vendor": "Vendeur",
+    "dashboard": "Tableau de bord",
+    "books": "Livres",
+    "auth": "Authentification",
+    "login": "Connexion",
+    "register": "Inscription"
+  }
+}

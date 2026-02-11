@@ -1,0 +1,261 @@
+{
+  "nav": {
+    "home": "Startseite",
+    "about": "Über Uns",
+    "books": "Seltene Bücher",
+    "collections": "Sammlungen",
+    "connect": "Verbinden",
+    "booksellers": "Buchhändler",
+    "cart": "Warenkorb",
+    "account": "Mein Konto",
+    "signIn": "Anmelden",
+    "signOut": "Abmelden"
+  },
+  "home": {
+    "hero": {
+      "title": "Entdecken Sie Seltene und Sammlerbücher",
+      "subtitle": "Verbinden Sie sich mit leidenschaftlichen Sammlern und vertrauenswürdigen Buchhändlern weltweit",
+      "cta": "Erkunden Beginnen"
+    },
+    "featuredAuctions": {
+      "title": "Empfohlene Auktionen",
+      "viewAll": "Alle Auktionen Anzeigen",
+      "bidNow": "Jetzt Bieten",
+      "ending": "Endet",
+      "currentBid": "Aktuelles Gebot"
+    },
+    "memberships": {
+      "title": "Werden Sie Teil Unserer Gemeinschaft",
+      "subtitle": "Wählen Sie die Mitgliedschaft, die zu Ihrer Sammelreise passt",
+      "pageTitle": "Mitgliedschaftspläne",
+      "pageSubtitle": "Werde Mitglied. Sammle Intelligenter.",
+      "cta": {
+        "title": "Bereit, deine Sammlung zu verbessern?",
+        "description": "Das ist nicht für jeden. Aber wenn du bereit bist, deine Sammlung zu verbessern—oder endlich zu lernen wie—so baust du dein Vermächtnis auf und bewahrst Geschichte, während du wertvolle Zeit sparst.",
+        "button": "Jetzt Beginnen"
+      },
+      "plans": {
+        "silver": {
+          "name": "Silber",
+          "tagline": "Für weniger als 64¢ pro Tag",
+          "features": [
+            "Exklusiver Meisterkurs über Buchsammeln von Experten mit über 25 Jahren Erfahrung. Über 45 Minuten lang.",
+            "Unbegrenzte private Anfragen für seltene Bücher",
+            "Zugang zu \"Meine Sammlung\" und präsentiere deine Sammlung digital",
+            "Unbegrenzte private Angebotseinreichungen",
+            "Unbegrenzte Social-Media-Beiträge"
+          ]
+        },
+        "gold": {
+          "name": "Gold",
+          "tagline": "Für weniger als $2 pro Tag",
+          "features": [
+            "SPARE 67% BEI ALLEN AUKTIONSGEBÜHREN",
+            "24 Stunden früher Zugang zu Auktionen",
+            "Exklusiver Meisterkurs über Buchsammeln von Experten mit über 25 Jahren Erfahrung. Über 45 Minuten lang.",
+            "Unbegrenzte private Anfragen für seltene Bücher",
+            "Zugang zu \"Meine Sammlung\" und präsentiere deine Sammlung digital",
+            "Unbegrenzte private Angebotseinreichungen",
+            "Unbegrenzte Social-Media-Beiträge",
+            "Unbegrenzter Zugang zu unserem KI-Recherchetool für seltene Bücher",
+            "20% RABATT auf 3 KI-Authentifizierungen/Monat",
+            "Zugang zu Wertdiagrammen und Daten zur Wertsteigerung sammelwürdiger Bücher"
+          ]
+        },
+        "platinum": {
+          "name": "Platin",
+          "tagline": "Für weniger als $10 pro Tag",
+          "features": [
+            "ERHALTE ALLE VORTEILE EINER GOLD-MITGLIEDSCHAFT",
+            "Concierge-Service - Persönliche Beratung mit einem Experten-Buchhändler, der deine Leidenschaft teilt",
+            "Hilft dir, die Bibliothek zu erschaffen, von der du immer geträumt hast",
+            "Mit dem Platin-Service von AL zahlst du nie Gebühren bei der direkten Zusammenarbeit mit deinem zugewiesenen Buchhändler",
+            "Während deine Sammlung wächst, kannst du jederzeit—kostenlos—einen neuen Buchhändler anfordern"
+          ]
+        }
+      }
+    },
+    "collectorCta": {
+      "title": "Beginnen Sie Heute Ihre Sammlung",
+      "description": "Schließen Sie sich Tausenden von Sammlern an, die seltene und wertvolle Bücher entdecken",
+      "cta": "Sammlung Durchsuchen"
+    },
+    "booksellerCta": {
+      "title": "Verkaufen Sie Ihre Seltenen Bücher",
+      "description": "Erreichen Sie ernsthafte Sammler und bauen Sie Ihr Geschäft aus",
+      "cta": "Verkäufer Werden"
+    },
+    "mobileApp": {
+      "title": "Nehmen Sie Ihre Sammlung Überall Mit",
+      "description": "Laden Sie unsere mobile App herunter, um unterwegs zu stöbern, zu bieten und Ihre Sammlung zu verwalten",
+      "ios": "Im App Store Herunterladen",
+      "android": "Jetzt bei Google Play"
+    },
+    "stats": {
+      "rareBooksListed": "Seltene Bücher gelistet",
+      "trustedBooksellers": "Vertrauenswürdige Buchhändler",
+      "countriesWorldwide": "Länder weltweit",
+      "customerSupport": "Kundenbetreuung"
+    }
+  },
+  "account": {
+    "dashboard": "Dashboard",
+    "profile": "Profil",
+    "preferences": "Einstellungen",
+    "password": "Passwort",
+    "orders": "Bestellungen",
+    "bids": "Meine Gebote",
+    "settings": "Einstellungen",
+    "membership": "Mitgliedschaft",
+    "logout": "Abmelden",
+    "welcome": "Willkommen zurück",
+    "overview": "Übersicht",
+    "profileDescription": "Ihre persönlichen Informationen verwalten",
+    "membershipDescription": "Ihre Mitgliedschaft anzeigen und verwalten",
+    "preferencesDescription": "Ihre Einstellungen und Präferenzen aktualisieren",
+    "ordersDescription": "Ihre Bestellhistorie anzeigen",
+    "bidsDescription": "Ihre Auktionsgebote verfolgen",
+    "settingsDescription": "Kontoeinstellungen, Passwörter und Zahlungsmethoden verwalten",
+    "totalOrders": "Bestellungen",
+    "activeBids": "Aktive Gebote",
+    "wins": "Gewinne",
+    "spent": "Ausgegeben",
+    "loadingAccount": "Konto wird geladen..."
+  },
+  "password": {
+    "title": "Passwort Ändern",
+    "subtitle": "Aktualisieren Sie Ihr Passwort, um Ihr Konto sicher zu halten. Wir benötigen jetzt stärkere Passwörter, um Ihr Konto vor unbefugtem Zugriff zu schützen.",
+    "currentPasswordSection": "Aktuelles Passwort",
+    "newPasswordSection": "Neues Passwort",
+    "currentPasswordLabel": "Aktuelles Passwort",
+    "currentPasswordPlaceholder": "Geben Sie Ihr aktuelles Passwort ein",
+    "newPasswordLabel": "Neues Passwort",
+    "newPasswordPlaceholder": "Geben Sie Ihr neues Passwort ein",
+    "confirmPasswordLabel": "Neues Passwort Bestätigen",
+    "confirmPasswordPlaceholder": "Bestätigen Sie Ihr neues Passwort",
+    "requirements": "Passwortanforderungen",
+    "updateButton": "Passwort Aktualisieren",
+    "updating": "Aktualisierung...",
+    "cancel": "Abbrechen"
+  },
+  "profile": {
+    "title": "Profil Bearbeiten",
+    "fullNameLabel": "Vollständiger Name",
+    "usernameLabel": "Benutzername",
+    "usernamePlaceholder": "Wählen Sie einen eindeutigen Benutzernamen",
+    "emailLabel": "E-Mail",
+    "bioLabel": "Bio",
+    "bioPlaceholder": "Erzählen Sie uns über sich",
+    "locationLabel": "Standort",
+    "locationPlaceholder": "Stadt, Land",
+    "saveButton": "Änderungen Speichern",
+    "saving": "Speichern...",
+    "cancel": "Abbrechen"
+  },
+  "common": {
+    "loading": "Laden...",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "close": "Schließen",
+    "submit": "Senden"
+  },
+  "preferences": {
+    "title": "Einstellungen",
+    "subtitle": "Verwalten Sie Ihre Benachrichtigungs- und Anzeigeeinstellungen",
+    "notifications": "Benachrichtigungen",
+    "emailNotifications": "E-Mail-Benachrichtigungen",
+    "bidAlerts": "Gebotsbenachrichtigungen",
+    "auctionReminders": "Auktionserinnerungen",
+    "newsletter": "Newsletter",
+    "smsNotifications": "SMS-Benachrichtigungen",
+    "displaySettings": "Anzeigeeinstellungen",
+    "currency": "Währung",
+    "currencyUSD": "USD - US-Dollar",
+    "currencyEUR": "EUR - Euro",
+    "currencyGBP": "GBP - Britisches Pfund",
+    "currencyCAD": "CAD - Kanadischer Dollar",
+    "language": "Sprache",
+    "languageDescription": "Ihre Seitensprache. Wir verwenden diese auf allen Geräten, wenn Sie angemeldet sind.",
+    "savePreferences": "Einstellungen speichern",
+    "cancel": "Abbrechen",
+    "saving": "Speichern..."
+  },
+  "footer": {
+    "explore": "ERKUNDEN",
+    "aboutUs": "Über Uns",
+    "shop": "Shop",
+    "booksellers": "Buchhändler",
+    "signInJoin": "Anmelden/Beitreten",
+    "signOut": "Abmelden",
+    "policy": "RICHTLINIEN",
+    "faq": "Häufig gestellte Fragen",
+    "refundsPolicy": "Rückerstattungs- und Rückgaberichtlinie",
+    "termsOfUse": "Nutzungsbedingungen",
+    "privacyPolicy": "Datenschutzrichtlinie",
+    "followUs": "FOLGEN SIE UNS",
+    "instagram": "Instagram",
+    "tagline": "Geschichte Bewahren, Zukunft Schaffen",
+    "copyright": "© 2025 Ageless Literature LLC. Alle Rechte vorbehalten. Vereinigte Staaten",
+    "sitemap": "Sitemap",
+    "accessibility": "Barrierefreiheit"
+  },
+  "auth": {
+    "login": {
+      "title": "Melden Sie sich in Ihrem Konto an",
+      "subtitle": "Oder",
+      "createAccount": "ein neues Konto erstellen",
+      "email": "E-Mail",
+      "emailPlaceholder": "Geben Sie Ihre E-Mail ein",
+      "password": "Passwort",
+      "passwordPlaceholder": "Geben Sie Ihr Passwort ein",
+      "forgotPassword": "Passwort vergessen?",
+      "signIn": "Anmelden",
+      "signingIn": "Anmeldung läuft...",
+      "googleSignIn": "Mit Google fortfahren",
+      "appleSignIn": "Mit Apple fortfahren",
+      "connecting": "Verbinden...",
+      "orContinue": "Oder mit E-Mail fortfahren"
+    },
+    "register": {
+      "title": "Erstellen Sie Ihr Konto",
+      "subtitle": "Haben Sie bereits ein Konto?",
+      "signIn": "melden Sie sich bei Ihrem bestehenden Konto an",
+      "firstName": "Vorname",
+      "firstNamePlaceholder": "Geben Sie Ihren Vornamen ein",
+      "lastName": "Nachname",
+      "lastNamePlaceholder": "Geben Sie Ihren Nachnamen ein",
+      "email": "E-Mail",
+      "emailPlaceholder": "Geben Sie Ihre E-Mail ein",
+      "password": "Passwort",
+      "passwordPlaceholder": "Wählen Sie ein sicheres Passwort",
+      "confirmPassword": "Passwort bestätigen",
+      "confirmPasswordPlaceholder": "Geben Sie Ihr Passwort erneut ein",
+      "createAccount": "Konto erstellen",
+      "creating": "Konto wird erstellt...",
+      "googleSignUp": "Mit Google fortfahren",
+      "appleSignUp": "Mit Apple fortfahren",
+      "connecting": "Verbinden...",
+      "orCreateWith": "Oder Konto mit E-Mail erstellen"
+    }
+  },
+  "breadcrumbs": {
+    "home": "Startseite",
+    "account": "Konto",
+    "preferences": "Einstellungen",
+    "profile": "Profil",
+    "password": "Passwort",
+    "membership": "Mitgliedschaft",
+    "orders": "Bestellungen",
+    "bids": "Gebote",
+    "settings": "Einstellungen",
+    "wishlist": "Wunschliste",
+    "vendor": "Verkäufer",
+    "dashboard": "Dashboard",
+    "books": "Bücher",
+    "auth": "Authentifizierung",
+    "login": "Anmelden",
+    "register": "Registrieren"
+  }
+}

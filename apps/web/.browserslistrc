@@ -1,0 +1,20 @@
+# Modern browsers that support ES2020+ natively
+# This significantly reduces transpilation and polyfills
+
+[production]
+# Support browsers with native ES2020+ support (Array.at, Object.hasOwn, etc.)
+chrome >= 92
+edge >= 92
+firefox >= 90
+safari >= 15.4
+ios >= 15.4
+and_chr >= 92
+and_ff >= 90
+
+# Also support maintained Node versions for SSR
+node >= 16
+
+[development]
+last 1 chrome version
+last 1 firefox version
+last 1 safari version

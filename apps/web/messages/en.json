@@ -1,0 +1,275 @@
+{
+  "nav": {
+    "home": "Home",
+    "about": "About Us",
+    "books": "Rare & Collectible",
+    "collections": "Collections",
+    "connect": "Connect",
+    "booksellers": "Booksellers",
+    "cart": "Cart",
+    "account": "My Account",
+    "signIn": "Sign In",
+    "signOut": "Sign Out"
+  },
+  "home": {
+    "hero": {
+      "title": "Discover Curated Rare Books and Artworks.",
+      "cta": "Start Exploring"
+    },
+    "featuredAuctions": {
+      "title": "Featured Auctions",
+      "viewAll": "View All Auctions",
+      "bidNow": "Bid Now",
+      "ending": "Ending",
+      "currentBid": "Current Bid"
+    },
+    "memberships": {
+      "title": "Join Our Community",
+      "subtitle": "Choose the membership that fits your collecting journey",
+      "newTitle": "Memberships Now Available!",
+      "newDescription": "Join the collecting community and enhance your journey with Ageless Literature experts. Enjoy exclusive access to courses, research tools, discounts, and more!",
+      "learnMore": "Learn More",
+      "pageTitle": "Membership Plans",
+      "pageSubtitle": "Become a Member. Collect Smarter.",
+      "cta": {
+        "title": "Ready to elevate your collecting?",
+        "description": "This isn't for everyone. But if you're ready to elevate your collecting—or finally learn how—this is how you build your legacy and preserve history while saving precious time.",
+        "button": "Get Started Today"
+      },
+      "plans": {
+        "silver": {
+          "name": "Silver",
+          "tagline": "For less than 64¢ per day",
+          "features": [
+            "Exclusive master class on book collecting from experts with 25+ years experience. 45+ Min long.",
+            "Unlimited Private Rare Book Requests",
+            "Access \"My Collection\" and display your collection digitally",
+            "Unlimited Private Offer Submissions",
+            "Unlimited Social Posting"
+          ]
+        },
+        "gold": {
+          "name": "Gold",
+          "tagline": "For less than $2 per day",
+          "features": [
+            "SAVE 67% ON ALL AUCTION FEES",
+            "24 hour early access to auctions",
+            "Exclusive master class on book collecting from experts with 25+ years experience. 45+ Min long.",
+            "Unlimited Private Rare Book Requests",
+            "Access \"My Collection\" and display your collection digitally",
+            "Unlimited Private Offer Submissions",
+            "Unlimited Social Posting",
+            "Unlimited access to our AI Rare Book Research Tool",
+            "20% OFF 3 AI Authentications /Month",
+            "Access to value charts and data of the appreciation of collectible books"
+          ]
+        },
+        "platinum": {
+          "name": "Platinum",
+          "tagline": "For less than $10 per day",
+          "features": [
+            "RECEIVE EVERY BENEFIT OF A GOLD MEMBERSHIP",
+            "Concierge Service - One-on-one guidance with an expert bookseller who shares your passion",
+            "Help you craft the library you've always dreamed of",
+            "With AL's Platinum Service, you will never pay fees when working directly with your paired bookseller",
+            "As your collection grows, you are free to request a new bookseller anytime—at no cost"
+          ]
+        }
+      }
+    },
+    "collectorCta": {
+      "title": "Start Your Collection Today",
+      "description": "Join thousands of collectors discovering rare and valuable books",
+      "cta": "Browse Collection"
+    },
+    "booksellerCta": {
+      "title": "Sell Your Rare Books",
+      "description": "Reach serious collectors and grow your business",
+      "cta": "Become a Seller"
+    },
+    "mobileApp": {
+      "title": "Take Your Collection Everywhere",
+      "description": "Download our mobile app to browse, bid, and manage your collection on the go",
+      "ios": "Download on the App Store",
+      "android": "Get it on Google Play"
+    },
+    "stats": {
+      "rareBooksListed": "Rare Books Listed",
+      "trustedBooksellers": "Trusted Booksellers",
+      "countriesWorldwide": "Countries Worldwide",
+      "customerSupport": "Customer Support"
+    },
+    "collectorCta": {
+      "label": "DISCOVER RARE WORKS",
+      "title": "Join Ageless Literature Today as a Collector",
+      "cta": "START COLLECTING"
+    },
+    "vendorCta": {
+      "label": "SHARE YOUR COLLECTION",
+      "title": "Apply to Become a Featured Bookseller Today",
+      "cta": "APPLY NOW"
+    }
+  },
+  "account": {
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "preferences": "Preferences",
+    "password": "Password",
+    "orders": "Orders",
+    "bids": "My Bids",
+    "offers": "Offers",
+    "settings": "Settings",
+    "membership": "Membership",
+    "logout": "Logout",
+    "welcome": "Welcome back",
+    "overview": "Overview",
+    "profileDescription": "Manage your personal information",
+    "membershipDescription": "View and manage your membership",
+    "preferencesDescription": "Update your settings and preferences",
+    "ordersDescription": "View your order history",
+    "offersDescription": "View custom offers from vendors",
+    "bidsDescription": "Track your auction bids",
+    "settingsDescription": "Manage account settings, passwords, and payment methods",
+    "totalOrders": "Orders",
+    "activeBids": "Active Bids",
+    "wins": "Wins",
+    "spent": "Spent",
+    "loadingAccount": "Loading account..."
+  },
+  "password": {
+    "title": "Change Password",
+    "subtitle": "Update your password to keep your account secure. We now require stronger passwords to protect your account from unauthorized access.",
+    "currentPasswordSection": "Current Password",
+    "newPasswordSection": "New Password",
+    "currentPasswordLabel": "Current Password",
+    "currentPasswordPlaceholder": "Enter your current password",
+    "newPasswordLabel": "New Password",
+    "newPasswordPlaceholder": "Enter your new password",
+    "confirmPasswordLabel": "Confirm New Password",
+    "confirmPasswordPlaceholder": "Confirm your new password",
+    "requirements": "Password Requirements",
+    "updateButton": "Update Password",
+    "updating": "Updating...",
+    "cancel": "Cancel"
+  },
+  "profile": {
+    "title": "Edit Profile",
+    "fullNameLabel": "Full Name",
+    "usernameLabel": "Username",
+    "usernamePlaceholder": "Choose a unique username",
+    "emailLabel": "Email",
+    "bioLabel": "Bio",
+    "bioPlaceholder": "Tell us about yourself",
+    "locationLabel": "Location",
+    "locationPlaceholder": "City, Country",
+    "saveButton": "Save Changes",
+    "saving": "Saving...",
+    "cancel": "Cancel"
+  },
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "submit": "Submit"
+  },
+  "preferences": {
+    "title": "Preferences",
+    "subtitle": "Manage your notification and display preferences",
+    "notifications": "Notifications",
+    "emailNotifications": "Email Notifications",
+    "bidAlerts": "Bid Alerts",
+    "auctionReminders": "Auction Reminders",
+    "newsletter": "Newsletter",
+    "smsNotifications": "SMS Notifications",
+    "displaySettings": "Display Settings",
+    "currency": "Currency",
+    "currencyUSD": "USD - US Dollar",
+    "currencyEUR": "EUR - Euro",
+    "currencyGBP": "GBP - British Pound",
+    "currencyCAD": "CAD - Canadian Dollar",
+    "language": "Language",
+    "languageDescription": "Your site language. We'll use this across all devices when you're signed in.",
+    "savePreferences": "Save Preferences",
+    "cancel": "Cancel",
+    "saving": "Saving..."
+  },
+  "footer": {
+    "explore": "EXPLORE",
+    "aboutUs": "About Us",
+    "shop": "Shop",
+    "booksellers": "Booksellers",
+    "signInJoin": "Sign in/Join",
+    "signOut": "Sign Out",
+    "policy": "POLICY",
+    "faq": "FAQ",
+    "refundsPolicy": "Refund and Returns Policy",
+    "termsOfUse": "Terms Of Use",
+    "privacyPolicy": "Privacy Policy",
+    "followUs": "FOLLOW US",
+    "instagram": "Instagram",
+    "tagline": "Preserving History, Creating The Future",
+    "copyright": "© 2025 Ageless Literature LLC. All rights reserved. United States",
+    "sitemap": "Sitemap",
+    "accessibility": "Accessibility"
+  },
+  "auth": {
+    "login": {
+      "title": "Sign in to your account",
+      "subtitle": "Or",
+      "createAccount": "create a new account",
+      "email": "Email",
+      "emailPlaceholder": "Enter your email",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "forgotPassword": "Forgot password?",
+      "signIn": "Sign in",
+      "signingIn": "Signing in...",
+      "googleSignIn": "Continue with Google",
+      "appleSignIn": "Continue with Apple",
+      "connecting": "Connecting...",
+      "orContinue": "Or continue with email"
+    },
+    "register": {
+      "title": "Create your account",
+      "subtitle": "Already have an account?",
+      "signIn": "sign in to your existing account",
+      "firstName": "First Name",
+      "firstNamePlaceholder": "Enter your first name",
+      "lastName": "Last Name",
+      "lastNamePlaceholder": "Enter your last name",
+      "email": "Email",
+      "emailPlaceholder": "Enter your email",
+      "password": "Password",
+      "passwordPlaceholder": "Choose a strong password",
+      "confirmPassword": "Confirm Password",
+      "confirmPasswordPlaceholder": "Re-enter your password",
+      "createAccount": "Create Account",
+      "creating": "Creating account...",
+      "googleSignUp": "Continue with Google",
+      "appleSignUp": "Continue with Apple",
+      "connecting": "Connecting...",
+      "orCreateWith": "Or create account with email"
+    }
+  },
+  "breadcrumbs": {
+    "home": "Home",
+    "account": "Account",
+    "preferences": "Preferences",
+    "profile": "Profile",
+    "password": "Password",
+    "membership": "Membership",
+    "orders": "Orders",
+    "bids": "Bids",
+    "settings": "Settings",
+    "wishlist": "Wishlist",
+    "vendor": "Vendor",
+    "dashboard": "Dashboard",
+    "books": "Books",
+    "auth": "Authentication",
+    "login": "Login",
+    "register": "Register"
+  }
+}

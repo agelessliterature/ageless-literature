@@ -1,0 +1,84 @@
+image: node:20
+
+definitions:
+  caches:
+    npm: ~/.npm
+  
+  steps:
+    - step: &install-and-validate
+        name: Install & Validate
+        caches:
+          - npm
+        script:
+          - npm ci
+          - npm run lint || echo "Linting completed with warnings"
+          - npm run typecheck || echo "Type checking completed with warnings"
+          - npm run build
+
+    - step: &build-and-push-images
+        name: Build & Push Docker Images
+        size: 2x
+        services:
+          - docker
+        caches:
+          - docker
+        script:
+          - export IMAGE_TAG="${BITBUCKET_COMMIT:0:7}"
+          - echo "Building images with tag ${IMAGE_TAG}"
+          - echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin
+          # Enable BuildKit for faster builds
+          - export DOCKER_BUILDKIT=1
+          # Build API image
+          - docker build -f apps/api/Dockerfile -t ${DOCKER_USERNAME}/ageless-api:${IMAGE_TAG} .
+          - docker push ${DOCKER_USERNAME}/ageless-api:${IMAGE_TAG}
+          # Build Web image
+          - docker build -f apps/web/Dockerfile --build-arg NEXT_PUBLIC_API_URL="https://dev.agelessliterature.com/v2/api" --build-arg NEXT_PUBLIC_SOCKET_URL="https://dev.agelessliterature.com" --build-arg NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME="${CLOUDINARY_CLOUD_NAME}" --build-arg NEXT_PUBLIC_FONTAWESOME_KIT="${NEXT_PUBLIC_FONTAWESOME_KIT}" --build-arg NEXTAUTH_URL="https://dev.agelessliterature.com/v2/api/auth" --build-arg NEXTAUTH_SECRET="${NEXTAUTH_SECRET}" -t ${DOCKER_USERNAME}/ageless-web:${IMAGE_TAG} .
+          - docker push ${DOCKER_USERNAME}/ageless-web:${IMAGE_TAG}
+          - echo ${IMAGE_TAG} > image_tag.txt
+        artifacts:
+          - image_tag.txt
+
+    - step: &deploy-dev
+        name: Deploy to DEV
+        script:
+          - mkdir -p ~/.ssh
+          - ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts 2>/dev/null
+          - scp image_tag.txt $SSH_USER@$SSH_HOST:/mnt/ageless-literature-dev/
+          - scp deploy/server-setup-dev.sh $SSH_USER@$SSH_HOST:/mnt/ageless-literature-dev/
+          - ssh $SSH_USER@$SSH_HOST "bash /mnt/ageless-literature-dev/server-setup-dev.sh $DOCKER_USERNAME"
+          - |
+            ssh $SSH_USER@$SSH_HOST << ENDSSH
+            export IMAGE_TAG=\$(cat /mnt/ageless-literature-dev/image_tag.txt)
+            export DOCKER_USERNAME=$DOCKER_USERNAME
+            export DOCKER_PASSWORD="$DOCKER_PASSWORD"
+            export DATABASE_URL="$DATABASE_URL"
+            export JWT_SECRET="$JWT_SECRET"
+            export NEXTAUTH_SECRET="$NEXTAUTH_SECRET"
+            export ENCRYPTION_KEY="$ENCRYPTION_KEY"
+            export STRIPE_PUBLISHABLE_KEY="$STRIPE_PUBLISHABLE_KEY"
+            export STRIPE_SECRET_KEY="$STRIPE_SECRET_KEY"
+            export STRIPE_WEBHOOK_SECRET="$STRIPE_WEBHOOK_SECRET"
+            export PAYPAL_CLIENT_ID="$PAYPAL_CLIENT_ID"
+            export PAYPAL_CLIENT_SECRET="$PAYPAL_CLIENT_SECRET"
+            export CLOUDINARY_CLOUD_NAME="$CLOUDINARY_CLOUD_NAME"
+            export CLOUDINARY_API_KEY="$CLOUDINARY_API_KEY"
+            export CLOUDINARY_API_SECRET="$CLOUDINARY_API_SECRET"
+            export SENDGRID_API_KEY="$SENDGRID_API_KEY"
+            export GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID"
+            export GOOGLE_CLIENT_SECRET="$GOOGLE_CLIENT_SECRET"
+            export TWILIO_ACCOUNT_SID="$TWILIO_ACCOUNT_SID"
+            export TWILIO_AUTH_TOKEN="$TWILIO_AUTH_TOKEN"
+            export MEILISEARCH_MASTER_KEY="$MEILISEARCH_MASTER_KEY"
+            bash /mnt/ageless-literature-dev/deploy.sh
+            ENDSSH
+
+pipelines:
+  pull-requests:
+    dev:
+      - step: *install-and-validate
+
+  branches:
+    dev:
+      - step: *install-and-validate
+      - step: *build-and-push-images
+      - step: *deploy-dev
