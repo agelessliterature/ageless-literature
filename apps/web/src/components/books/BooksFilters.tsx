@@ -165,10 +165,11 @@ export function BooksFilters({ filters, onChange, onClear }: BooksFiltersProps) 
 
       {/* Clear Filters Button */}
       {hasActiveFilters && (
-        <div className="mt-4 flex justify-end">
+        <div className="mt-4 flex justify-center md:justify-end">
           <button
             onClick={onClear}
-            className="px-4 py-2 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 transition-colors flex items-center gap-2"
+            className="w-full md:w-auto px-6 py-3 md:px-4 md:py-2 text-sm bg-red-50 text-red-600 hover:text-red-800 hover:bg-red-100 transition-colors flex items-center justify-center gap-2 font-medium border border-red-200 hover:border-red-300"
+            style={{ borderRadius: '0.5rem' }}
           >
             <FontAwesomeIcon icon={['fal', 'times-circle']} />
             Clear All Filters

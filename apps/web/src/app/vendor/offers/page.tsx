@@ -18,6 +18,7 @@ interface Offer {
   offerPrice: string;
   message: string | null;
   status: 'pending' | 'accepted' | 'declined' | 'expired' | 'cancelled';
+  initiatedBy: 'vendor' | 'buyer';
   expiresAt: string | null;
   createdAt: string;
   user: {
@@ -65,6 +66,24 @@ export default function VendorOffersPage() {
         headers: { Authorization: `Bearer ${session?.accessToken}` },
       });
       if (!res.ok) throw new Error('Failed to cancel offer');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vendor-offers'] });
+    },
+  });
+
+  const respondMutation = useMutation({
+    mutationFn: async ({ offerId, action }: { offerId: string; action: 'accept' | 'decline' }) => {
+      const res = await fetch(getApiUrl(`api/vendor/offers/${offerId}/respond`), {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${session?.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ action }),
+      });
+      if (!res.ok) throw new Error(`Failed to ${action} offer`);
       return res.json();
     },
     onSuccess: () => {
@@ -122,7 +141,9 @@ export default function VendorOffersPage() {
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-primary">Custom Offers</h1>
-            <p className="text-gray-600 mt-2">Send personalized price offers to customers</p>
+            <p className="text-gray-600 mt-2">
+              Manage offers from buyers and send custom offers to customers
+            </p>
           </div>
           <button
             onClick={() => setShowCreateModal(true)}
@@ -170,10 +191,7 @@ export default function VendorOffersPage() {
       ) : (
         <div className="space-y-4">
           {offers.map((offer) => (
-            <div
-              key={offer.id}
-              className="bg-white border border-gray-200 p-4 sm:p-6"
-            >
+            <div key={offer.id} className="bg-white border border-gray-200 p-4 sm:p-6">
               <div className="flex flex-col sm:flex-row gap-4">
                 {/* Item Image */}
                 <div className="w-20 h-20 flex-shrink-0 bg-gray-100">
@@ -201,12 +219,32 @@ export default function VendorOffersPage() {
                     <div>
                       <h3 className="font-semibold text-gray-900">{offer.item?.title || 'Item'}</h3>
                       <p className="text-sm text-gray-600">
-                        To: {offer.user?.name} ({offer.user?.email})
+                        {offer.initiatedBy === 'buyer' ? (
+                          <>
+                            <span className="inline-flex items-center gap-1 text-blue-600 font-medium">
+                              <FontAwesomeIcon icon={['fal', 'arrow-down']} /> From:
+                            </span>{' '}
+                            {offer.user?.name} ({offer.user?.email})
+                          </>
+                        ) : (
+                          <>
+                            To: {offer.user?.name} ({offer.user?.email})
+                          </>
+                        )}
                       </p>
                     </div>
-                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded ${getStatusBadge(offer.status)}`}>
-                      {offer.status.charAt(0).toUpperCase() + offer.status.slice(1)}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {offer.initiatedBy === 'buyer' && (
+                        <span className="inline-flex px-2 py-1 text-xs font-medium rounded bg-blue-100 text-blue-800">
+                          Buyer Offer
+                        </span>
+                      )}
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-medium rounded ${getStatusBadge(offer.status)}`}
+                      >
+                        {offer.status.charAt(0).toUpperCase() + offer.status.slice(1)}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="mt-3 flex flex-wrap gap-4 text-sm">
@@ -221,7 +259,11 @@ export default function VendorOffersPage() {
                     <div>
                       <span className="text-gray-500">Discount:</span>{' '}
                       <span className="text-green-600">
-                        {Math.round((1 - parseFloat(offer.offerPrice) / parseFloat(offer.originalPrice)) * 100)}% off
+                        {Math.round(
+                          (1 - parseFloat(offer.offerPrice) / parseFloat(offer.originalPrice)) *
+                            100,
+                        )}
+                        % off
                       </span>
                     </div>
                   </div>
@@ -235,7 +277,7 @@ export default function VendorOffersPage() {
                     {offer.expiresAt && (
                       <span>Expires: {new Date(offer.expiresAt).toLocaleDateString()}</span>
                     )}
-                    {offer.status === 'pending' && (
+                    {offer.status === 'pending' && offer.initiatedBy === 'vendor' && (
                       <button
                         onClick={() => {
                           if (confirm('Are you sure you want to cancel this offer?')) {
@@ -247,6 +289,28 @@ export default function VendorOffersPage() {
                       >
                         Cancel Offer
                       </button>
+                    )}
+                    {offer.status === 'pending' && offer.initiatedBy === 'buyer' && (
+                      <div className="flex gap-2 ml-auto">
+                        <button
+                          onClick={() =>
+                            respondMutation.mutate({ offerId: offer.id, action: 'accept' })
+                          }
+                          className="bg-green-600 text-white px-3 py-1 text-xs font-semibold hover:bg-green-700 transition rounded"
+                          disabled={respondMutation.isPending}
+                        >
+                          Accept Offer
+                        </button>
+                        <button
+                          onClick={() =>
+                            respondMutation.mutate({ offerId: offer.id, action: 'decline' })
+                          }
+                          className="bg-red-600 text-white px-3 py-1 text-xs font-semibold hover:bg-red-700 transition rounded"
+                          disabled={respondMutation.isPending}
+                        >
+                          Decline
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>

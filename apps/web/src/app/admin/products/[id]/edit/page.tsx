@@ -175,15 +175,17 @@ export default function EditProductPage() {
         // Set categoryIds from product.categories
         setCategoryIds(product.categories?.map((c: any) => c.id) || []);
         // Extract HTML from JSONB format if needed
-        const descriptionHtml = typeof product.description === 'object' 
-          ? (product.description?.en || product.description?.html || '') 
-          : (product.description || '');
-        
+        const descriptionHtml =
+          typeof product.description === 'object'
+            ? product.description?.en || product.description?.html || ''
+            : product.description || '';
+
         // Short description should be plain text - strip any HTML if present
-        let shortDescText = typeof product.shortDescription === 'object' 
-          ? (product.shortDescription?.en || product.shortDescription?.html || '') 
-          : (product.shortDescription || product.short_description || '');
-        
+        let shortDescText =
+          typeof product.shortDescription === 'object'
+            ? product.shortDescription?.en || product.shortDescription?.html || ''
+            : product.shortDescription || product.short_description || '';
+
         // Strip HTML tags from short description
         shortDescText = shortDescText.replace(/<[^>]*>/g, '').trim();
 
@@ -382,15 +384,29 @@ export default function EditProductPage() {
                 onChange={(e) => setIncludeShortDescription(e.target.checked)}
                 className="h-4 w-4 text-black border-gray-300 focus:ring-black"
               />
-              <label htmlFor="includeShortDescription" className="text-sm font-medium text-gray-700 cursor-pointer">
+              <label
+                htmlFor="includeShortDescription"
+                className="text-sm font-medium text-gray-700 cursor-pointer"
+              >
                 Add a short description
               </label>
-              <span 
-                className="inline-block text-gray-400 hover:text-gray-600 cursor-help" 
+              <span
+                className="inline-block text-gray-400 hover:text-gray-600 cursor-help"
                 title="A brief description (1-2 sentences) that will appear in product listings and search results. The full description will be shown on the product detail page."
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
               </span>
             </div>

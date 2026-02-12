@@ -6,8 +6,9 @@ WORKDIR /app
 COPY package*.json ./
 COPY apps/api/package*.json ./apps/api/
 
-# Install dependencies
-RUN npm install --workspace=apps/api --production=false
+# Install dependencies (skip husky prepare script in Docker)
+RUN npm install --workspace=apps/api --production=false --ignore-scripts && \
+    cd apps/api && npm rebuild
 
 # Copy API source code
 COPY apps/api ./apps/api

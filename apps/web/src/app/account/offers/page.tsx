@@ -154,15 +154,13 @@ export default function UserOffersPage() {
         <div className="bg-white border border-gray-200 p-8 text-center">
           <FontAwesomeIcon icon={['fal', 'tag']} className="text-4xl text-gray-300 mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">No offers yet</h3>
-          <p className="text-gray-600">
-            When vendors send you custom offers, they'll appear here.
-          </p>
+          <p className="text-gray-600">When vendors send you custom offers, they'll appear here.</p>
         </div>
       ) : (
         <div className="space-y-4">
           {offers.map((offer) => {
             const expired = offer.status === 'pending' && isExpired(offer.expiresAt);
-            
+
             return (
               <div
                 key={offer.id}
@@ -193,15 +191,22 @@ export default function UserOffersPage() {
                   <div className="flex-1">
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                       <div>
-                        <Link href={getItemLink(offer)} className="font-semibold text-gray-900 hover:text-primary">
+                        <Link
+                          href={getItemLink(offer)}
+                          className="font-semibold text-gray-900 hover:text-primary"
+                        >
                           {offer.item?.title || 'Item'}
                         </Link>
                         <p className="text-sm text-gray-600">
                           From: {offer.vendor?.shopName || 'Vendor'}
                         </p>
                       </div>
-                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded ${getStatusBadge(expired ? 'expired' : offer.status)}`}>
-                        {expired ? 'Expired' : offer.status.charAt(0).toUpperCase() + offer.status.slice(1)}
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-medium rounded ${getStatusBadge(expired ? 'expired' : offer.status)}`}
+                      >
+                        {expired
+                          ? 'Expired'
+                          : offer.status.charAt(0).toUpperCase() + offer.status.slice(1)}
                       </span>
                     </div>
 
@@ -212,12 +217,22 @@ export default function UserOffersPage() {
                       </div>
                       <div>
                         <span className="text-gray-500">Your Price:</span>{' '}
-                        <span className="font-bold text-green-600 text-lg">${offer.offerPrice}</span>
+                        <span className="font-bold text-green-600 text-lg">
+                          ${offer.offerPrice}
+                        </span>
                       </div>
                       <div>
                         <span className="text-gray-500">You Save:</span>{' '}
                         <span className="text-green-600 font-semibold">
-                          {Math.round((1 - parseFloat(offer.offerPrice) / parseFloat(offer.originalPrice)) * 100)}% (${(parseFloat(offer.originalPrice) - parseFloat(offer.offerPrice)).toFixed(2)})
+                          {Math.round(
+                            (1 - parseFloat(offer.offerPrice) / parseFloat(offer.originalPrice)) *
+                              100,
+                          )}
+                          % ($
+                          {(parseFloat(offer.originalPrice) - parseFloat(offer.offerPrice)).toFixed(
+                            2,
+                          )}
+                          )
                         </span>
                       </div>
                     </div>
@@ -232,7 +247,9 @@ export default function UserOffersPage() {
                       {offer.status === 'pending' && !expired && (
                         <>
                           <button
-                            onClick={() => respondMutation.mutate({ offerId: offer.id, action: 'accept' })}
+                            onClick={() =>
+                              respondMutation.mutate({ offerId: offer.id, action: 'accept' })
+                            }
                             disabled={respondMutation.isPending}
                             className="bg-green-600 text-white px-6 py-2 hover:bg-green-700 transition disabled:opacity-50"
                           >
@@ -240,7 +257,9 @@ export default function UserOffersPage() {
                             Accept Offer
                           </button>
                           <button
-                            onClick={() => respondMutation.mutate({ offerId: offer.id, action: 'decline' })}
+                            onClick={() =>
+                              respondMutation.mutate({ offerId: offer.id, action: 'decline' })
+                            }
                             disabled={respondMutation.isPending}
                             className="border border-gray-300 px-4 py-2 hover:bg-gray-50 transition disabled:opacity-50"
                           >

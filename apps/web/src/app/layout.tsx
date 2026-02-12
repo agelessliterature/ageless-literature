@@ -34,10 +34,17 @@ export const metadata: Metadata = {
   manifest: process.env.NODE_ENV === 'production' ? '/v2/manifest.json' : '/manifest.json',
   icons: {
     icon: [
-      { url: process.env.NODE_ENV === 'production' ? '/v2/favicon.ico' : '/favicon.ico', sizes: 'any' },
-      { url: process.env.NODE_ENV === 'production' ? '/v2/icon.svg' : '/icon.svg', type: 'image/svg+xml' },
+      {
+        url: process.env.NODE_ENV === 'production' ? '/v2/favicon.ico' : '/favicon.ico',
+        sizes: 'any',
+      },
+      {
+        url: process.env.NODE_ENV === 'production' ? '/v2/icon.svg' : '/icon.svg',
+        type: 'image/svg+xml',
+      },
     ],
-    apple: process.env.NODE_ENV === 'production' ? '/v2/apple-touch-icon.png' : '/apple-touch-icon.png',
+    apple:
+      process.env.NODE_ENV === 'production' ? '/v2/apple-touch-icon.png' : '/apple-touch-icon.png',
   },
   robots: {
     index: true,
@@ -83,7 +90,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const messages = await getMessages();
 
   const basePath = process.env.NODE_ENV === 'production' ? '/v2' : '';
-  
+
   return (
     <html lang={locale} className={`${montserrat.variable} ${montserrat.className}`}>
       <head>

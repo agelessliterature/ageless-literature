@@ -70,6 +70,7 @@ export default function VendorRegistrationPage() {
         } catch (error: any) {
           // No vendor profile yet - this is expected for new applicants
           if (error.response?.status !== 404) {
+            console.error('Error checking vendor status:', error);
           }
         }
       }
@@ -253,6 +254,20 @@ export default function VendorRegistrationPage() {
             Platform commission: <span className="font-semibold text-primary">8%</span> per sale
             (you keep 92%)
           </p>
+
+          {/* FAQ Link Banner */}
+          <div className="bg-white border-2 border-secondary/30 rounded-lg p-4 mt-6 inline-block shadow-sm">
+            <p className="text-gray-700 mb-2">
+              <FontAwesomeIcon icon={['fal', 'circle-question']} className="text-secondary mr-2" />
+              Have questions about becoming a bookseller?
+            </p>
+            <Link
+              href="/faq"
+              className="text-secondary hover:text-secondary/80 font-semibold underline transition-colors text-lg"
+            >
+              View our Comprehensive FAQ →
+            </Link>
+          </div>
         </div>
 
         {/* Main Form */}

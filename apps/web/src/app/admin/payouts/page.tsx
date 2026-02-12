@@ -299,8 +299,8 @@ export default function AdminPayoutsPage() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {payouts.map((payout: Payout) => (
-                  <tr 
-                    key={payout.id} 
+                  <tr
+                    key={payout.id}
                     className="hover:bg-gray-50 cursor-pointer"
                     onClick={() => router.push(`/admin/vendors/${payout.vendor.id}`)}
                   >

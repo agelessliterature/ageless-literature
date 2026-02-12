@@ -618,8 +618,8 @@ export default function AdminProductsPage() {
                   const imageUrl = primaryImage?.url || primaryImage?.imageUrl || primaryImage;
 
                   return (
-                    <tr 
-                      key={product.id} 
+                    <tr
+                      key={product.id}
                       className="hover:bg-gray-50 transition-colors cursor-pointer"
                       onClick={() => handleViewDetails(product)}
                     >
@@ -678,7 +678,10 @@ export default function AdminProductsPage() {
                         {formatDate(product.createdAt)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                        <div
+                          className="flex items-center justify-end gap-2"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           {product.status === 'draft' && (
                             <button
                               onClick={() => handleToggleStatus(product, 'published')}

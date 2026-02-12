@@ -77,6 +77,7 @@ router.put('/settings/payout', authMiddleware, vendorSettingsController.updatePa
 router.get('/offers', authMiddleware, customOffersController.getVendorOffers);
 router.get('/offers/search-users', authMiddleware, customOffersController.searchUsers);
 router.post('/offers', authMiddleware, customOffersController.createOffer);
+router.post('/offers/:id/respond', authMiddleware, customOffersController.vendorRespondToOffer);
 router.delete('/offers/:id', authMiddleware, customOffersController.cancelOffer);
 
 export default router;

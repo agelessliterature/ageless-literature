@@ -68,8 +68,8 @@ export default function UsersAdminPage() {
   const [roleFilter, setRoleFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [membershipFilter, setMembershipFilter] = useState('');
-  const [sortBy, _setSortBy] = useState('createdAt');
-  const [sortOrder, _setSortOrder] = useState<'ASC' | 'DESC'>('DESC');
+  const [sortBy] = useState('createdAt');
+  const [sortOrder] = useState<'ASC' | 'DESC'>('DESC');
 
   // Modals
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -177,7 +177,17 @@ export default function UsersAdminPage() {
       setLoading(false);
       setError('Not authenticated. Please log in.');
     }
-  }, [pagination.currentPage, sortBy, sortOrder, session?.accessToken, status, search, roleFilter, statusFilter, membershipFilter]);
+  }, [
+    pagination.currentPage,
+    sortBy,
+    sortOrder,
+    session?.accessToken,
+    status,
+    search,
+    roleFilter,
+    statusFilter,
+    membershipFilter,
+  ]);
 
   useEffect(() => {
     if (session?.accessToken) {
@@ -440,8 +450,8 @@ export default function UsersAdminPage() {
                 </tr>
               ) : (
                 users.map((user) => (
-                  <tr 
-                    key={user.id} 
+                  <tr
+                    key={user.id}
                     className="hover:bg-gray-50 transition-colors cursor-pointer"
                     onClick={() => router.push(`/admin/users/${user.id}/edit`)}
                   >
@@ -546,7 +556,10 @@ export default function UsersAdminPage() {
                     <td className="px-3 sm:px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
                       {new Date(user.createdAt).toLocaleDateString()}
                     </td>
-                    <td className="px-3 sm:px-6 py-4 text-right text-sm font-medium whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                    <td
+                      className="px-3 sm:px-6 py-4 text-right text-sm font-medium whitespace-nowrap"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <Link
                         href={`/admin/users/${user.id}/edit`}
                         className="text-yellow-600 hover:text-yellow-900 mr-2"

@@ -71,6 +71,12 @@ export default (sequelize, DataTypes) => {
         allowNull: true,
         comment: 'When the user responded to the offer',
       },
+      initiatedBy: {
+        type: DataTypes.ENUM('vendor', 'buyer'),
+        allowNull: false,
+        defaultValue: 'vendor',
+        comment: 'Who initiated the offer: vendor or buyer',
+      },
     },
     {
       tableName: 'custom_offers',
@@ -83,17 +89,17 @@ export default (sequelize, DataTypes) => {
         { fields: ['status'] },
         { fields: ['expires_at'] },
       ],
-    }
+    },
   );
 
   CustomOffer.associate = (models) => {
-    CustomOffer.belongsTo(models.Vendor, { 
-      foreignKey: 'vendorId', 
-      as: 'vendor' 
+    CustomOffer.belongsTo(models.Vendor, {
+      foreignKey: 'vendorId',
+      as: 'vendor',
     });
-    CustomOffer.belongsTo(models.User, { 
-      foreignKey: 'userId', 
-      as: 'user' 
+    CustomOffer.belongsTo(models.User, {
+      foreignKey: 'userId',
+      as: 'user',
     });
   };
 

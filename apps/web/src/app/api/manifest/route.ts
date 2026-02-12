@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
+  const basePath = process.env.NODE_ENV === 'production' ? '/v2' : '';
   const manifest = {
     name: 'Ageless Literature',
     short_name: 'Ageless Lit',
@@ -12,19 +13,19 @@ export async function GET(request: NextRequest) {
     orientation: 'portrait-primary',
     icons: [
       {
-        src: '/icon-192x192.png',
+        src: `${basePath}/icon-192x192.png`,
         sizes: '192x192',
         type: 'image/png',
         purpose: 'any maskable',
       },
       {
-        src: '/icon-512x512.png',
+        src: `${basePath}/icon-512x512.png`,
         sizes: '512x512',
         type: 'image/png',
         purpose: 'any maskable',
       },
       {
-        src: '/icon.svg',
+        src: `${basePath}/icon.svg`,
         sizes: 'any',
         type: 'image/svg+xml',
         purpose: 'any',

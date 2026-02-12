@@ -13,7 +13,7 @@ interface RichTextEditorProps {
 
 export default function RichTextEditor({ value, onChange, placeholder }: RichTextEditorProps) {
   const isInitialMount = useRef(true);
-  
+
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -60,7 +60,7 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
     const currentContent = editor.getHTML();
     const normalizedCurrent = currentContent.replace(/\s+/g, ' ').trim();
     const normalizedValue = value.replace(/\s+/g, ' ').trim();
-    
+
     if (normalizedCurrent !== normalizedValue && value !== '<p></p>') {
       editor.commands.setContent(value, { emitUpdate: false });
     }
@@ -77,7 +77,9 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
           type="button"
           onClick={() => editor.chain().focus().toggleBold().run()}
           className={`px-3 py-1 rounded text-sm font-medium ${
-            editor.isActive('bold') ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
+            editor.isActive('bold')
+              ? 'bg-blue-500 text-white'
+              : 'bg-white text-gray-700 hover:bg-gray-100'
           }`}
         >
           Bold
@@ -86,7 +88,9 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
           type="button"
           onClick={() => editor.chain().focus().toggleItalic().run()}
           className={`px-3 py-1 rounded text-sm font-medium ${
-            editor.isActive('italic') ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
+            editor.isActive('italic')
+              ? 'bg-blue-500 text-white'
+              : 'bg-white text-gray-700 hover:bg-gray-100'
           }`}
         >
           Italic
@@ -95,7 +99,9 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
           type="button"
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           className={`px-3 py-1 rounded text-sm font-medium ${
-            editor.isActive('bulletList') ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
+            editor.isActive('bulletList')
+              ? 'bg-blue-500 text-white'
+              : 'bg-white text-gray-700 hover:bg-gray-100'
           }`}
         >
           • List
@@ -104,16 +110,15 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
           type="button"
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
           className={`px-3 py-1 rounded text-sm font-medium ${
-            editor.isActive('orderedList') ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
+            editor.isActive('orderedList')
+              ? 'bg-blue-500 text-white'
+              : 'bg-white text-gray-700 hover:bg-gray-100'
           }`}
         >
           1. List
         </button>
       </div>
-      <EditorContent 
-        editor={editor} 
-        className="p-4 focus:outline-none"
-      />
+      <EditorContent editor={editor} className="p-4 focus:outline-none" />
     </div>
   );
 }

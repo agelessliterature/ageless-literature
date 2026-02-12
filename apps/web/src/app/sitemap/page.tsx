@@ -13,22 +13,46 @@ export default function SitemapPage() {
         <div>
           <h2 className="text-2xl font-semibold mb-4">Shop</h2>
           <ul className="space-y-2">
-            <li><Link href="/books" className="text-secondary hover:underline">Browse Books</Link></li>
-            <li><Link href="/vendors" className="text-secondary hover:underline">Vendors</Link></li>
+            <li>
+              <Link href="/books" className="text-secondary hover:underline">
+                Browse Books
+              </Link>
+            </li>
+            <li>
+              <Link href="/vendors" className="text-secondary hover:underline">
+                Vendors
+              </Link>
+            </li>
           </ul>
         </div>
         <div>
           <h2 className="text-2xl font-semibold mb-4">Account</h2>
           <ul className="space-y-2">
-            <li><Link href="/auth/login" className="text-secondary hover:underline">Login</Link></li>
-            <li><Link href="/account/profile" className="text-secondary hover:underline">Profile</Link></li>
+            <li>
+              <Link href="/auth/login" className="text-secondary hover:underline">
+                Login
+              </Link>
+            </li>
+            <li>
+              <Link href="/account/profile" className="text-secondary hover:underline">
+                Profile
+              </Link>
+            </li>
           </ul>
         </div>
         <div>
           <h2 className="text-2xl font-semibold mb-4">Info</h2>
           <ul className="space-y-2">
-            <li><Link href="/about" className="text-secondary hover:underline">About</Link></li>
-            <li><Link href="/accessibility" className="text-secondary hover:underline">Accessibility</Link></li>
+            <li>
+              <Link href="/about" className="text-secondary hover:underline">
+                About
+              </Link>
+            </li>
+            <li>
+              <Link href="/accessibility" className="text-secondary hover:underline">
+                Accessibility
+              </Link>
+            </li>
           </ul>
         </div>
       </div>

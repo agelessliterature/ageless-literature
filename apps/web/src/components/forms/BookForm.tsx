@@ -22,12 +22,14 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
   const [images, setImages] = useState<
     Array<{ url: string; publicId: string; thumbnail?: string }>
   >(book?.images || []);
-  const [categories, setCategories] = useState<Array<{ id: number; name: string; slug: string }>>([]);
+  const [categories, setCategories] = useState<Array<{ id: number; name: string; slug: string }>>(
+    [],
+  );
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>(
-    book?.categories?.map(c => c.id) || []
+    book?.categories?.map((c) => c.id) || [],
   );
   const [includeShortDescription, setIncludeShortDescription] = useState<boolean>(
-    !!book?.shortDescription
+    !!book?.shortDescription,
   );
   const [formData, setFormData] = useState<Partial<BookFormData>>({
     title: book?.title || '',
@@ -153,15 +155,29 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
                 onChange={(e) => setIncludeShortDescription(e.target.checked)}
                 className="h-4 w-4 text-black border-gray-300 focus:ring-black"
               />
-              <label htmlFor="includeShortDescription" className="text-sm font-medium text-gray-700 cursor-pointer">
+              <label
+                htmlFor="includeShortDescription"
+                className="text-sm font-medium text-gray-700 cursor-pointer"
+              >
                 Add a short description
               </label>
-              <span 
-                className="inline-block text-gray-400 hover:text-gray-600 cursor-help" 
+              <span
+                className="inline-block text-gray-400 hover:text-gray-600 cursor-help"
                 title="A brief description (1-2 sentences) that will appear in product listings and search results. The full description will be shown on the product detail page."
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
               </span>
             </div>
@@ -169,7 +185,9 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
             {/* Short Description - Conditionally Rendered */}
             {includeShortDescription && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Short Description</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Short Description
+                </label>
                 <textarea
                   value={formData.shortDescription || ''}
                   onChange={(e) => handleChange('shortDescription', e.target.value)}
@@ -219,15 +237,18 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
             <label className="block text-sm font-medium text-gray-700 mb-1">Categories</label>
             <div className="border border-gray-300 rounded max-h-48 overflow-y-auto p-2">
               {categories.map((cat) => (
-                <label key={cat.id} className="flex items-center gap-2 py-1 cursor-pointer hover:bg-gray-50">
+                <label
+                  key={cat.id}
+                  className="flex items-center gap-2 py-1 cursor-pointer hover:bg-gray-50"
+                >
                   <input
                     type="checkbox"
                     checked={selectedCategoryIds.includes(cat.id)}
                     onChange={(e) => {
                       if (e.target.checked) {
-                        setSelectedCategoryIds(prev => [...prev, cat.id]);
+                        setSelectedCategoryIds((prev) => [...prev, cat.id]);
                       } else {
-                        setSelectedCategoryIds(prev => prev.filter(id => id !== cat.id));
+                        setSelectedCategoryIds((prev) => prev.filter((id) => id !== cat.id));
                       }
                     }}
                     className="rounded border-gray-300 text-black focus:ring-black"
@@ -241,7 +262,8 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
             </div>
             {selectedCategoryIds.length > 0 && (
               <p className="text-xs text-gray-500 mt-1">
-                {selectedCategoryIds.length} category{selectedCategoryIds.length > 1 ? 'ies' : 'y'} selected
+                {selectedCategoryIds.length} category{selectedCategoryIds.length > 1 ? 'ies' : 'y'}{' '}
+                selected
               </p>
             )}
           </div>

@@ -8,14 +8,24 @@ import api from '@/lib/api';
 import { Auction } from '@/types/Auction';
 import AuctionCountdown from '@/components/auctions/AuctionCountdown';
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { CloudinaryImage } from '@/components/ui/CloudinaryImage';
 import { motion, useInView } from 'framer-motion';
+import { BASE_PATH } from '@/lib/basePath';
 // import CountUp from 'react-countup';
 
-const basePath = process.env.NODE_ENV === 'production' ? '/v2' : '';
-
 // Stats Card Component with Count-Up Animation
-function StatsCard({ icon, value, suffix, label, delay }: { icon: string; value: number; suffix: string; label: string; delay: number }) {
+function StatsCard({
+  icon,
+  value,
+  suffix,
+  label,
+  delay,
+}: {
+  icon: string;
+  value: number;
+  suffix: string;
+  label: string;
+  delay: number;
+}) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true });
   const [hasAnimated, setHasAnimated] = useState(false);
@@ -33,12 +43,17 @@ function StatsCard({ icon, value, suffix, label, delay }: { icon: string; value:
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.6, delay }}
       className="text-center p-6 bg-gradient-to-br from-primary/5 to-secondary/5 hover:shadow-lg transition-all duration-300"
+      style={{ borderRadius: '1.5rem' }}
     >
       <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
-        <FontAwesomeIcon icon={['fal', icon] as [string, string]} className="text-3xl text-primary" />
+        <FontAwesomeIcon
+          icon={['fal', icon] as [string, string]}
+          className="text-3xl text-primary"
+        />
       </div>
       <div className="text-4xl font-bold text-primary mb-2">
-        {value.toLocaleString()}{suffix}
+        {value.toLocaleString()}
+        {suffix}
       </div>
       <p className="text-gray-600 font-medium">{label}</p>
     </motion.div>
@@ -57,37 +72,43 @@ export default function Home() {
       id: 1,
       name: 'CURATED',
       slug: 'curated',
-      imageUrl: 'https://res.cloudinary.com/dvohtcqvi/image/upload/v1767984844/categories/african-american.jpg',
+      imageUrl:
+        'https://res.cloudinary.com/dvohtcqvi/image/upload/v1767984844/categories/african-american.jpg',
     },
     {
       id: 2,
       name: 'AUCTIONS',
       slug: 'auctions',
-      imageUrl: 'https://res.cloudinary.com/dvohtcqvi/image/upload/v1767984846/categories/americana.jpg',
+      imageUrl:
+        'https://res.cloudinary.com/dvohtcqvi/image/upload/v1767984846/categories/americana.jpg',
     },
     {
       id: 3,
       name: 'SIGNED + ASSOCIATION COPIES',
       slug: 'signed',
-      imageUrl: 'https://res.cloudinary.com/dvohtcqvi/image/upload/v1767984886/categories/first-editions.jpg',
+      imageUrl:
+        'https://res.cloudinary.com/dvohtcqvi/image/upload/v1767984886/categories/first-editions.jpg',
     },
     {
       id: 4,
       name: 'ONE-OF-ONE',
       slug: 'african-american',
-      imageUrl: 'https://res.cloudinary.com/dvohtcqvi/image/upload/v1767984844/categories/african-american.jpg',
+      imageUrl:
+        'https://res.cloudinary.com/dvohtcqvi/image/upload/v1767984844/categories/african-american.jpg',
     },
     {
       id: 5,
       name: 'ANTIQUARIAN',
       slug: 'americana',
-      imageUrl: 'https://res.cloudinary.com/dvohtcqvi/image/upload/v1767984846/categories/americana.jpg',
+      imageUrl:
+        'https://res.cloudinary.com/dvohtcqvi/image/upload/v1767984846/categories/americana.jpg',
     },
     {
       id: 6,
       name: 'FIRST PRINTINGS',
       slug: 'first-editions',
-      imageUrl: 'https://res.cloudinary.com/dvohtcqvi/image/upload/v1767984886/categories/first-editions.jpg',
+      imageUrl:
+        'https://res.cloudinary.com/dvohtcqvi/image/upload/v1767984886/categories/first-editions.jpg',
     },
   ];
 
@@ -106,15 +127,18 @@ export default function Home() {
   });
 
   // Auto-scroll functionality
-  const scrollToIndex = useCallback((index: number, smooth = true) => {
-    if (sliderRef.current && auctions && auctions.length > 0) {
-      const cardWidth = sliderRef.current.scrollWidth / auctions.length;
-      sliderRef.current.scrollTo({
-        left: cardWidth * index,
-        behavior: smooth ? 'smooth' : 'auto',
-      });
-    }
-  }, [auctions]);
+  const scrollToIndex = useCallback(
+    (index: number, smooth = true) => {
+      if (sliderRef.current && auctions && auctions.length > 0) {
+        const cardWidth = sliderRef.current.scrollWidth / auctions.length;
+        sliderRef.current.scrollTo({
+          left: cardWidth * index,
+          behavior: smooth ? 'smooth' : 'auto',
+        });
+      }
+    },
+    [auctions],
+  );
 
   // Calculate the maximum index based on visible items
   const getMaxIndex = useCallback(() => {
@@ -172,24 +196,24 @@ export default function Home() {
           </div>
 
           {/* Horizontal Slider */}
-          <div 
-            className="relative"
+          <div
+            className="relative px-0 md:px-0"
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
           >
-            {/* Navigation Arrows */}
+            {/* Navigation Arrows - Hidden on mobile, visible on md+ */}
             {auctions && auctions.length > 0 && (
               <>
                 <button
                   onClick={handlePrev}
-                  className="absolute left-0 top-1/2 -translate-y-1/2 z-20 bg-black/80 hover:bg-black text-white w-12 h-12 flex items-center justify-center transition-all duration-300 -ml-4"
+                  className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 z-20 bg-black/80 hover:bg-black text-white w-12 h-12 items-center justify-center transition-all duration-300 -ml-4"
                   aria-label="Previous auction"
                 >
                   <FontAwesomeIcon icon={['fal', 'chevron-left']} className="text-xl" />
                 </button>
                 <button
                   onClick={handleNext}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 z-20 bg-black/80 hover:bg-black text-white w-12 h-12 flex items-center justify-center transition-all duration-300 -mr-4"
+                  className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-20 bg-black/80 hover:bg-black text-white w-12 h-12 items-center justify-center transition-all duration-300 -mr-4"
                   aria-label="Next auction"
                 >
                   <FontAwesomeIcon icon={['fal', 'chevron-right']} className="text-xl" />
@@ -198,16 +222,16 @@ export default function Home() {
             )}
 
             {/* Slider Container */}
-            <div 
+            <div
               ref={sliderRef}
               className="flex gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-4"
-              style={{ scrollSnapType: 'x mandatory' }}
+              style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}
             >
               {isLoading ? (
                 // Loading Placeholders
                 Array.from({ length: 4 }).map((_, idx) => (
-                  <div 
-                    key={idx} 
+                  <div
+                    key={idx}
                     className="flex-shrink-0 w-[calc(25%-18px)] min-w-[280px] bg-gray-50 animate-pulse overflow-hidden"
                     style={{ scrollSnapAlign: 'start', borderRadius: 0 }}
                   >
@@ -229,7 +253,8 @@ export default function Home() {
                     '/placeholder.jpg';
                   const itemTitle = item?.title || 'Auction Item';
                   const endDate = (auction as any).endDate || (auction as any).endsAt;
-                  const isEndingSoon = endDate && new Date(endDate).getTime() - Date.now() < 24 * 60 * 60 * 1000;
+                  const isEndingSoon =
+                    endDate && new Date(endDate).getTime() - Date.now() < 24 * 60 * 60 * 1000;
 
                   return (
                     <Link
@@ -241,7 +266,10 @@ export default function Home() {
                       {/* Status Badge */}
                       <div className="relative">
                         {isEndingSoon && (
-                          <div className="absolute top-4 right-4 z-10 bg-red-600 text-white px-3 py-1 text-xs font-bold shadow-lg" style={{ borderRadius: 0 }}>
+                          <div
+                            className="absolute top-4 right-4 z-10 bg-red-600 text-white px-3 py-1 text-xs font-bold shadow-lg"
+                            style={{ borderRadius: 0 }}
+                          >
                             ENDING SOON
                           </div>
                         )}
@@ -278,19 +306,19 @@ export default function Home() {
                           </span>
                           <span className="font-semibold flex items-center gap-1">
                             <FontAwesomeIcon icon={['fal', 'clock'] as [string, string]} />
-                            <AuctionCountdown
-                              endsAt={endDate}
-                            />
+                            <AuctionCountdown endsAt={endDate} />
                           </span>
                         </div>
 
                         {/* Bid Button */}
-                        <button 
-                          className="flex items-center justify-center gap-2 bg-white hover:bg-gray-50 text-black px-6 py-2 text-sm font-semibold transition-all duration-300 w-full"
+                        <div
+                          className="flex items-center justify-center gap-2 bg-black hover:bg-secondary text-white hover:text-black px-6 py-2 text-sm font-semibold transition-all duration-300 w-full border-2 border-black hover:border-secondary cursor-pointer"
                           style={{ borderRadius: '1.5rem' }}
+                          role="button"
+                          tabIndex={0}
                         >
                           {t('featuredAuctions.bidNow')}
-                        </button>
+                        </div>
                       </div>
                     </Link>
                   );
@@ -298,7 +326,10 @@ export default function Home() {
               ) : (
                 // No Auctions Found
                 <div className="w-full flex flex-col items-center justify-center text-center py-12">
-                  <FontAwesomeIcon icon={['fal', 'gavel']} className="text-6xl text-gray-300 mb-4" />
+                  <FontAwesomeIcon
+                    icon={['fal', 'gavel']}
+                    className="text-6xl text-gray-300 mb-4"
+                  />
                   <p className="text-xl text-gray-500">No active auctions at the moment</p>
                   <p className="text-sm text-gray-400 mt-2">Check back soon for exciting items!</p>
                 </div>
@@ -327,14 +358,14 @@ export default function Home() {
 
           {/* View All Button - Only show when auctions exist */}
           {auctions && auctions.length > 0 && (
-            <div className="text-center mt-12">
+            <div className="text-center mt-12 px-4 sm:px-0">
               <Link
                 href="/auctions"
-                className="inline-flex items-center gap-4 text-primary hover:text-secondary font-semibold transition-colors"
-                style={{ fontSize: '2.15rem' }}
+                className="inline-flex items-center justify-center gap-3 bg-black hover:bg-secondary text-white hover:text-black font-bold transition-all duration-300 border-2 border-black hover:border-secondary hover:scale-105 w-full sm:w-auto px-8 py-4 sm:px-12 sm:py-5 text-lg sm:text-xl shadow-lg hover:shadow-xl"
+                style={{ borderRadius: '1.5rem' }}
               >
-                {t('featuredAuctions.viewAll').toUpperCase()}
-                <FontAwesomeIcon icon={['fal', 'arrow-right']} className="text-xl" />
+                <span>{t('featuredAuctions.viewAll').toUpperCase()}</span>
+                <FontAwesomeIcon icon={['fal', 'arrow-right']} className="text-xl sm:text-2xl" />
               </Link>
             </div>
           )}
@@ -352,7 +383,13 @@ export default function Home() {
             className="grid grid-cols-2 md:grid-cols-4 gap-8"
           >
             <StatsCard icon="book" value={10000} suffix="+" label="Rare Books Listed" delay={0} />
-            <StatsCard icon="users" value={500} suffix="+" label="Trusted Booksellers" delay={0.2} />
+            <StatsCard
+              icon="users"
+              value={50}
+              suffix="+"
+              label="Vetted Booksellers & Galleries"
+              delay={0.2}
+            />
             <StatsCard icon="globe" value={50} suffix="+" label="Countries Worldwide" delay={0.4} />
             <StatsCard icon="headset" value={24} suffix="/7" label="Customer Support" delay={0.6} />
           </motion.div>
@@ -366,7 +403,7 @@ export default function Home() {
           {/* Background Image */}
           <div className="absolute inset-0">
             <img
-              src={`${basePath}/home-page/RenderedImage.jpeg`}
+              src={`${BASE_PATH}/home-page/RenderedImage.jpeg`}
               alt="Curated Rare Books"
               className="w-full h-full object-cover"
             />
@@ -384,10 +421,14 @@ export default function Home() {
               className="max-w-2xl"
             >
               <h2 className="text-3xl md:text-4xl lg:text-6xl font-serif text-white mb-4 leading-tight">
-                Curated Rare Books<br />for Serious Collectors.
+                Curated Rare Books
+                <br />
+                for Serious Collectors.
               </h2>
               <p className="text-base md:text-lg text-white/90 mb-8 max-w-xl">
-                12,000+ rare books and collectible works<br />each selected for significance and lasting value.
+                12,000+ rare books and collectible works
+                <br />
+                each selected for significance and lasting value.
               </p>
               <Link
                 href="/shop"
@@ -431,6 +472,54 @@ export default function Home() {
             </motion.div>
           </div>
         </div>
+      </section>
+
+      {/* February High Spots Section */}
+      <section className="bg-gray-50">
+        <div className="mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center bg-white shadow-sm"
+          >
+            {/* Image on Left */}
+            <div
+              className="relative overflow-hidden w-full aspect-square mx-auto lg:ml-auto lg:mr-0 lg:h-[700px]"
+              style={{
+                backgroundImage: `url(${BASE_PATH}/home-page/IMG_7760.jpeg)`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
+              role="img"
+              aria-label="February High Spots"
+            />
+
+            {/* Content on Right */}
+            <div className="flex flex-col justify-center">
+              <h2 className="text-4xl md:text-5xl lg:text-7xl font-serif italic text-gray-800 mb-6">
+                FEBRUARY
+                <br />
+                HIGH SPOTS
+              </h2>
+              <p className="text-lg md:text-base text-gray-600 leading-relaxed mb-8 max-w-[700px]">
+                Highlights of our recently added inventory include a Gutenberg Bible leaf,
+                Mercator's Magna Opera, a truly storied 1591 Greek New Testament, a rare Russian
+                Royal portrait by Thaddeus Kossler, accompanied by a 1st Albert Camus typewriter,
+                and an orbit illustration of Shakespeare's Bamabek.
+              </p>
+              <div>
+                <Link
+                  href="/products/gutenberg-bible-a-leaf-from-the-book-of-jeremiah/dqr0rl-e6d2zk"
+                  className="inline-block border-2 border-gray-800 text-gray-800 px-8 py-3 text-sm font-semibold hover:bg-gray-800 hover:text-white transition-all duration-300"
+                >
+                  LEARN MORE
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+        </div>
 
         {/* High Spots Bottom Section */}
         <div className="bg-gray-100 py-8 md:py-12">
@@ -442,7 +531,7 @@ export default function Home() {
               viewport={{ once: true }}
               className="text-center"
             >
-              <h3 className="text-2xl md:text-3xl font-serif text-gray-800 mb-2">
+              <h3 className="text-3xl md:text-4xl py-4 font-bold text-primary tracking-wider">
                 High Spots
               </h3>
               <p className="text-sm md:text-base text-gray-600 mb-4">
@@ -456,49 +545,6 @@ export default function Home() {
               </Link>
             </motion.div>
           </div>
-        </div>
-      </section>
-
-      {/* February High Spots Section */}
-      <section className="bg-gray-50">
-        <div className="mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center bg-white p-8 shadow-sm"
-          >
-            {/* Image on Left */}
-            <div
-              className="relative overflow-hidden w-full aspect-square max-w-lg mx-auto lg:ml-auto lg:mr-0"
-              style={{
-                backgroundImage: `url(${basePath}/home-page/IMG_7760.jpeg)`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-              }}
-              role="img"
-              aria-label="February High Spots"
-            />
-
-            {/* Content on Right */}
-            <div className="flex flex-col justify-center">
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif italic text-gray-800 mb-6">
-                FEBRUARY<br />HIGH SPOTS
-              </h2>
-              <p className="text-sm md:text-base text-gray-600 leading-relaxed mb-8 max-w-xl">
-                Highlights of our recently added inventory include a Gutenberg Bible leaf, Mercator's Magna Opera, a truly storied 1591 Greek New Testament, a rare Russian Royal portrait by Thaddeus Kossler, accompanied by a 1st Albert Camus typewriter, and an orbit illustration of Shakespeare's Bamabek.
-              </p>
-              <div>
-                <Link
-                  href="/products/gutenberg-bible-a-leaf-from-the-book-of-jeremiah/dqr0rl-e6d2zk"
-                  className="inline-block border-2 border-gray-800 text-gray-800 px-8 py-3 text-sm font-semibold hover:bg-gray-800 hover:text-white transition-all duration-300"
-                >
-                  LEARN MORE
-                </Link>
-              </div>
-            </div>
-          </motion.div>
         </div>
       </section>
 
@@ -520,10 +566,13 @@ export default function Home() {
                 className="group block text-center"
               >
                 {/* Category Name Above Image */}
-                <h3 className="font-bold text-primary mb-6 tracking-wide uppercase" style={{ fontSize: '0.9rem' }}>
+                <h3
+                  className="font-bold text-primary mb-6 tracking-wide uppercase"
+                  style={{ fontSize: '0.9rem' }}
+                >
                   {category.name}
                 </h3>
-                
+
                 {/* Category Image */}
                 <div className="relative overflow-hidden bg-white shadow-md hover:shadow-xl transition-all duration-300">
                   <div className="aspect-[3/4] relative overflow-hidden">
@@ -539,41 +588,43 @@ export default function Home() {
           </div>
 
           {/* View All Categories Link */}
-          <div className="text-center mt-12">
+          <div className="text-center mt-12 px-4 sm:px-0">
             <Link
               href="/categories"
-              className="inline-flex items-center gap-2 text-primary hover:text-secondary font-semibold text-lg transition-colors"
+              className="inline-flex items-center justify-center gap-3 bg-black hover:bg-secondary text-white hover:text-black font-bold transition-all duration-300 border-2 border-black hover:border-secondary hover:scale-105 w-full sm:w-auto px-8 py-4 sm:px-12 sm:py-5 text-lg sm:text-xl shadow-lg hover:shadow-xl"
+              style={{ borderRadius: '1.5rem' }}
             >
-              VIEW ALL CATEGORIES
-              <FontAwesomeIcon icon={['fal', 'arrow-right']} className="text-base" />
+              <span>VIEW ALL CATEGORIES</span>
+              <FontAwesomeIcon icon={['fal', 'arrow-right']} className="text-xl sm:text-2xl" />
             </Link>
           </div>
         </div>
       </section>
       <section className="bg-white">
-          {/* Download Mobile App Section */}
-            <Link
-              href="https://apps.apple.com/us/app/ageless-literature/id6747270974"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block bg-black text-white py-6 text-center hover:bg-gray-900 transition-colors duration-300"
-            >
-              <h3 className="text-xl md:text-2xl font-bold tracking-wider uppercase">
-                DOWNLOAD OUR MOBILE APP
-              </h3>
-            </Link>
+        {/* Download Mobile App Section */}
+        <Link
+          href="https://apps.apple.com/us/app/ageless-literature/id6747270974"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block bg-black text-white py-6 text-center hover:bg-gray-900 transition-colors duration-300"
+        >
+          <h3 className="text-xl md:text-2xl font-bold tracking-wider uppercase">
+            DOWNLOAD OUR MOBILE APP
+          </h3>
+        </Link>
       </section>
 
       {/* Memberships Section */}
       <section className="py-24 bg-white">
         <div className="mx-auto px-4 sm:px-6 lg:px-8">
-          <div 
-            className="max-w-7xl mx-auto p-8 md:p-12 relative" 
+          <div
+            className="max-w-7xl mx-auto p-8 md:p-12 relative"
             style={{
-              background: 'linear-gradient(white, white) padding-box, linear-gradient(135deg, #d4af37, #f4e5a1, #d4af37, #c9a02c) border-box',
+              background:
+                'linear-gradient(white, white) padding-box, linear-gradient(135deg, #d4af37, #f4e5a1, #d4af37, #c9a02c) border-box',
               border: '1px solid #000',
               boxShadow: '0 0 8px 1px #D4AF37',
-              borderRadius: 0
+              borderRadius: 0,
             }}
           >
             <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
@@ -602,7 +653,7 @@ export default function Home() {
                   {t('memberships.newDescription')}
                 </p>
                 <Link
-                  href="https://www.agelessliterature.academy/product-launch-optin-page--12f00"
+                  href="/memberships"
                   target="_blank"
                   className="inline-block bg-black hover:bg-gray-900 text-white px-8 py-4 text-lg font-semibold transition-all duration-300"
                   aria-label="Learn more about Ageless Literature memberships"

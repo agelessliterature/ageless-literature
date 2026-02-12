@@ -276,10 +276,7 @@ export default function VendorPage() {
                             />
                           ) : (
                             <div className="flex items-center justify-center h-full text-gray-400">
-                              <FontAwesomeIcon
-                                icon={['fal', 'book']}
-                                className="text-6xl"
-                              />
+                              <FontAwesomeIcon icon={['fal', 'book']} className="text-6xl" />
                             </div>
                           )}
                         </div>
@@ -297,11 +294,11 @@ export default function VendorPage() {
                                 {Number(book.price).toFixed(0)} USD
                               </span>
                             </div>
-                            
+
                             {/* Action Buttons */}
                             <div className="flex gap-2">
                               <button
-                                onClick={(e) => {
+                                onClick={(_e) => {
                                   // Let the parent Link handle navigation
                                 }}
                                 className="flex-1 bg-secondary hover:bg-secondary/90 text-black py-2 px-4 font-semibold transition-colors duration-300 text-center"
@@ -318,10 +315,7 @@ export default function VendorPage() {
                                 style={{ borderRadius: '1.5rem' }}
                                 aria-label="Add to wishlist"
                               >
-                                <FontAwesomeIcon
-                                  icon={['fal', 'heart']}
-                                  className="text-base"
-                                />
+                                <FontAwesomeIcon icon={['fal', 'heart']} className="text-base" />
                               </button>
                               <button
                                 onClick={(e) => {

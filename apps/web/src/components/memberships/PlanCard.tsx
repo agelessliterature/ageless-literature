@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
 import PlanBadge from './PlanBadge';
 
 interface PlanCardProps {
@@ -98,18 +99,11 @@ export default function PlanCard({
       <ul className="space-y-4 mb-8 flex-grow">
         {features.map((feature, idx) => (
           <li key={idx} className="flex items-start gap-3">
-            <svg
-              className="text-xl text-secondary flex-shrink-0 mt-0.5"
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path d="M5 13l4 4L19 7"></path>
-            </svg>
-            <span className="text-gray-700 leading-relaxed">{feature}</span>
+            <FontAwesomeIcon
+              icon={['fal', 'check-circle']}
+              className="text-secondary text-lg mt-0.5 flex-shrink-0"
+            />
+            <span className="text-gray-700 leading-relaxed text-sm">{feature}</span>
           </li>
         ))}
       </ul>

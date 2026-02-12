@@ -35,7 +35,7 @@ export default function CategoryMultiSelect({
   }, []);
 
   const filteredCategories = categories.filter((cat) =>
-    cat.name.toLowerCase().includes(searchTerm.toLowerCase())
+    cat.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const toggleCategory = (categoryId: number) => {
@@ -58,21 +58,21 @@ export default function CategoryMultiSelect({
       <label className="block text-sm font-medium text-gray-700 mb-1">
         {label} {required && <span className="text-red-500">*</span>}
       </label>
-      
+
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="w-full border border-gray-300 px-3 py-2 text-sm text-left focus:outline-none focus:ring-2 focus:ring-black bg-white flex justify-between items-center"
       >
         <span className={selectedCategories.length === 0 ? 'text-gray-400' : 'text-gray-900'}>
-          {selectedCategories.length === 0 
-            ? 'Select categories...' 
+          {selectedCategories.length === 0
+            ? 'Select categories...'
             : `${selectedCategories.length} selected: ${getSelectedNames()}`}
         </span>
-        <svg 
+        <svg
           className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
-          fill="none" 
-          stroke="currentColor" 
+          fill="none"
+          stroke="currentColor"
           viewBox="0 0 24 24"
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -91,7 +91,7 @@ export default function CategoryMultiSelect({
               onClick={(e) => e.stopPropagation()}
             />
           </div>
-          
+
           <div className="py-1">
             {filteredCategories.length === 0 ? (
               <div className="px-3 py-2 text-sm text-gray-500">No categories found</div>

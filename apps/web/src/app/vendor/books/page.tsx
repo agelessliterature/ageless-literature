@@ -100,35 +100,19 @@ export default function VendorBooksPage() {
     }
   });
 
-  const handleDeleteProduct = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this product?')) return;
-
-    try {
-      const res = await fetch(getApiUrl(`api/vendor/products/${id}`), {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${session?.accessToken}` },
-      });
-
-      if (res.ok) {
-        refetch();
-      }
-    } catch (error) {
-      console.error('Delete failed:', error);
-    }
-  };
-
   const handleBulkDelete = async () => {
     if (selectedProducts.size === 0) return;
-    
+
     const count = selectedProducts.size;
-    if (!confirm(`Are you sure you want to delete ${count} product${count > 1 ? 's' : ''}?`)) return;
+    if (!confirm(`Are you sure you want to delete ${count} product${count > 1 ? 's' : ''}?`))
+      return;
 
     try {
-      const deletePromises = Array.from(selectedProducts).map(id =>
+      const deletePromises = Array.from(selectedProducts).map((id) =>
         fetch(getApiUrl(`api/vendor/products/${id}`), {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${session?.accessToken}` },
-        })
+        }),
       );
 
       await Promise.all(deletePromises);
@@ -295,12 +279,15 @@ export default function VendorBooksPage() {
                     // Convert product.id to string for consistent comparison
                     const hasActiveAuction = auctionMap.has(String(product.id));
                     return (
-                      <tr 
-                        key={product.id} 
+                      <tr
+                        key={product.id}
                         className="hover:bg-gray-50 cursor-pointer"
                         onClick={() => router.push(`/vendor/books/${product.id}/edit`)}
                       >
-                        <td className="px-6 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                        <td
+                          className="px-6 py-4 whitespace-nowrap"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <input
                             type="checkbox"
                             checked={selectedProducts.has(product.id)}
@@ -361,7 +348,10 @@ export default function VendorBooksPage() {
                             {product.views || 0}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium" onClick={(e) => e.stopPropagation()}>
+                        <td
+                          className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <Link
                             href={`/vendor/books/${product.id}/edit`}
                             className="text-primary hover:text-secondary inline-flex items-center justify-center"
@@ -401,8 +391,8 @@ export default function VendorBooksPage() {
                   <div>
                     <p className="text-sm text-gray-700">
                       Showing <span className="font-medium">{(page - 1) * 20 + 1}</span> to{' '}
-                      <span className="font-medium">{Math.min(page * 20, pagination.total)}</span> of{' '}
-                      <span className="font-medium">{pagination.total}</span> results
+                      <span className="font-medium">{Math.min(page * 20, pagination.total)}</span>{' '}
+                      of <span className="font-medium">{pagination.total}</span> results
                     </p>
                   </div>
                   <div>

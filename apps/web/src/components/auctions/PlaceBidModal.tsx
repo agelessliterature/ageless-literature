@@ -19,8 +19,13 @@ interface PlaceBidModalProps {
   auction: AuctionSummary;
 }
 
-function BidForm({ auction, onClose, onCollectCardChange, setupIntentClientSecret }: { 
-  auction: AuctionSummary; 
+function BidForm({
+  auction,
+  onClose,
+  onCollectCardChange,
+  setupIntentClientSecret,
+}: {
+  auction: AuctionSummary;
   onClose: () => void;
   onCollectCardChange: (collect: boolean) => void;
   setupIntentClientSecret: string | null;
@@ -48,8 +53,14 @@ function BidForm({ auction, onClose, onCollectCardChange, setupIntentClientSecre
   }, [collectCard, onCollectCardChange]);
 
   const placeBidMutation = useMutation({
-    mutationFn: async ({ amount, paymentMethodId }: { amount: number; paymentMethodId?: string }) => {
-      const response = await api.post(`/auctions/${auction.id}/bids`, { 
+    mutationFn: async ({
+      amount,
+      paymentMethodId,
+    }: {
+      amount: number;
+      paymentMethodId?: string;
+    }) => {
+      const response = await api.post(`/auctions/${auction.id}/bids`, {
         amount,
         paymentMethodId,
         smsOptIn,
@@ -190,9 +201,14 @@ function BidForm({ auction, onClose, onCollectCardChange, setupIntentClientSecre
                 className="mt-1 w-4 h-4 text-secondary-600 border-gray-300 rounded focus:ring-secondary-500"
                 disabled={placeBidMutation.isPending}
               />
-              <label htmlFor="smsOptIn" className="text-sm font-medium text-gray-700 cursor-pointer">
+              <label
+                htmlFor="smsOptIn"
+                className="text-sm font-medium text-gray-700 cursor-pointer"
+              >
                 <div>Receive SMS notifications when you're outbid</div>
-                <div className="text-xs text-gray-500 mt-1">Stay updated on auction status via text message</div>
+                <div className="text-xs text-gray-500 mt-1">
+                  Stay updated on auction status via text message
+                </div>
               </label>
             </div>
             {smsOptIn && (
@@ -219,7 +235,10 @@ function BidForm({ auction, onClose, onCollectCardChange, setupIntentClientSecre
                 className="mt-1 w-4 h-4 text-secondary-600 border-gray-300 rounded focus:ring-secondary-500"
                 disabled={placeBidMutation.isPending}
               />
-              <label htmlFor="collectCard" className="text-sm font-medium text-gray-700 cursor-pointer">
+              <label
+                htmlFor="collectCard"
+                className="text-sm font-medium text-gray-700 cursor-pointer"
+              >
                 <div>Save payment method for automatic charge if I win</div>
                 <div className="text-xs text-gray-500 mt-1">
                   Your card will only be charged if you win the auction. Secured by Stripe.
@@ -228,7 +247,7 @@ function BidForm({ auction, onClose, onCollectCardChange, setupIntentClientSecre
             </div>
             {collectCard && (
               <div className="mt-3">
-                <PaymentElement 
+                <PaymentElement
                   options={{
                     layout: 'accordion',
                   }}
@@ -259,7 +278,7 @@ function BidForm({ auction, onClose, onCollectCardChange, setupIntentClientSecre
               </button>
               <button
                 type="submit"
-                className="flex-1 px-6 py-3 bg-secondary text-white font-semibold hover:from-secondary-700 hover:to-secondary-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-6 py-3 bg-black hover:bg-secondary text-white hover:text-black font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed border-2 border-black hover:border-secondary"
                 disabled={placeBidMutation.isPending}
               >
                 {placeBidMutation.isPending ? (
@@ -308,9 +327,9 @@ export default function PlaceBidModal({ isOpen, onClose, auction }: PlaceBidModa
 
   return (
     <Elements stripe={stripePromise} options={stripeOptions}>
-      <BidForm 
-        auction={auction} 
-        onClose={onClose} 
+      <BidForm
+        auction={auction}
+        onClose={onClose}
         onCollectCardChange={setCollectCard}
         setupIntentClientSecret={setupIntentClientSecret}
       />

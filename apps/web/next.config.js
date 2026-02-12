@@ -12,8 +12,8 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
 
-  // Base path for deployment under /v2
-  // NEVER use basePath in development mode - only when NODE_ENV=production AND deploying to dev server
+  // Base path for deployment
+  // Production uses /v2 since Apache reverse proxy routes /v2/* to this app
   basePath: process.env.NODE_ENV === 'production' ? '/v2' : '',
 
   // Asset prefix should match basePath

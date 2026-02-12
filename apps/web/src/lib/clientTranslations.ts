@@ -23,7 +23,12 @@ export function useTranslations(namespace: string = 'common') {
 
   return (key: string, fallback?: string): string => {
     try {
-      return t(key);
+      // Use has() to check key existence before calling t() to avoid
+      // next-intl throwing MISSING_MESSAGE errors in dev mode
+      if (t.has(key)) {
+        return t(key);
+      }
+      return fallback || key;
     } catch {
       // If key not found, return fallback or key itself
       return fallback || key;

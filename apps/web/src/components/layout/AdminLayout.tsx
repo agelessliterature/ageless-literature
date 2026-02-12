@@ -2,12 +2,18 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { withAssetPrefix } from '@/lib/basePath';
 import { usePathname, useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
 import { useState, useRef, useEffect } from 'react';
 import type { IconPrefix, IconName } from '@/types/fontawesome';
 import { withBasePath } from '@/lib/path-utils';
+import { useUnreadNotificationCount } from '@/hooks/useNotifications';
+import { initSocket } from '@/lib/socket';
+import { useQueryClient } from '@tanstack/react-query';
+import { mapNotificationToUI } from '@/lib/utils';
+import { showNotificationToast } from '@/lib/notificationToast';
 
 interface NavItem {
   href: string;
@@ -31,6 +37,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const router = useRouter();
   const { data: session, status } = useSession();
+  const { data: unreadCount } = useUnreadNotificationCount();
+  const queryClient = useQueryClient();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -38,6 +46,33 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   // Check if we're on the login page
   const isLoginPage = pathname === withBasePath('/admin/login') || pathname === '/admin/login';
+
+  // Initialize Socket.IO and listen for notification events
+  useEffect(() => {
+    if (!session?.accessToken) {
+      return;
+    }
+
+    const socket = initSocket(session.accessToken);
+
+    // Listen for new notifications
+    socket.on('notification:new', (notification) => {
+      console.log('ADMIN NOTIFICATION: New notification received:', notification);
+
+      // Show toast popup
+      const uiData = mapNotificationToUI(notification);
+      showNotificationToast(uiData, (href) => {
+        router.push(href);
+      });
+
+      // Refetch unread count
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    });
+
+    return () => {
+      socket.off('notification:new');
+    };
+  }, [session?.accessToken, queryClient, router]);
 
   // Avoid hydration mismatch by only showing active state after mount
   useEffect(() => {
@@ -89,23 +124,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center">
-              <button
-                type="button"
-                className="lg:hidden -ml-0.5 -mt-0.5 inline-flex h-12 w-12 items-center justify-center rounded-md text-gray-500 hover:text-gray-900"
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-              >
-                <span className="sr-only">Open sidebar</span>
-                <FontAwesomeIcon
-                  icon={sidebarOpen ? ['fal', 'times'] : ['fal', 'bars']}
-                  className="text-2xl"
-                />
-              </button>
-              <Link
-                href={withBasePath('/admin/dashboard')}
-                className="flex items-center ml-4 lg:ml-0"
-              >
+              <Link href={withBasePath('/admin/dashboard')} className="flex items-center">
                 <Image
-                  src={process.env.NODE_ENV === 'production' ? '/v2/ageless-literature-logo.svg' : '/ageless-literature-logo.svg'}
+                  src={withAssetPrefix('/ageless-literature-logo.svg')}
                   alt="Ageless Literature"
                   width={120}
                   height={30}
@@ -118,18 +139,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
             <div className="flex items-center gap-4">
               {/* Notifications */}
-              <button
+              <Link
+                href={withBasePath('/account/notifications')}
                 className="relative p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
                 aria-label="Notifications"
               >
                 <FontAwesomeIcon icon={['fal', 'bell']} className="text-xl" />
-                {/* Only show notification badge when there are notifications */}
-                {false && ( // Change to true when you have actual notification count
-                  <span className="absolute top-1.5 right-1.5 flex items-center justify-center min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full px-1">
-                    3
+                {(unreadCount || 0) > 0 && (
+                  <span className="absolute top-1.5 right-1.5 flex items-center justify-center min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full px-1 animate-pulse">
+                    {unreadCount}
                   </span>
                 )}
-              </button>
+              </Link>
 
               {/* Profile Dropdown */}
               <div className="relative" ref={dropdownRef}>

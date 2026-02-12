@@ -7,6 +7,13 @@ const router = express.Router();
 
 router.get('/profile', usersController.getUserProfile);
 router.get('/me', verifyToken, usersController.getCurrentUser);
+
+// Custom offers routes for users (must be before /:id routes)
+router.get('/offers', verifyToken, customOffersController.getUserOffers);
+router.get('/offers/:id', verifyToken, customOffersController.getOfferById);
+router.post('/offers', verifyToken, customOffersController.createBuyerOffer);
+router.post('/offers/:id/respond', verifyToken, customOffersController.respondToOffer);
+
 router.get('/:id', verifyToken, usersController.getUserById);
 router.patch('/:id', verifyToken, usersController.updateUser);
 router.delete('/:id', verifyToken, usersController.deleteUser);
@@ -20,10 +27,5 @@ router.get('/:id/is-admin', verifyToken, usersController.checkIsAdmin);
 // Password and preferences
 router.patch('/:id/password', verifyToken, usersController.updatePassword);
 router.patch('/:id/language', verifyToken, usersController.updateLanguage);
-
-// Custom offers routes for users
-router.get('/offers', verifyToken, customOffersController.getUserOffers);
-router.get('/offers/:id', verifyToken, customOffersController.getOfferById);
-router.post('/offers/:id/respond', verifyToken, customOffersController.respondToOffer);
 
 export default router;

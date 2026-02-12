@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from '@/lib/clientTranslations';
+import { useMessages } from 'next-intl';
 import PlanCard from '@/components/memberships/PlanCard';
 import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
 import { getApiUrl } from '@/lib/api';
@@ -27,6 +28,7 @@ interface UserSubscription {
 
 export default function MembershipPage() {
   const t = useTranslations('home');
+  const messages = useMessages() as any;
 
   // Fetch membership plans
   const {
@@ -66,12 +68,12 @@ export default function MembershipPage() {
   const getEnrichedPlanData = (plan: MembershipPlan) => {
     const slug = plan.slug.toLowerCase();
 
-    // Get translated features or fallback to database features
+    // Get translated features from messages object (supports arrays)
     let features: string[] = [];
     try {
-      const translatedFeatures = t(`memberships.plans.${slug}.features`) as unknown;
-      if (Array.isArray(translatedFeatures)) {
-        features = translatedFeatures;
+      const planMessages = messages?.home?.memberships?.plans?.[slug];
+      if (planMessages?.features && Array.isArray(planMessages.features)) {
+        features = planMessages.features;
       } else {
         features = plan.features || [];
       }
@@ -80,8 +82,16 @@ export default function MembershipPage() {
     }
 
     // Get translated name and tagline
-    const name = t(`memberships.plans.${slug}.name`) || plan.name;
-    const tagline = t(`memberships.plans.${slug}.tagline`) || `$${plan.price}/month`;
+    let name = plan.name;
+    let tagline = `$${plan.price}/month`;
+
+    try {
+      const planMessages = messages?.home?.memberships?.plans?.[slug];
+      if (planMessages?.name) name = planMessages.name;
+      if (planMessages?.tagline) tagline = planMessages.tagline;
+    } catch {
+      // Use defaults
+    }
 
     // Determine highlight badge
     let highlight: 'popular' | 'premium' | 'starter' | null = null;
@@ -135,21 +145,27 @@ export default function MembershipPage() {
       <section className="py-12 sm:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {plansLoading || subscriptionLoading ? (
-            <div className="flex items-center justify-center py-20">
+            <div className="flex flex-col items-center justify-center py-20">
               <FontAwesomeIcon
                 icon={['fal', 'spinner-third']}
                 spin
-                className="text-5xl text-primary"
+                className="text-6xl text-primary mb-4"
               />
+              <p className="text-gray-600">Loading membership plans...</p>
             </div>
           ) : plansError ? (
-            <div className="flex items-center justify-center gap-3 py-20 text-red-600">
-              <FontAwesomeIcon icon={['fal', 'exclamation-circle']} className="text-3xl" />
-              <p className="text-lg">Failed to load membership plans. Please try again later.</p>
+            <div className="flex flex-col items-center justify-center gap-4 py-20">
+              <FontAwesomeIcon
+                icon={['fal', 'exclamation-circle']}
+                className="text-6xl text-red-600"
+              />
+              <p className="text-lg text-red-600 font-medium">Failed to load membership plans</p>
+              <p className="text-gray-600">Please try again later.</p>
             </div>
           ) : plans.length === 0 ? (
-            <div className="text-center py-20 text-gray-600">
-              <p className="text-lg">No membership plans available at this time.</p>
+            <div className="flex flex-col items-center justify-center py-20">
+              <FontAwesomeIcon icon={['fal', 'inbox']} className="text-6xl text-gray-400 mb-4" />
+              <p className="text-lg text-gray-600">No membership plans available at this time.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -201,14 +217,26 @@ export default function MembershipPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div>
+              <FontAwesomeIcon
+                icon={['fal', 'award']}
+                className="text-5xl text-primary mb-4 mx-auto"
+              />
               <div className="text-4xl font-bold text-primary mb-2">25+</div>
               <p className="text-gray-600">Years of Expertise</p>
             </div>
             <div>
+              <FontAwesomeIcon
+                icon={['fal', 'users']}
+                className="text-5xl text-primary mb-4 mx-auto"
+              />
               <div className="text-4xl font-bold text-primary mb-2">10,000+</div>
               <p className="text-gray-600">Active Members</p>
             </div>
             <div>
+              <FontAwesomeIcon
+                icon={['fal', 'books']}
+                className="text-5xl text-primary mb-4 mx-auto"
+              />
               <div className="text-4xl font-bold text-primary mb-2">50,000+</div>
               <p className="text-gray-600">Rare Books Catalogued</p>
             </div>

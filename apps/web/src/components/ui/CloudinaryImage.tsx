@@ -70,14 +70,15 @@ export function CloudinaryImage({
 
   // Apply Cloudinary transformation if it's a Cloudinary URL
   let optimizedSrc = src;
-  const isCloudinary = typeof src === 'string' && src.includes('cloudinary.com') && src.includes('/upload/');
-  
+  const isCloudinary =
+    typeof src === 'string' && src.includes('cloudinary.com') && src.includes('/upload/');
+
   if (isCloudinary) {
     // Check if transformations already exist
     if (!src.match(/\/upload\/[^/]*c_/)) {
       // Build transformation string with progressive loading, auto format, and DPR
       const baseTransforms = 'q_auto,f_auto,fl_progressive,dpr_auto';
-      
+
       if (height === 'auto') {
         // Use c_scale for auto height (maintains aspect ratio)
         optimizedSrc = src.replace(/\/upload\//, `/upload/c_scale,w_${width},${baseTransforms}/`);
@@ -92,9 +93,10 @@ export function CloudinaryImage({
   }
 
   // Generate low-quality blur placeholder for Cloudinary images
-  const blurDataURL = isCloudinary && (placeholder === 'blur' || (placeholder === undefined && isCloudinary))
-    ? src.replace(/\/upload\//, '/upload/w_20,q_auto:low,f_auto,e_blur:1000/')
-    : undefined;
+  const blurDataURL =
+    isCloudinary && (placeholder === 'blur' || (placeholder === undefined && isCloudinary))
+      ? src.replace(/\/upload\//, '/upload/w_20,q_auto:low,f_auto,e_blur:1000/')
+      : undefined;
 
   // Determine loading strategy
   const loadingStrategy = loading || (priority ? 'eager' : 'lazy');

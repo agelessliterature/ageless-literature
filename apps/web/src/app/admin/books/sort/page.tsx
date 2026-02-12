@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
 import api from '@/lib/api';
@@ -222,9 +222,7 @@ export default function SortBooksPage() {
             onClick={handleSave}
             disabled={!hasChanges || saveStatus === 'saving'}
             className={`px-6 py-2 text-sm font-medium rounded text-white transition-colors ${
-              hasChanges
-                ? 'bg-blue-600 hover:bg-blue-700'
-                : 'bg-gray-300 cursor-not-allowed'
+              hasChanges ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-300 cursor-not-allowed'
             }`}
           >
             {saveStatus === 'saving' ? (
@@ -275,12 +273,17 @@ export default function SortBooksPage() {
           <label className="block text-xs font-medium text-gray-600 mb-1">Category</label>
           <select
             value={category}
-            onChange={(e) => { setCategory(e.target.value); setPage(1); }}
+            onChange={(e) => {
+              setCategory(e.target.value);
+              setPage(1);
+            }}
             className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
           >
             <option value="">All Categories</option>
             {categories.map((cat) => (
-              <option key={cat.id} value={cat.slug}>{cat.name}</option>
+              <option key={cat.id} value={cat.slug}>
+                {cat.name}
+              </option>
             ))}
           </select>
         </div>
@@ -288,7 +291,10 @@ export default function SortBooksPage() {
           <label className="block text-xs font-medium text-gray-600 mb-1">Status</label>
           <select
             value={status}
-            onChange={(e) => { setStatus(e.target.value); setPage(1); }}
+            onChange={(e) => {
+              setStatus(e.target.value);
+              setPage(1);
+            }}
             className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
           >
             <option value="">All</option>
@@ -308,7 +314,11 @@ export default function SortBooksPage() {
       {/* Loading */}
       {isLoading && (
         <div className="flex items-center justify-center py-20">
-          <FontAwesomeIcon icon={['fal', 'spinner-third']} spin className="text-4xl text-blue-500" />
+          <FontAwesomeIcon
+            icon={['fal', 'spinner-third']}
+            spin
+            className="text-4xl text-blue-500"
+          />
         </div>
       )}
 
@@ -346,8 +356,8 @@ export default function SortBooksPage() {
                 draggedIndex === index
                   ? 'bg-blue-50 opacity-50'
                   : dragOverIndex === index
-                  ? 'bg-blue-100 border-blue-300'
-                  : 'bg-white hover:bg-gray-50'
+                    ? 'bg-blue-100 border-blue-300'
+                    : 'bg-white hover:bg-gray-50'
               }`}
             >
               {/* Order Number */}
@@ -359,11 +369,7 @@ export default function SortBooksPage() {
               {/* Image */}
               <div className="w-14 h-14 bg-gray-100 rounded overflow-hidden flex-shrink-0">
                 {getImageUrl(book) ? (
-                  <img
-                    src={getImageUrl(book)}
-                    alt=""
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={getImageUrl(book)} alt="" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <FontAwesomeIcon icon={['fal', 'book']} className="text-gray-300" />
@@ -394,8 +400,8 @@ export default function SortBooksPage() {
                     book.status === 'published'
                       ? 'bg-green-100 text-green-800'
                       : book.status === 'draft'
-                      ? 'bg-gray-100 text-gray-800'
-                      : 'bg-yellow-100 text-yellow-800'
+                        ? 'bg-gray-100 text-gray-800'
+                        : 'bg-yellow-100 text-yellow-800'
                   }`}
                 >
                   {book.status}

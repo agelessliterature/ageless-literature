@@ -9,18 +9,23 @@ import '@/lib/fontawesome';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   // Create QueryClient inside the component to avoid issues with SSR
-  const [queryClient] = useState(() => new QueryClient({
-    defaultOptions: {
-      queries: {
-        staleTime: 1000 * 60 * 5, // 5 minutes
-        refetchOnWindowFocus: false,
-        retry: 1,
-      },
-    },
-  }));
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 1000 * 60 * 5, // 5 minutes
+            refetchOnWindowFocus: false,
+            retry: 1,
+          },
+        },
+      }),
+  );
 
   return (
-    <SessionProvider basePath={process.env.NODE_ENV === 'production' ? '/v2/api/auth' : '/api/auth'}>
+    <SessionProvider
+      basePath={process.env.NODE_ENV === 'production' ? '/v2/api/auth' : '/api/auth'}
+    >
       <QueryClientProvider client={queryClient}>
         {children}
         <Toaster

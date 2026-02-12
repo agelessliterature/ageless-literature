@@ -249,8 +249,8 @@ export default function AdminAuctionsPage() {
                     const imageUrl = primaryImage?.url || primaryImage?.imageUrl || primaryImage;
 
                     return (
-                      <tr 
-                        key={auction.id} 
+                      <tr
+                        key={auction.id}
                         className="hover:bg-gray-50 cursor-pointer"
                         onClick={() => handleViewDetails(auction)}
                       >
@@ -338,7 +338,10 @@ export default function AdminAuctionsPage() {
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                          <div
+                            className="flex items-center justify-end gap-2"
+                            onClick={(e) => e.stopPropagation()}
+                          >
                             <button
                               onClick={() => handleViewDetails(auction)}
                               className="text-primary hover:text-secondary"

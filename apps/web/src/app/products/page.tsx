@@ -128,7 +128,9 @@ export default function ProductsPage() {
                   )}
                 </div>
                 <div className="p-4">
-                  <h3 className="font-semibold text-lg mb-1 line-clamp-2 h-14 text-white">{product.title}</h3>
+                  <h3 className="font-semibold text-lg mb-1 line-clamp-2 h-14 text-white">
+                    {product.title}
+                  </h3>
                   <p className="text-sm text-gray-300 mb-2">{product.category}</p>
                   <div className="flex justify-between items-center">
                     <span className="text-xl font-bold text-white">

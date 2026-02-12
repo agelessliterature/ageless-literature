@@ -239,6 +239,8 @@ export default (sequelize, DataTypes) => {
       hooks: {
         beforeCreate: async (user) => {
           if (user.password) {
+            // Trim password to handle potential whitespace from copy-paste (especially on Windows)
+            user.password = user.password.trim();
             const salt = await bcrypt.genSalt(10);
             user.passwordHash = await bcrypt.hash(user.password, salt);
           }
@@ -249,6 +251,8 @@ export default (sequelize, DataTypes) => {
         },
         beforeUpdate: async (user) => {
           if (user.changed('password') && user.password) {
+            // Trim password to handle potential whitespace from copy-paste (especially on Windows)
+            user.password = user.password.trim();
             const salt = await bcrypt.genSalt(10);
             user.passwordHash = await bcrypt.hash(user.password, salt);
           }
@@ -266,7 +270,9 @@ export default (sequelize, DataTypes) => {
     if (!this.passwordHash) {
       return false; // OAuth-only users have no password
     }
-    return bcrypt.compare(candidatePassword, this.passwordHash);
+    // Trim password to handle potential whitespace from copy-paste (especially on Windows)
+    const trimmedPassword = candidatePassword ? candidatePassword.trim() : '';
+    return bcrypt.compare(trimmedPassword, this.passwordHash);
   };
 
   User.prototype.toJSON = function () {

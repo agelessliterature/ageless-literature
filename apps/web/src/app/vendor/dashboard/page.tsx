@@ -74,7 +74,11 @@ export default function VendorDashboardPage() {
     { label: 'Custom Offers', href: withBasePath('/vendor/offers'), icon: ['fal', 'tag'] },
     { label: 'Orders', href: withBasePath('/vendor/orders'), icon: ['fal', 'file-invoice-dollar'] },
     { label: 'Reports', href: withBasePath('/vendor/reports'), icon: ['fal', 'chart-line'] },
-    { label: 'Rare Book Requests', href: withBasePath('/vendor/requests'), icon: ['fal', 'book-open'] },
+    {
+      label: 'Rare Book Requests',
+      href: withBasePath('/vendor/requests'),
+      icon: ['fal', 'book-open'],
+    },
   ];
 
   // Handle pending status
@@ -266,7 +270,9 @@ export default function VendorDashboardPage() {
               className="text-2xl sm:text-3xl text-purple-600"
             />
           </div>
-          <p className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">{vendor?.totalSales || 0}</p>
+          <p className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
+            {vendor?.totalSales || 0}
+          </p>
           <p className="text-xs sm:text-sm text-gray-600">Total Sales</p>
           <p className="text-xs text-gray-500 mt-1 hidden sm:block">All-time transactions</p>
         </div>
@@ -276,7 +282,9 @@ export default function VendorDashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
         {/* Stats */}
         <div className="bg-white p-4 sm:p-6 shadow-sm border border-gray-200">
-          <h3 className="text-base sm:text-lg font-semibold text-primary mb-3 sm:mb-4">Performance Stats</h3>
+          <h3 className="text-base sm:text-lg font-semibold text-primary mb-3 sm:mb-4">
+            Performance Stats
+          </h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-sm sm:text-base text-gray-600">Active Listings</span>
@@ -299,12 +307,17 @@ export default function VendorDashboardPage() {
 
         {/* Payout Settings Status */}
         <div className="bg-white p-4 sm:p-6 shadow-sm border border-gray-200">
-          <h3 className="text-base sm:text-lg font-semibold text-primary mb-3 sm:mb-4">Payout Methods</h3>
+          <h3 className="text-base sm:text-lg font-semibold text-primary mb-3 sm:mb-4">
+            Payout Methods
+          </h3>
           <div className="space-y-3">
             {/* Stripe Connect */}
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0">
-                <FontAwesomeIcon icon={['fab', 'stripe']} className="text-lg sm:text-xl text-indigo-600 flex-shrink-0" />
+                <FontAwesomeIcon
+                  icon={['fab', 'stripe']}
+                  className="text-lg sm:text-xl text-indigo-600 flex-shrink-0"
+                />
                 <span className="text-sm sm:text-base text-gray-700">Stripe</span>
               </div>
               {payoutSettings?.stripeAccountId &&
@@ -326,13 +339,21 @@ export default function VendorDashboardPage() {
             {/* PayPal */}
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0">
-                <FontAwesomeIcon icon={['fab', 'paypal']} className="text-lg sm:text-xl text-blue-600 flex-shrink-0" />
+                <FontAwesomeIcon
+                  icon={['fab', 'paypal']}
+                  className="text-lg sm:text-xl text-blue-600 flex-shrink-0"
+                />
                 <span className="text-sm sm:text-base text-gray-700">PayPal</span>
               </div>
               {payoutSettings?.paypalEmail ? (
                 <span className="flex items-center gap-1 text-green-600 text-xs sm:text-sm min-w-0">
-                  <FontAwesomeIcon icon={['fal', 'check-circle']} className="text-base flex-shrink-0" />
-                  <span className="truncate max-w-[120px] sm:max-w-none">{payoutSettings.paypalEmail}</span>
+                  <FontAwesomeIcon
+                    icon={['fal', 'check-circle']}
+                    className="text-base flex-shrink-0"
+                  />
+                  <span className="truncate max-w-[120px] sm:max-w-none">
+                    {payoutSettings.paypalEmail}
+                  </span>
                 </span>
               ) : (
                 <Link
@@ -353,7 +374,10 @@ export default function VendorDashboardPage() {
         <div className="bg-white shadow-sm border border-gray-200 overflow-hidden">
           <div className="p-3 sm:p-4 border-b flex justify-between items-center gap-2">
             <h3 className="text-base sm:text-lg font-semibold text-primary">Recent Earnings</h3>
-            <Link href="/vendor/earnings" className="text-primary hover:text-secondary text-xs sm:text-sm whitespace-nowrap flex-shrink-0">
+            <Link
+              href="/vendor/earnings"
+              className="text-primary hover:text-secondary text-xs sm:text-sm whitespace-nowrap flex-shrink-0"
+            >
               View All &rarr;
             </Link>
           </div>
@@ -386,7 +410,10 @@ export default function VendorDashboardPage() {
         <div className="bg-white shadow-sm border border-gray-200 overflow-hidden">
           <div className="p-3 sm:p-4 border-b flex justify-between items-center gap-2">
             <h3 className="text-base sm:text-lg font-semibold text-primary">Recent Payouts</h3>
-            <Link href="/vendor/payouts" className="text-primary hover:text-secondary text-xs sm:text-sm whitespace-nowrap flex-shrink-0">
+            <Link
+              href="/vendor/payouts"
+              className="text-primary hover:text-secondary text-xs sm:text-sm whitespace-nowrap flex-shrink-0"
+            >
               View All &rarr;
             </Link>
           </div>
@@ -395,7 +422,9 @@ export default function VendorDashboardPage() {
               {recentPayouts.slice(0, 5).map((payout: any) => (
                 <div key={payout.id} className="p-3 sm:p-4 hover:bg-gray-50">
                   <div className="flex justify-between items-start mb-1">
-                    <p className="font-medium text-gray-900 text-xs sm:text-sm capitalize">{payout.method}</p>
+                    <p className="font-medium text-gray-900 text-xs sm:text-sm capitalize">
+                      {payout.method}
+                    </p>
                     <p className="font-bold text-gray-900 text-sm">
                       ${parseFloat(payout.amount).toFixed(2)}
                     </p>

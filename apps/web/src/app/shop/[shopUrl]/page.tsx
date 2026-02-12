@@ -74,7 +74,17 @@ export default function VendorPage() {
 
   // Fetch vendor products
   const { data: productsData, isLoading: productsLoading } = useQuery({
-    queryKey: ['vendor-products', vendorData?.id, page, searchQuery, category, author, minPrice, maxPrice, sortBy],
+    queryKey: [
+      'vendor-products',
+      vendorData?.id,
+      page,
+      searchQuery,
+      category,
+      author,
+      minPrice,
+      maxPrice,
+      sortBy,
+    ],
     queryFn: async () => {
       const [field, order] = sortBy.split('-');
       const res = await api.get<BooksResponse>('/books', {
@@ -95,11 +105,6 @@ export default function VendorPage() {
     },
     enabled: !!vendorData?.id,
   });
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setPage(1);
-  };
 
   const handleCopyLink = () => {
     const url = window.location.href;
@@ -383,7 +388,7 @@ export default function VendorPage() {
                       />
                     </div>
                   </div>
-                  
+
                   {/* Filter Toggle */}
                   <button
                     onClick={() => setShowFilters(!showFilters)}
@@ -402,7 +407,9 @@ export default function VendorPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                       {/* Category Filter */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Category
+                        </label>
                         <input
                           type="text"
                           value={category}
@@ -414,7 +421,9 @@ export default function VendorPage() {
 
                       {/* Author Filter */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Author</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Author
+                        </label>
                         <input
                           type="text"
                           value={author}
@@ -427,7 +436,9 @@ export default function VendorPage() {
                       {/* Price Range */}
                       <div className="flex gap-2">
                         <div className="flex-1">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Min Price</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Min Price
+                          </label>
                           <input
                             type="number"
                             value={minPrice}
@@ -438,7 +449,9 @@ export default function VendorPage() {
                           />
                         </div>
                         <div className="flex-1">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Max Price</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Max Price
+                          </label>
                           <input
                             type="number"
                             value={maxPrice}
@@ -452,7 +465,9 @@ export default function VendorPage() {
 
                       {/* Sort By */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Sort By
+                        </label>
                         <select
                           value={sortBy}
                           onChange={(e) => setSortBy(e.target.value)}
@@ -506,7 +521,10 @@ export default function VendorPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                   {productsData.data.map((book) => (
                     <Link key={book.id} href={`/products/${book.slug}`} className="group block">
-                      <div className="bg-white border border-gray-200 hover:shadow-xl hover:border-[#d4af37] transition-all duration-300 overflow-hidden h-full flex flex-col" style={{ borderRadius: 0 }}>
+                      <div
+                        className="bg-white border border-gray-200 hover:shadow-xl hover:border-[#d4af37] transition-all duration-300 overflow-hidden h-full flex flex-col"
+                        style={{ borderRadius: 0 }}
+                      >
                         {/* Image */}
                         <div className="relative aspect-[3/4] bg-gray-100">
                           {book.primaryImage ? (

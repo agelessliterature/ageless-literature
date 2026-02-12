@@ -37,7 +37,7 @@ services:
     container_name: ageless-lit-meilisearch
     environment:
       MEILI_ENV: production
-      MEILI_MASTER_KEY: masterKey
+      MEILI_MASTER_KEY: gdGXOZCkcQFtSQKa1YD3UHy_nHCbiepDg4DSIsyQHi8
     ports:
       - '7700:7700'
     volumes:
@@ -54,6 +54,8 @@ services:
       API_PORT: 3001
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/ageless_literature
       REDIS_URL: redis://redis:6379
+      MEILISEARCH_HOST: http://meilisearch:7700
+      MEILISEARCH_MASTER_KEY: gdGXOZCkcQFtSQKa1YD3UHy_nHCbiepDg4DSIsyQHi8
     env_file:
       - .env
     ports:
@@ -70,9 +72,13 @@ services:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: /v2
     container_name: ageless-lit-web
     environment:
       NODE_ENV: production
+      API_URL: http://api:3001
+      INTERNAL_API_URL: http://api:3001
     env_file:
       - .env
     ports:

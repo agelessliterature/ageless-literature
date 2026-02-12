@@ -44,7 +44,7 @@ export default function BookSellersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState('menuOrder-ASC');
+  const [sortBy, setSortBy] = useState('featured');
   const [pagination, setPagination] = useState<Pagination>({
     total: 0,
     totalPages: 0,
@@ -57,13 +57,11 @@ export default function BookSellersPage() {
   const fetchAllVendors = async (page: number = 1) => {
     try {
       setError(null);
-      const [sortField, sortOrder] = sortBy.split('-');
       const params = new URLSearchParams({
         page: page.toString(),
         limit: pagination.perPage.toString(),
         ...(searchQuery && { search: searchQuery }),
-        sortBy: sortField,
-        sortOrder: sortOrder,
+        sortBy: sortBy,
       });
       const response = await fetch(getApiUrl(`api/vendors?${params}`));
       const data = await response.json();
@@ -101,27 +99,28 @@ export default function BookSellersPage() {
       style={{ borderRadius: '1.5rem' }}
     >
       {/* Banner with overlay and shop name */}
-      <div className="relative h-64 overflow-hidden flex-shrink-0">
+      <div className="relative h-56 overflow-hidden flex-shrink-0">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
             backgroundImage: vendor.bannerUrl
               ? `url(${vendor.bannerUrl})`
               : 'url(https://res.cloudinary.com/dvohtcqvi/image/upload/v1/vendor-defaults/default-banner.png)',
+            backgroundPosition: 'center center',
           }}
         />
         {/* Dark overlay */}
         <div className="absolute inset-0 bg-black bg-opacity-40" />
-        
+
         {/* Full width white bar at bottom with name on left and logo on right */}
         <div className="absolute bottom-0 left-0 right-0 bg-white px-4 py-3 flex items-center justify-between">
-          <h3 className="font-semibold text-black" style={{ fontSize: '.95rem' }}>{vendor.shopName}</h3>
-          <div className="w-20 h-20 flex-shrink-0 rounded-full border-2 border-gray-300 bg-white shadow-lg overflow-hidden">
+          <h3 className="font-semibold text-black text-base">{vendor.shopName}</h3>
+          <div className="w-16 h-16 flex-shrink-0 rounded-full border-2 border-gray-300 bg-white shadow-lg overflow-hidden">
             <CloudinaryImage
               src={vendor.logoUrl}
               alt={vendor.shopName}
-              width={80}
-              height={80}
+              width={64}
+              height={64}
               className="w-full h-full rounded-full object-cover"
               fallbackIcon={['fal', 'store']}
               fallbackText={vendor.shopName.charAt(0).toUpperCase()}
@@ -136,6 +135,13 @@ export default function BookSellersPage() {
           </div>
         )}
       </div>
+
+      {/* Business Description */}
+      {vendor.businessDescription && (
+        <div className="px-4 py-4 flex-grow">
+          <p className="text-gray-600 text-sm line-clamp-3">{vendor.businessDescription}</p>
+        </div>
+      )}
     </Link>
   );
 
@@ -173,11 +179,11 @@ export default function BookSellersPage() {
               onChange={(e) => setSortBy(e.target.value)}
               className="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent bg-white"
             >
-              <option value="menuOrder-ASC">Featured</option>
-              <option value="shopName-ASC">Name (A-Z)</option>
-              <option value="shopName-DESC">Name (Z-A)</option>
-              <option value="createdAt-DESC">Newest First</option>
-              <option value="createdAt-ASC">Oldest First</option>
+              <option value="featured">Featured</option>
+              <option value="name-asc">Name (A-Z)</option>
+              <option value="name-desc">Name (Z-A)</option>
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
             </select>
           </div>
         </div>
@@ -188,7 +194,10 @@ export default function BookSellersPage() {
           </div>
         ) : error ? (
           <div className="text-center py-12 bg-red-50 border border-red-200 rounded-lg max-w-2xl mx-auto">
-            <FontAwesomeIcon icon={['fal', 'exclamation-circle']} className="text-4xl text-red-500 mb-4" />
+            <FontAwesomeIcon
+              icon={['fal', 'exclamation-circle']}
+              className="text-4xl text-red-500 mb-4"
+            />
             <p className="text-red-600 mb-4">{error}</p>
             <button
               onClick={() => fetchAllVendors()}
@@ -205,8 +214,8 @@ export default function BookSellersPage() {
           </div>
         ) : (
           <>
-            {/* Grid Layout - Perfect alignment with equal card heights */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+            {/* Grid Layout - Larger cards with max 3 columns */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 max-w-7xl mx-auto">
               {allVendors.map((vendor) => (
                 <VendorCard key={vendor.id} vendor={vendor} />
               ))}

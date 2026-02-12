@@ -11,7 +11,10 @@ import { uploadOAuthProfileImage, deleteImage } from '../utils/cloudinary.js';
 
 const { User } = db;
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
-const JWT_EXPIRATION = '30d';
+const JWT_EXPIRATION = process.env.JWT_EXPIRES_IN || '30d';
+
+console.log('[Auth] JWT_SECRET configured:', JWT_SECRET ? 'Yes' : 'No');
+console.log('[Auth] JWT_SECRET length:', JWT_SECRET?.length || 0);
 
 /**
  * Register a new user
@@ -19,7 +22,10 @@ const JWT_EXPIRATION = '30d';
  */
 export const register = [
   // Validation middleware
-  body('email').isEmail().normalizeEmail({ gmail_remove_dots: false }).withMessage('Valid email is required'),
+  body('email')
+    .isEmail()
+    .normalizeEmail({ gmail_remove_dots: false })
+    .withMessage('Valid email is required'),
   body('password')
     .custom(passwordComplexityValidator())
     .withMessage('Password does not meet security requirements'),
@@ -75,6 +81,9 @@ export const register = [
         { expiresIn: JWT_EXPIRATION },
       );
 
+      console.log('[Register] User created successfully, ID:', user.id);
+      console.log('[Register] Token generated, length:', token?.length || 0);
+
       // Return user data (password excluded by toJSON)
       res.status(201).json({
         success: true,
@@ -85,6 +94,7 @@ export const register = [
         },
       });
     } catch (error) {
+      console.error('[Register] Registration error:', error);
       res.status(500).json({
         success: false,
         message: 'Registration failed',
@@ -100,8 +110,11 @@ export const register = [
  */
 export const login = [
   // Validation middleware
-  body('email').isEmail().normalizeEmail({ gmail_remove_dots: false }).withMessage('Valid email is required'),
-  body('password').notEmpty().withMessage('Password is required'),
+  body('email')
+    .isEmail()
+    .normalizeEmail({ gmail_remove_dots: false })
+    .withMessage('Valid email is required'),
+  body('password').trim().notEmpty().withMessage('Password is required'),
 
   async (req, res) => {
     try {

@@ -5,9 +5,9 @@ let socket: Socket | null = null;
 export const initSocket = (token?: string): Socket => {
   if (!socket) {
     // Use explicit socket URL or derive from API URL
-    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 
-                     (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001')
-                       .replace('/api', '');
+    const socketUrl =
+      process.env.NEXT_PUBLIC_SOCKET_URL ||
+      (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001').replace('/api', '');
 
     socket = io(socketUrl, {
       auth: {

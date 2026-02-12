@@ -3,10 +3,11 @@
 import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState, useEffect, useRef, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense, useCallback } from 'react';
 import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
 import toast from 'react-hot-toast';
 import { getApiUrl } from '@/lib/api';
+import { useChatSocket } from '@/hooks/useChatSocket';
 
 function ChatContent() {
   const { data: session, status } = useSession();
@@ -16,7 +17,31 @@ function ChatContent() {
   const queryClient = useQueryClient();
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [messageText, setMessageText] = useState('');
+  const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Handle new messages from socket
+  const handleNewMessage = useCallback(
+    (message: any) => {
+      console.log('Received new message via socket:', message);
+      // Invalidate messages query to refetch
+      queryClient.invalidateQueries({ queryKey: ['customer-messages', conversationId] });
+    },
+    [conversationId, queryClient],
+  );
+
+  // Initialize chat socket
+  const {
+    sendMessage: sendSocketMessage,
+    emitTyping,
+    isConnected,
+  } = useChatSocket({
+    conversationId: conversationId ? parseInt(conversationId) : undefined,
+    onNewMessage: handleNewMessage,
+    onError: (error) => {
+      console.error('Socket error:', error);
+    },
+  });
 
   const { data: conversationData, isLoading: conversationLoading } = useQuery({
     queryKey: ['customer-conversation', vendorId],
@@ -53,7 +78,7 @@ function ChatContent() {
       return result.data;
     },
     enabled: !!session && !!conversationId,
-    refetchInterval: 5000, // Poll every 5 seconds
+    refetchInterval: isConnected ? 10000 : 5000, // Slower polling when socket connected
   });
 
   const sendMessageMutation = useMutation({
@@ -112,7 +137,39 @@ function ChatContent() {
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!messageText.trim() || !conversationId) return;
+
+    // Try to send via socket first
+    if (isConnected && sendSocketMessage) {
+      const sent = sendSocketMessage(messageText);
+      if (sent) {
+        setMessageText('');
+        // Still use mutation for optimistic update and fallback
+        sendMessageMutation.mutate(messageText);
+        return;
+      }
+    }
+
+    // Fallback to REST API
     sendMessageMutation.mutate(messageText);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setMessageText(e.target.value);
+
+    // Clear existing timeout
+    if (typingTimeout) {
+      clearTimeout(typingTimeout);
+    }
+
+    // Emit typing start
+    emitTyping(true);
+
+    // Set timeout to emit typing stop
+    const timeout = setTimeout(() => {
+      emitTyping(false);
+    }, 1000);
+
+    setTypingTimeout(timeout);
   };
 
   return (
@@ -141,9 +198,7 @@ function ChatContent() {
                 >
                   <div
                     className={`max-w-[70%] rounded-lg px-4 py-2 ${
-                      msg.isCustomer
-                        ? 'bg-primary text-white'
-                        : 'bg-gray-100 text-gray-900'
+                      msg.isCustomer ? 'bg-primary text-white' : 'bg-gray-100 text-gray-900'
                     }`}
                   >
                     <p className="whitespace-pre-wrap break-words">{msg.message}</p>
@@ -168,7 +223,7 @@ function ChatContent() {
             <input
               type="text"
               value={messageText}
-              onChange={(e) => setMessageText(e.target.value)}
+              onChange={handleInputChange}
               placeholder="Type your message..."
               className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
               disabled={!conversationId || sendMessageMutation.isPending}
@@ -185,6 +240,12 @@ function ChatContent() {
               )}
             </button>
           </div>
+          {isConnected && (
+            <p className="text-xs text-green-600 mt-2">
+              <FontAwesomeIcon icon={['fas', 'circle']} className="mr-1" />
+              Real-time messaging active
+            </p>
+          )}
         </form>
       </div>
     </div>
@@ -193,7 +254,13 @@ function ChatContent() {
 
 export default function CustomerChatPage() {
   return (
-    <Suspense fallback={<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"><div className="text-center">Loading...</div></div>}>
+    <Suspense
+      fallback={
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center">Loading...</div>
+        </div>
+      }
+    >
       <ChatContent />
     </Suspense>
   );

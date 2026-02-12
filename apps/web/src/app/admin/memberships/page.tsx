@@ -618,8 +618,8 @@ export default function AdminMembershipsPage() {
                 </tr>
               ) : (
                 subscriptions.map((subscription) => (
-                  <tr 
-                    key={subscription.id} 
+                  <tr
+                    key={subscription.id}
                     className="hover:bg-gray-50 transition-colors cursor-pointer"
                     onClick={() => openEditModal(subscription)}
                   >
@@ -669,7 +669,10 @@ export default function AdminMembershipsPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm" onClick={(e) => e.stopPropagation()}>
+                    <td
+                      className="px-6 py-4 whitespace-nowrap text-sm"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <div className="flex items-center gap-3">
                         <button
                           onClick={() => openEditModal(subscription)}

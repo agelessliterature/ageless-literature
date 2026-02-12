@@ -117,7 +117,12 @@ export default function CategoriesPage() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredCategories?.map((category) => (
                   <tr key={category.id} className="hover:bg-gray-50 cursor-pointer">
-                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap" onClick={() => window.location.href = `/admin/categories/${category.id}/edit`}>
+                    <td
+                      className="px-3 sm:px-6 py-4 whitespace-nowrap"
+                      onClick={() =>
+                        (window.location.href = `/admin/categories/${category.id}/edit`)
+                      }
+                    >
                       <div className="flex items-center">
                         <div className="h-10 w-10 mr-2 flex-shrink-0 overflow-hidden">
                           <CloudinaryImage
@@ -132,17 +137,30 @@ export default function CategoriesPage() {
                         <div className="text-sm font-medium text-gray-900">{category.name}</div>
                       </div>
                     </td>
-                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500" onClick={() => window.location.href = `/admin/categories/${category.id}/edit`}>
+                    <td
+                      className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+                      onClick={() =>
+                        (window.location.href = `/admin/categories/${category.id}/edit`)
+                      }
+                    >
                       {category.slug}
                     </td>
-                    <td className="px-3 sm:px-6 py-4 text-sm text-gray-500" onClick={() => window.location.href = `/admin/categories/${category.id}/edit`}>
+                    <td
+                      className="px-3 sm:px-6 py-4 text-sm text-gray-500"
+                      onClick={() =>
+                        (window.location.href = `/admin/categories/${category.id}/edit`)
+                      }
+                    >
                       {category.description ? (
                         <span className="line-clamp-2">{category.description}</span>
                       ) : (
                         <span className="text-gray-400 italic">No description</span>
                       )}
                     </td>
-                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-right text-sm font-medium" onClick={(e) => e.stopPropagation()}>
+                    <td
+                      className="px-3 sm:px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <Link
                         href={`/admin/categories/${category.id}/edit`}
                         className="text-yellow-600 hover:text-yellow-900"

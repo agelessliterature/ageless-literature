@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -83,7 +82,10 @@ export default function CartPage() {
             <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Shopping Cart</h1>
             <div className="bg-white rounded-lg shadow-md p-8 mt-8">
               <div className="text-center py-12">
-                <FontAwesomeIcon icon={['fal', 'shopping-cart']} className="text-6xl text-gray-400 mb-4" />
+                <FontAwesomeIcon
+                  icon={['fal', 'shopping-cart']}
+                  className="text-6xl text-gray-400 mb-4"
+                />
                 <h3 className="mt-2 text-xl font-medium text-gray-900">Please log in</h3>
                 <p className="mt-1 text-sm text-gray-500">
                   You need to be logged in to view your cart.
@@ -109,7 +111,11 @@ export default function CartPage() {
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-center py-20">
-            <FontAwesomeIcon icon={['fal', 'spinner-third']} spin className="text-5xl text-primary" />
+            <FontAwesomeIcon
+              icon={['fal', 'spinner-third']}
+              spin
+              className="text-5xl text-primary"
+            />
           </div>
         </div>
       </div>
@@ -127,7 +133,10 @@ export default function CartPage() {
         {isEmpty ? (
           <div className="bg-white rounded-lg shadow-md p-8">
             <div className="text-center py-12">
-              <FontAwesomeIcon icon={['fal', 'shopping-cart']} className="text-6xl text-gray-400 mb-4" />
+              <FontAwesomeIcon
+                icon={['fal', 'shopping-cart']}
+                className="text-6xl text-gray-400 mb-4"
+              />
               <h3 className="mt-2 text-xl font-medium text-gray-900">Your cart is empty</h3>
               <p className="mt-1 text-sm text-gray-500">
                 Start shopping to add items to your cart.
@@ -148,7 +157,8 @@ export default function CartPage() {
             <div className="lg:col-span-2 space-y-4">
               {items.map((item) => {
                 const product = item.product;
-                const imageUrl = product.images?.[0]?.url || product.media?.[0]?.imageUrl || '/placeholder.jpg';
+                const imageUrl =
+                  product.images?.[0]?.url || product.media?.[0]?.imageUrl || '/placeholder.jpg';
                 const productUrl = withBasePath(`/products/${product.sid || product.id}`);
 
                 return (
@@ -198,7 +208,9 @@ export default function CartPage() {
                                 quantity: Math.min(product.quantity, item.quantity + 1),
                               })
                             }
-                            disabled={item.quantity >= product.quantity || updateQuantityMutation.isPending}
+                            disabled={
+                              item.quantity >= product.quantity || updateQuantityMutation.isPending
+                            }
                             className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <FontAwesomeIcon icon={['fal', 'plus']} />

@@ -136,3 +136,34 @@ select:focus {
   display: none;  /* Chrome, Safari and Opera */
 }
 
+/* Notification Toast Animations */
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateX(100%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes leave {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%) scale(0.95);
+  }
+}
+
+.animate-enter {
+  animation: enter 0.35s cubic-bezier(0.21, 1.02, 0.73, 1) forwards;
+}
+
+.animate-leave {
+  animation: leave 0.3s cubic-bezier(0.06, 0.71, 0.55, 1) forwards;
+}
+

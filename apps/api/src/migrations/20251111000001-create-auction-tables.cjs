@@ -11,18 +11,18 @@ module.exports = {
     // Create auctions table
     await queryInterface.createTable('auctions', {
       id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
       },
       book_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: false,
         references: { model: 'books', key: 'id' },
         onDelete: 'CASCADE',
       },
       vendor_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: false,
         references: { model: 'vendors', key: 'id' },
         onDelete: 'CASCADE',
@@ -52,7 +52,7 @@ module.exports = {
         defaultValue: 'upcoming',
       },
       winner_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: true,
         references: { model: 'users', key: 'id' },
         onDelete: 'SET NULL',
@@ -79,18 +79,18 @@ module.exports = {
     // Create auction_bids table
     await queryInterface.createTable('auction_bids', {
       id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
       },
       auction_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: false,
         references: { model: 'auctions', key: 'id' },
         onDelete: 'CASCADE',
       },
       user_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: false,
         references: { model: 'users', key: 'id' },
         onDelete: 'CASCADE',
@@ -128,25 +128,25 @@ module.exports = {
     // Create auction_wins table
     await queryInterface.createTable('auction_wins', {
       id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
       },
       auction_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: false,
         unique: true,
         references: { model: 'auctions', key: 'id' },
         onDelete: 'CASCADE',
       },
       user_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: false,
         references: { model: 'users', key: 'id' },
         onDelete: 'CASCADE',
       },
       order_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: true,
         references: { model: 'orders', key: 'id' },
         onDelete: 'SET NULL',

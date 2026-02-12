@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
@@ -33,12 +33,18 @@ interface Item {
   images?: string[];
 }
 
-export default function CreateOfferModal({ onClose, onSuccess, preselectedItem }: CreateOfferModalProps) {
+export default function CreateOfferModal({
+  onClose,
+  onSuccess,
+  preselectedItem,
+}: CreateOfferModalProps) {
   const { data: session } = useSession();
   const [step, setStep] = useState(preselectedItem ? 2 : 1);
   const [itemType, setItemType] = useState<'book' | 'product'>(preselectedItem?.type || 'book');
   const [selectedItem, setSelectedItem] = useState<Item | null>(
-    preselectedItem ? { id: preselectedItem.id, title: preselectedItem.title, price: preselectedItem.price } : null
+    preselectedItem
+      ? { id: preselectedItem.id, title: preselectedItem.title, price: preselectedItem.price }
+      : null,
   );
   const [userSearch, setUserSearch] = useState('');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -71,9 +77,12 @@ export default function CreateOfferModal({ onClose, onSuccess, preselectedItem }
     queryKey: ['search-users', userSearch],
     queryFn: async () => {
       if (userSearch.length < 2) return [];
-      const res = await fetch(getApiUrl(`api/vendor/offers/search-users?q=${encodeURIComponent(userSearch)}`), {
-        headers: { Authorization: `Bearer ${session?.accessToken}` },
-      });
+      const res = await fetch(
+        getApiUrl(`api/vendor/offers/search-users?q=${encodeURIComponent(userSearch)}`),
+        {
+          headers: { Authorization: `Bearer ${session?.accessToken}` },
+        },
+      );
       if (!res.ok) throw new Error('Failed to search users');
       const result = await res.json();
       return result.data || [];
@@ -116,9 +125,10 @@ export default function CreateOfferModal({ onClose, onSuccess, preselectedItem }
     return null;
   };
 
-  const discount = selectedItem && offerPrice
-    ? Math.round((1 - parseFloat(offerPrice) / parseFloat(selectedItem.price)) * 100)
-    : 0;
+  const discount =
+    selectedItem && offerPrice
+      ? Math.round((1 - parseFloat(offerPrice) / parseFloat(selectedItem.price)) * 100)
+      : 0;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
@@ -135,18 +145,30 @@ export default function CreateOfferModal({ onClose, onSuccess, preselectedItem }
         <div className="p-4">
           {/* Progress Indicator */}
           <div className="flex items-center justify-center mb-6">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 1 ? 'bg-primary text-white' : 'bg-gray-200'}`}>1</div>
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 1 ? 'bg-primary text-white' : 'bg-gray-200'}`}
+            >
+              1
+            </div>
             <div className={`w-16 h-1 ${step >= 2 ? 'bg-primary' : 'bg-gray-200'}`} />
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 2 ? 'bg-primary text-white' : 'bg-gray-200'}`}>2</div>
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 2 ? 'bg-primary text-white' : 'bg-gray-200'}`}
+            >
+              2
+            </div>
             <div className={`w-16 h-1 ${step >= 3 ? 'bg-primary' : 'bg-gray-200'}`} />
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 3 ? 'bg-primary text-white' : 'bg-gray-200'}`}>3</div>
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 3 ? 'bg-primary text-white' : 'bg-gray-200'}`}
+            >
+              3
+            </div>
           </div>
 
           {/* Step 1: Select Item */}
           {step === 1 && (
             <div>
               <h3 className="font-semibold mb-4">Step 1: Select Item</h3>
-              
+
               {/* Item Type Toggle */}
               <div className="flex gap-2 mb-4">
                 <button
@@ -209,7 +231,10 @@ export default function CreateOfferModal({ onClose, onSuccess, preselectedItem }
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
-                            <FontAwesomeIcon icon={['fal', itemType === 'book' ? 'book' : 'box']} className="text-gray-400" />
+                            <FontAwesomeIcon
+                              icon={['fal', itemType === 'book' ? 'book' : 'box']}
+                              className="text-gray-400"
+                            />
                           </div>
                         )}
                       </div>
@@ -244,7 +269,10 @@ export default function CreateOfferModal({ onClose, onSuccess, preselectedItem }
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <FontAwesomeIcon icon={['fal', itemType === 'book' ? 'book' : 'box']} className="text-gray-400 text-sm" />
+                        <FontAwesomeIcon
+                          icon={['fal', itemType === 'book' ? 'book' : 'box']}
+                          className="text-gray-400 text-sm"
+                        />
                       </div>
                     )}
                   </div>
@@ -252,7 +280,9 @@ export default function CreateOfferModal({ onClose, onSuccess, preselectedItem }
                     <p className="font-medium text-sm">{selectedItem.title}</p>
                     <p className="text-xs text-gray-500">${selectedItem.price}</p>
                   </div>
-                  <button onClick={() => setStep(1)} className="text-primary text-sm">Change</button>
+                  <button onClick={() => setStep(1)} className="text-primary text-sm">
+                    Change
+                  </button>
                 </div>
               )}
 
@@ -276,7 +306,9 @@ export default function CreateOfferModal({ onClose, onSuccess, preselectedItem }
                 {usersLoading ? (
                   <div className="p-4 text-center text-gray-500">Searching...</div>
                 ) : userSearch.length < 2 ? (
-                  <div className="p-4 text-center text-gray-500">Type at least 2 characters to search</div>
+                  <div className="p-4 text-center text-gray-500">
+                    Type at least 2 characters to search
+                  </div>
                 ) : usersData?.length === 0 ? (
                   <div className="p-4 text-center text-gray-500">No users found</div>
                 ) : (
@@ -337,7 +369,10 @@ export default function CreateOfferModal({ onClose, onSuccess, preselectedItem }
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <FontAwesomeIcon icon={['fal', itemType === 'book' ? 'book' : 'box']} className="text-gray-400 text-sm" />
+                        <FontAwesomeIcon
+                          icon={['fal', itemType === 'book' ? 'book' : 'box']}
+                          className="text-gray-400 text-sm"
+                        />
                       </div>
                     )}
                   </div>
@@ -348,7 +383,9 @@ export default function CreateOfferModal({ onClose, onSuccess, preselectedItem }
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <FontAwesomeIcon icon={['fal', 'user']} className="text-gray-400" />
-                  <span>{selectedUser?.name} ({selectedUser?.email})</span>
+                  <span>
+                    {selectedUser?.name} ({selectedUser?.email})
+                  </span>
                 </div>
               </div>
 
@@ -369,7 +406,9 @@ export default function CreateOfferModal({ onClose, onSuccess, preselectedItem }
                   />
                 </div>
                 {discount > 0 && (
-                  <p className="text-sm text-green-600 mt-1">{discount}% discount from original price</p>
+                  <p className="text-sm text-green-600 mt-1">
+                    {discount}% discount from original price
+                  </p>
                 )}
               </div>
 
@@ -390,7 +429,9 @@ export default function CreateOfferModal({ onClose, onSuccess, preselectedItem }
 
               {/* Message */}
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">Personal Message (optional)</label>
+                <label className="block text-sm font-medium mb-1">
+                  Personal Message (optional)
+                </label>
                 <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
@@ -420,7 +461,7 @@ export default function CreateOfferModal({ onClose, onSuccess, preselectedItem }
           >
             {step === 1 ? 'Cancel' : 'Back'}
           </button>
-          
+
           {step === 3 ? (
             <button
               onClick={() => createMutation.mutate()}

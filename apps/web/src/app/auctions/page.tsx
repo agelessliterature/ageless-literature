@@ -14,11 +14,10 @@ type SortOption = 'ending-soon' | 'newest' | 'price-low' | 'price-high' | 'most-
 export default function AuctionsPage() {
   const t = useTranslations('home');
   const [sortBy, setSortBy] = useState<SortOption>('ending-soon');
-  const [category, setCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   // Fetch all active auctions
-  const { data: auctions, isLoading, error } = useQuery<Auction[]>({
+  const { data: auctions, isLoading } = useQuery<Auction[]>({
     queryKey: ['all-auctions', sortBy, category],
     queryFn: async () => {
       const response = await api.get('/auctions', {
@@ -32,36 +31,44 @@ export default function AuctionsPage() {
   });
 
   // Sort auctions based on selected option
-  const sortedAuctions = auctions ? [...auctions].sort((a, b) => {
-    switch (sortBy) {
-      case 'ending-soon':
-        const dateA = new Date((a as any).endDate || (a as any).endsAt).getTime();
-        const dateB = new Date((b as any).endDate || (b as any).endsAt).getTime();
-        return dateA - dateB;
-      case 'newest':
-        const createdA = new Date((a as any).createdAt).getTime();
-        const createdB = new Date((b as any).createdAt).getTime();
-        return createdB - createdA;
-      case 'price-low':
-        return Number(a.currentBid || a.startingPrice) - Number(b.currentBid || b.startingPrice);
-      case 'price-high':
-        return Number(b.currentBid || b.startingPrice) - Number(a.currentBid || a.startingPrice);
-      case 'most-bids':
-        return (b.bidCount || 0) - (a.bidCount || 0);
-      default:
-        return 0;
-    }
-  }) : [];
+  const sortedAuctions = auctions
+    ? [...auctions].sort((a, b) => {
+        switch (sortBy) {
+          case 'ending-soon': {
+            const dateA = new Date((a as any).endDate || (a as any).endsAt).getTime();
+            const dateB = new Date((b as any).endDate || (b as any).endsAt).getTime();
+            return dateA - dateB;
+          }
+          case 'newest': {
+            const createdA = new Date((a as any).createdAt).getTime();
+            const createdB = new Date((b as any).createdAt).getTime();
+            return createdB - createdA;
+          }
+          case 'price-low':
+            return (
+              Number(a.currentBid || a.startingPrice) - Number(b.currentBid || b.startingPrice)
+            );
+          case 'price-high':
+            return (
+              Number(b.currentBid || b.startingPrice) - Number(a.currentBid || a.startingPrice)
+            );
+          case 'most-bids':
+            return (b.bidCount || 0) - (a.bidCount || 0);
+          default:
+            return 0;
+        }
+      })
+    : [];
 
   // Filter auctions based on search query
   const filteredAuctions = sortedAuctions.filter((auction) => {
     if (!searchQuery.trim()) return true;
-    
+
     const item = auction.item || auction.book || auction.product;
     const itemTitle = (item?.title || '').toLowerCase();
     const itemAuthor = ((item as any)?.author || (item as any)?.artist || '').toLowerCase();
     const query = searchQuery.toLowerCase();
-    
+
     return itemTitle.includes(query) || itemAuthor.includes(query);
   });
 
@@ -113,8 +120,8 @@ export default function AuctionsPage() {
                 className="w-full border-2 border-gray-200 px-4 py-3 pl-12 text-sm focus:border-[#d4af37] focus:outline-none transition-colors bg-white"
                 style={{ borderRadius: 0 }}
               />
-              <FontAwesomeIcon 
-                icon={['fal', 'search']} 
+              <FontAwesomeIcon
+                icon={['fal', 'search']}
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg"
               />
               {searchQuery && (
@@ -148,8 +155,13 @@ export default function AuctionsPage() {
 
             {/* Results Count */}
             <div className="text-sm text-gray-600 flex-shrink-0 text-right">
-              <span className="font-semibold text-primary">{filteredAuctions.length}</span> Active Auction{filteredAuctions.length !== 1 ? 's' : ''}
-              {searchQuery && <span className="ml-2 text-gray-500 block lg:inline">(filtered from {sortedAuctions.length})</span>}
+              <span className="font-semibold text-primary">{filteredAuctions.length}</span> Active
+              Auction{filteredAuctions.length !== 1 ? 's' : ''}
+              {searchQuery && (
+                <span className="ml-2 text-gray-500 block lg:inline">
+                  (filtered from {sortedAuctions.length})
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -162,7 +174,11 @@ export default function AuctionsPage() {
             // Loading Grid
             <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {Array.from({ length: 8 }).map((_, idx) => (
-                <div key={idx} className="border border-gray-200 animate-pulse" style={{ borderRadius: 0 }}>
+                <div
+                  key={idx}
+                  className="border border-gray-200 animate-pulse"
+                  style={{ borderRadius: 0 }}
+                >
                   <div className="aspect-[3/4] bg-gray-200" />
                   <div className="p-5 space-y-3">
                     <div className="h-5 bg-gray-200 w-3/4" />
@@ -183,7 +199,8 @@ export default function AuctionsPage() {
                   '/placeholder.jpg';
                 const itemTitle = item?.title || 'Auction Item';
                 const endDate = (auction as any).endDate || (auction as any).endsAt;
-                const isEndingSoon = endDate && new Date(endDate).getTime() - Date.now() < 24 * 60 * 60 * 1000;
+                const isEndingSoon =
+                  endDate && new Date(endDate).getTime() - Date.now() < 24 * 60 * 60 * 1000;
 
                 return (
                   <Link
@@ -195,11 +212,14 @@ export default function AuctionsPage() {
                     {/* Status Badge - Red "ENDING SOON" */}
                     <div className="relative">
                       {isEndingSoon && (
-                        <div className="absolute top-4 right-4 z-10 bg-red-600 text-white px-3 py-1 text-xs font-bold shadow-lg" style={{ borderRadius: 0 }}>
+                        <div
+                          className="absolute top-4 right-4 z-10 bg-red-600 text-white px-3 py-1 text-xs font-bold shadow-lg"
+                          style={{ borderRadius: 0 }}
+                        >
                           ENDING SOON
                         </div>
                       )}
-                      
+
                       {/* Image */}
                       <div className="aspect-[3/4] bg-gray-100 overflow-hidden">
                         <img
@@ -236,13 +256,15 @@ export default function AuctionsPage() {
                         </span>
                       </div>
 
-                      {/* Bid Button - Black/White Style */}
-                      <button 
-                        className="flex items-center justify-center gap-2 bg-white hover:bg-gray-50 text-black px-6 py-2 text-sm font-semibold transition-all duration-300 w-full"
+                      {/* Bid Button - Black/Gold Style */}
+                      <div
+                        className="flex items-center justify-center gap-2 bg-black hover:bg-secondary text-white hover:text-black px-6 py-2 text-sm font-semibold transition-all duration-300 w-full border-2 border-black hover:border-secondary cursor-pointer"
                         style={{ borderRadius: '1.5rem' }}
+                        role="button"
+                        tabIndex={0}
                       >
                         {t('featuredAuctions.bidNow')}
-                      </button>
+                      </div>
                     </div>
                   </Link>
                 );
@@ -251,7 +273,10 @@ export default function AuctionsPage() {
           ) : searchQuery ? (
             // No Search Results
             <div className="text-center py-20">
-              <div className="w-24 h-24 mx-auto mb-6 bg-gray-100 flex items-center justify-center" style={{ borderRadius: 0 }}>
+              <div
+                className="w-24 h-24 mx-auto mb-6 bg-gray-100 flex items-center justify-center"
+                style={{ borderRadius: 0 }}
+              >
                 <FontAwesomeIcon icon={['fal', 'search']} className="text-4xl text-gray-400" />
               </div>
               <h2 className="text-2xl font-bold text-primary mb-3">No Matching Auctions</h2>
@@ -270,12 +295,16 @@ export default function AuctionsPage() {
           ) : (
             // Empty State
             <div className="text-center py-20">
-              <div className="w-24 h-24 mx-auto mb-6 bg-gray-100 flex items-center justify-center" style={{ borderRadius: 0 }}>
+              <div
+                className="w-24 h-24 mx-auto mb-6 bg-gray-100 flex items-center justify-center"
+                style={{ borderRadius: 0 }}
+              >
                 <FontAwesomeIcon icon={['fal', 'gavel']} className="text-4xl text-gray-400" />
               </div>
               <h2 className="text-2xl font-bold text-primary mb-3">No Active Auctions</h2>
               <p className="text-gray-600 mb-8 max-w-md mx-auto">
-                There are no live auctions at the moment. Check back soon for exciting rare book auctions!
+                There are no live auctions at the moment. Check back soon for exciting rare book
+                auctions!
               </p>
               <Link
                 href="/books"

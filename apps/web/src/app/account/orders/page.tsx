@@ -57,7 +57,10 @@ export default function AccountOrdersPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-6">
-        <Link href={withBasePath('/account')} className="text-primary hover:text-secondary mb-4 inline-block">
+        <Link
+          href={withBasePath('/account')}
+          className="text-primary hover:text-secondary mb-4 inline-block"
+        >
           <FontAwesomeIcon icon={['fal', 'arrow-left']} className="mr-2" />
           Back to Account
         </Link>
@@ -89,12 +92,17 @@ export default function AccountOrdersPage() {
                   </p>
                 </div>
                 <div className="mt-2 sm:mt-0">
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    order.status === 'completed' ? 'bg-green-100 text-green-800' :
-                    order.status === 'processing' ? 'bg-blue-100 text-blue-800' :
-                    order.status === 'shipped' ? 'bg-purple-100 text-purple-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
+                  <span
+                    className={`px-3 py-1 rounded-full text-sm font-medium ${
+                      order.status === 'completed'
+                        ? 'bg-green-100 text-green-800'
+                        : order.status === 'processing'
+                          ? 'bg-blue-100 text-blue-800'
+                          : order.status === 'shipped'
+                            ? 'bg-purple-100 text-purple-800'
+                            : 'bg-gray-100 text-gray-800'
+                    }`}
+                  >
                     {order.status}
                   </span>
                 </div>

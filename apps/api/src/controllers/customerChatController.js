@@ -7,10 +7,7 @@ import db from '../models/index.js';
 
 const { Conversation, Message, User, Vendor } = db;
 
-/**
- * Get or create conversation with a vendor
- * POST /api/customer/chat/conversations
- */
+// Get or create conversation with vendor
 export const getOrCreateConversation = async (req, res) => {
   try {
     const userId = req.user?.userId || req.user?.id;
@@ -175,10 +172,24 @@ export const sendMessage = async (req, res) => {
     });
 
     // Update conversation timestamp
-    await conversation.update({ 
+    await conversation.update({
       updatedAt: new Date(),
       lastMessageAt: new Date(),
     });
+
+    // Emit socket event for real-time update
+    const io = req.app.get('io');
+    if (io) {
+      io.of('/chat').to(`conversation:${conversationId}`).emit('message:new', {
+        id: newMessage.id,
+        conversationId,
+        senderId: userId,
+        content: message.trim(),
+        message: message.trim(),
+        createdAt: newMessage.createdAt,
+        isCustomer: true,
+      });
+    }
 
     return res.status(201).json({
       success: true,

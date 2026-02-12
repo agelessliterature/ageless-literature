@@ -81,9 +81,12 @@ export default function NativeImageUploader({
 
     // Delete from server
     try {
-      await fetch(getApiUrl(`api/upload?publicId=${imageToRemove.publicId}&productType=${productType}`), {
-        method: 'DELETE',
-      });
+      await fetch(
+        getApiUrl(`api/upload?publicId=${imageToRemove.publicId}&productType=${productType}`),
+        {
+          method: 'DELETE',
+        },
+      );
     } catch (error) {
       console.error('Delete error:', error);
     }

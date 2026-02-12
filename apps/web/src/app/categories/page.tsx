@@ -109,35 +109,51 @@ export default function CategoriesPage() {
 
       {/* Categories Grid */}
       <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-16">
-        {/* Search and Sort */}
-        <div className="bg-white p-4 border border-gray-200 mb-8 shadow-sm">
-          <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4">
-            <input
-              type="text"
-              placeholder="Search collections..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1 px-4 py-3 sm:py-2 border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary text-base"
-            />
-            <div className="flex gap-2 sm:gap-4">
-              <button
-                type="submit"
-                className="flex-1 sm:flex-none px-6 sm:px-8 py-3 sm:py-2 bg-gray-900 text-white hover:bg-gray-800 transition-colors font-medium"
-              >
-                Search
-              </button>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="flex-1 sm:flex-none px-3 sm:px-4 py-3 sm:py-2 border border-gray-300 bg-white focus:ring-2 focus:ring-primary focus:border-primary text-sm"
-              >
-                <option value="name-ASC">A to Z</option>
-                <option value="name-DESC">Z to A</option>
-                <option value="id-ASC">Oldest</option>
-                <option value="id-DESC">Newest</option>
-              </select>
-            </div>
-          </form>
+        {/* Search and Sort - Enhanced to match shop page */}
+        <div className="bg-white border border-gray-200 mb-8 shadow-sm">
+          <div className="p-4">
+            <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4">
+              {/* Search Input */}
+              <div className="flex-1">
+                <div className="relative">
+                  <FontAwesomeIcon
+                    icon={['fal', 'search']}
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-base"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Search collections..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary"
+                  />
+                </div>
+              </div>
+
+              {/* Sort Dropdown */}
+              <div className="w-full md:w-48">
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 bg-white focus:ring-2 focus:ring-primary focus:border-primary"
+                >
+                  <option value="name-ASC">Name: A to Z</option>
+                  <option value="name-DESC">Name: Z to A</option>
+                  <option value="id-DESC">Newest First</option>
+                  <option value="id-ASC">Oldest First</option>
+                </select>
+              </div>
+            </form>
+          </div>
+
+          {/* Results Count */}
+          <div className="px-4 pb-4">
+            <p className="text-sm text-gray-600">
+              Showing <span className="font-semibold">{categories.length}</span> collection
+              {categories.length !== 1 ? 's' : ''}
+              {searchQuery && <span> matching "{searchQuery}"</span>}
+            </p>
+          </div>
         </div>
 
         {categories.length > 0 ? (

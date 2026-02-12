@@ -37,8 +37,13 @@ export function BookCard({ book }: BookCardProps) {
       console.error('Add to cart error:', error);
       const status = error.response?.status;
       const message = error.response?.data?.message || error.response?.data?.error;
-      
-      if (status === 401 || status === 403 || message?.includes('token') || message?.includes('token required')) {
+
+      if (
+        status === 401 ||
+        status === 403 ||
+        message?.includes('token') ||
+        message?.includes('token required')
+      ) {
         toast.error('Please log in to add items to your cart');
       } else if (message) {
         toast.error(message);
@@ -99,7 +104,10 @@ export function BookCard({ book }: BookCardProps) {
 
   return (
     <Link href={`/products/${book.slug}`} className="group block h-full">
-      <div className="bg-black border border-gray-700 hover:shadow-xl hover:border-[#d4af37] transition-all duration-300 overflow-hidden h-full flex flex-col" style={{ borderRadius: '1.5rem' }}>
+      <div
+        className="bg-black border border-gray-700 hover:shadow-xl hover:border-[#d4af37] transition-all duration-300 overflow-hidden h-full flex flex-col"
+        style={{ borderRadius: '1.5rem' }}
+      >
         {/* Book Cover */}
         <div className="relative aspect-[3/4] bg-gray-100">
           {primaryImage ? (
@@ -145,14 +153,14 @@ export function BookCard({ book }: BookCardProps) {
                 {Number(book.price).toFixed(0)} USD
               </span>
             </div>
-            
+
             {/* Action Buttons */}
             <div className="flex gap-2">
               <button
-                onClick={(e) => {
+                onClick={(_e) => {
                   // Let the parent Link handle navigation
                 }}
-                className="flex-1 bg-secondary hover:bg-secondary/90 text-black py-2 px-4 font-semibold transition-colors duration-300 text-center"
+                className="flex-1 bg-black hover:bg-secondary text-white hover:text-black py-2 px-4 font-semibold transition-all duration-300 text-center border-2 border-black hover:border-secondary"
                 style={{ borderRadius: '1.5rem' }}
               >
                 {'hasActiveAuction' in book && book.hasActiveAuction ? 'PLACE BID' : 'VIEW'}
@@ -177,10 +185,7 @@ export function BookCard({ book }: BookCardProps) {
                   style={{ borderRadius: '1.5rem' }}
                   aria-label="Add to cart"
                 >
-                  <FontAwesomeIcon
-                    icon={['fal', 'shopping-cart']}
-                    className="text-base"
-                  />
+                  <FontAwesomeIcon icon={['fal', 'shopping-cart']} className="text-base" />
                 </button>
               )}
             </div>

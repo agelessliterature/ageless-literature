@@ -23,9 +23,6 @@ import GoogleProvider from 'next-auth/providers/google';
 import AppleProvider from 'next-auth/providers/apple';
 import jwt from 'jsonwebtoken';
 
-// Check if running in development mode
-const isDevelopment = process.env.NODE_ENV === 'development';
-
 /**
  * Get the internal API base URL for server-side calls.
  * IMPORTANT: Do NOT use NEXT_PUBLIC_* variables here — SWC inlines them as
@@ -51,14 +48,19 @@ function getInternalApiBaseUrl(): string {
 
 // Generate Apple client secret JWT
 function generateAppleClientSecret() {
-  if (!process.env.APPLE_CLIENT_ID || !process.env.APPLE_TEAM_ID || !process.env.APPLE_KEY_ID || !process.env.APPLE_PRIVATE_KEY) {
+  if (
+    !process.env.APPLE_CLIENT_ID ||
+    !process.env.APPLE_TEAM_ID ||
+    !process.env.APPLE_KEY_ID ||
+    !process.env.APPLE_PRIVATE_KEY
+  ) {
     return null;
   }
 
   try {
     const privateKey = process.env.APPLE_PRIVATE_KEY.replace(/\\n/g, '\n');
     const now = Math.floor(Date.now() / 1000);
-    
+
     const token = jwt.sign(
       {
         iss: process.env.APPLE_TEAM_ID,
@@ -71,9 +73,9 @@ function generateAppleClientSecret() {
       {
         algorithm: 'ES256',
         keyid: process.env.APPLE_KEY_ID,
-      }
+      },
     );
-    
+
     return token;
   } catch (error) {
     console.error('Error generating Apple client secret:', error);
@@ -85,7 +87,12 @@ function generateAppleClientSecret() {
 if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
   // Google OAuth not configured
 }
-if (!process.env.APPLE_CLIENT_ID || !process.env.APPLE_PRIVATE_KEY || !process.env.APPLE_TEAM_ID || !process.env.APPLE_KEY_ID) {
+if (
+  !process.env.APPLE_CLIENT_ID ||
+  !process.env.APPLE_PRIVATE_KEY ||
+  !process.env.APPLE_TEAM_ID ||
+  !process.env.APPLE_KEY_ID
+) {
   // Apple OAuth not configured
 }
 if (!process.env.NEXTAUTH_SECRET) {
@@ -308,6 +315,6 @@ export const authOptions: NextAuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   secret: process.env.NEXTAUTH_SECRET,
-  // Set basePath for production deployment under /v2
+  // Set basePath for API auth (production needs /v2 prefix for Apache proxy)
   basePath: process.env.NODE_ENV === 'production' ? '/v2/api/auth' : '/api/auth',
 };

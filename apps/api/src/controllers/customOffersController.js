@@ -101,6 +101,7 @@ export const createOffer = async (req, res) => {
       message,
       expiresAt,
       status: 'pending',
+      initiatedBy: 'vendor',
     });
 
     // Create notification for the user
@@ -174,7 +175,7 @@ export const getVendorOffers = async (req, res) => {
     const offersWithItems = await Promise.all(
       offers.map(async (offer) => {
         const offerData = offer.toJSON();
-        
+
         if (offer.itemType === 'book') {
           const book = await Book.findByPk(offer.itemId, {
             include: [{ model: BookMedia, as: 'media', limit: 1 }],
@@ -184,9 +185,9 @@ export const getVendorOffers = async (req, res) => {
           const product = await Product.findByPk(offer.itemId);
           offerData.item = product;
         }
-        
+
         return offerData;
-      })
+      }),
     );
 
     return res.json({
@@ -272,10 +273,7 @@ export const getUserOffers = async (req, res) => {
     } else {
       // By default, show pending and not expired
       where.status = 'pending';
-      where[Op.or] = [
-        { expiresAt: null },
-        { expiresAt: { [Op.gt]: new Date() } },
-      ];
+      where[Op.or] = [{ expiresAt: null }, { expiresAt: { [Op.gt]: new Date() } }];
     }
 
     const { count, rows: offers } = await CustomOffer.findAndCountAll({
@@ -296,7 +294,7 @@ export const getUserOffers = async (req, res) => {
     const offersWithItems = await Promise.all(
       offers.map(async (offer) => {
         const offerData = offer.toJSON();
-        
+
         if (offer.itemType === 'book') {
           const book = await Book.findByPk(offer.itemId, {
             include: [{ model: BookMedia, as: 'media', limit: 1 }],
@@ -306,9 +304,9 @@ export const getUserOffers = async (req, res) => {
           const product = await Product.findByPk(offer.itemId);
           offerData.item = product;
         }
-        
+
         return offerData;
-      })
+      }),
     );
 
     return res.json({
@@ -485,10 +483,7 @@ export const searchUsers = async (req, res) => {
 
     const users = await User.findAll({
       where: {
-        [Op.or]: [
-          { name: { [Op.iLike]: `%${q}%` } },
-          { email: { [Op.iLike]: `%${q}%` } },
-        ],
+        [Op.or]: [{ name: { [Op.iLike]: `%${q}%` } }, { email: { [Op.iLike]: `%${q}%` } }],
         status: 'active',
       },
       attributes: ['id', 'name', 'email', 'avatar'],
@@ -504,6 +499,225 @@ export const searchUsers = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Failed to search users',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Create a buyer-initiated offer (User → Vendor)
+ * POST /api/users/offers
+ */
+export const createBuyerOffer = async (req, res) => {
+  try {
+    const userId = req.user?.userId || req.user?.id;
+    const { itemType, itemId, offerPrice, message } = req.body;
+
+    if (!itemType || !itemId || !offerPrice) {
+      return res.status(400).json({
+        success: false,
+        message: 'itemType, itemId, and offerPrice are required',
+      });
+    }
+
+    if (!['book', 'product'].includes(itemType)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid item type. Must be "book" or "product"',
+      });
+    }
+
+    // Validate item exists and get its vendor
+    let item;
+    let originalPrice;
+    let vendorId;
+
+    if (itemType === 'book') {
+      item = await Book.findByPk(itemId, {
+        include: [{ model: Vendor, as: 'vendor', attributes: ['id', 'userId', 'shopName'] }],
+      });
+      if (!item) {
+        return res.status(404).json({ success: false, message: 'Book not found' });
+      }
+      originalPrice = item.price;
+      vendorId = item.vendorId;
+    } else {
+      item = await Product.findByPk(itemId, {
+        include: [{ model: Vendor, as: 'vendor', attributes: ['id', 'userId', 'shopName'] }],
+      });
+      if (!item) {
+        return res.status(404).json({ success: false, message: 'Product not found' });
+      }
+      originalPrice = item.price;
+      vendorId = item.vendorId;
+    }
+
+    // Don't allow vendors to make offers on their own items
+    const userVendor = await Vendor.findOne({ where: { userId } });
+    if (userVendor && userVendor.id === vendorId) {
+      return res.status(400).json({
+        success: false,
+        message: 'You cannot make an offer on your own item',
+      });
+    }
+
+    // Check for existing pending offer from this user on this item
+    const existingOffer = await CustomOffer.findOne({
+      where: {
+        userId,
+        vendorId,
+        itemType,
+        itemId,
+        status: 'pending',
+        initiatedBy: 'buyer',
+      },
+    });
+
+    if (existingOffer) {
+      return res.status(400).json({
+        success: false,
+        message: 'You already have a pending offer on this item',
+      });
+    }
+
+    // Buyer offers expire in 7 days
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7);
+
+    const offer = await CustomOffer.create({
+      vendorId,
+      userId,
+      itemType,
+      itemId,
+      originalPrice,
+      offerPrice,
+      message: message || null,
+      expiresAt,
+      status: 'pending',
+      initiatedBy: 'buyer',
+    });
+
+    // Notify the vendor
+    if (Notification && item.vendor) {
+      const buyer = await User.findByPk(userId, { attributes: ['id', 'name'] });
+      await Notification.create({
+        userId: item.vendor.userId,
+        type: 'buyer_offer',
+        title: 'New Offer Received',
+        message: `${buyer?.name || 'A buyer'} made an offer of $${offerPrice} on "${item.title}"`,
+        data: {
+          offerId: offer.id,
+          itemType,
+          itemId,
+          originalPrice,
+          offerPrice,
+        },
+      });
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: 'Offer submitted successfully',
+      data: offer,
+    });
+  } catch (error) {
+    console.error('Error creating buyer offer:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to submit offer',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Vendor responds to a buyer-initiated offer
+ * POST /api/vendor/offers/:id/respond
+ */
+export const vendorRespondToOffer = async (req, res) => {
+  try {
+    const userId = req.user?.userId || req.user?.id;
+    const { id } = req.params;
+    const { action } = req.body; // 'accept' or 'decline'
+
+    if (!['accept', 'decline'].includes(action)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid action. Must be "accept" or "decline"',
+      });
+    }
+
+    const vendor = await Vendor.findOne({ where: { userId } });
+    if (!vendor) {
+      return res.status(404).json({
+        success: false,
+        message: 'Vendor profile not found',
+      });
+    }
+
+    const offer = await CustomOffer.findOne({
+      where: {
+        id,
+        vendorId: vendor.id,
+        status: 'pending',
+        initiatedBy: 'buyer',
+      },
+    });
+
+    if (!offer) {
+      return res.status(404).json({
+        success: false,
+        message: 'Offer not found or already processed',
+      });
+    }
+
+    // Check if expired
+    if (offer.expiresAt && new Date() > new Date(offer.expiresAt)) {
+      await offer.update({ status: 'expired' });
+      return res.status(400).json({
+        success: false,
+        message: 'This offer has expired',
+      });
+    }
+
+    const newStatus = action === 'accept' ? 'accepted' : 'declined';
+    await offer.update({
+      status: newStatus,
+      respondedAt: new Date(),
+    });
+
+    // Notify the buyer
+    if (Notification) {
+      let item;
+      if (offer.itemType === 'book') {
+        item = await Book.findByPk(offer.itemId);
+      } else {
+        item = await Product.findByPk(offer.itemId);
+      }
+
+      await Notification.create({
+        userId: offer.userId,
+        type: 'offer_response',
+        title: `Offer ${newStatus}`,
+        message: `${vendor.shopName || 'The vendor'} has ${newStatus} your offer of $${offer.offerPrice} on "${item?.title || 'an item'}"`,
+        data: {
+          offerId: offer.id,
+          status: newStatus,
+          offerPrice: offer.offerPrice,
+        },
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: `Offer ${newStatus} successfully`,
+      data: offer,
+    });
+  } catch (error) {
+    console.error('Error responding to buyer offer:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to respond to offer',
       error: error.message,
     });
   }

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { withAssetPrefix } from '@/lib/basePath';
 import { useSession, signOut } from 'next-auth/react';
 import { useState, useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
@@ -18,6 +19,8 @@ import { mapNotificationToUI } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { initSocket } from '@/lib/socket';
 import { useQueryClient } from '@tanstack/react-query';
+import SearchModal from '@/components/modals/SearchModal';
+import { showNotificationToast } from '@/lib/notificationToast';
 
 export default function Header() {
   const t = useTranslations('nav');
@@ -32,6 +35,7 @@ export default function Header() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationDropdownOpen, setNotificationDropdownOpen] = useState(false);
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [scrollDirection, setScrollDirection] = useState<'up' | 'down'>('up');
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -50,6 +54,13 @@ export default function Header() {
     // Listen for new notifications
     socket.on('notification:new', (notification) => {
       console.log('NOTIFICATION: New notification received:', notification);
+
+      // Show toast popup
+      const uiData = mapNotificationToUI(notification);
+      showNotificationToast(uiData, (href) => {
+        router.push(href);
+      });
+
       // Refetch unread count and notification list
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
     });
@@ -181,7 +192,7 @@ export default function Header() {
               {/* Left Action Icons */}
               <div className="flex items-center gap-6">
                 <button
-                  onClick={() => router.push('/shop')}
+                  onClick={() => setSearchModalOpen(true)}
                   className={`transition-all duration-300 hover:scale-110 ${getTextColor()} hover:text-secondary`}
                   aria-label="Search the site"
                   type="button"
@@ -213,7 +224,7 @@ export default function Header() {
                   aria-label="Ageless Literature home page"
                 >
                   <Image
-                    src={process.env.NODE_ENV === 'production' ? '/v2/ageless-literature-logo.svg' : '/ageless-literature-logo.svg'}
+                    src={withAssetPrefix('/ageless-literature-logo.svg')}
                     alt="Ageless Literature logo"
                     width={200}
                     height={60}
@@ -507,12 +518,12 @@ export default function Header() {
               className="absolute left-1/2 transform -translate-x-1/2 transition-transform duration-300 hover:scale-105"
             >
               <Image
-                src={process.env.NODE_ENV === 'production' ? '/v2/ageless-literature-logo.svg' : '/ageless-literature-logo.svg'}
+                src={withAssetPrefix('/ageless-literature-logo.svg')}
                 alt="Ageless Literature"
                 width={140}
                 height={42}
                 className={`transition-all duration-500 w-auto ${
-                  scrolled ? 'h-10 opacity-100' : 'h-12 opacity-0'
+                  scrolled ? 'h-10' : 'h-12'
                 } ${getLogoClasses()}`}
               />
             </Link>
@@ -520,7 +531,7 @@ export default function Header() {
             {/* Mobile Actions */}
             <div className="flex items-center gap-4">
               <button
-                onClick={() => router.push('/shop')}
+                onClick={() => setSearchModalOpen(true)}
                 className={`transition-all duration-300 hover:scale-110 ${getTextColor()} hover:text-secondary`}
                 aria-label="Search"
               >
@@ -550,7 +561,7 @@ export default function Header() {
             {/* Mobile Menu Header */}
             <div className="flex items-center justify-between px-4 py-6 border-b border-gray-200 animate-in slide-in-from-top duration-300">
               <Image
-                src={process.env.NODE_ENV === 'production' ? '/v2/ageless-literature-logo.svg' : '/ageless-literature-logo.svg'}
+                src={withAssetPrefix('/ageless-literature-logo.svg')}
                 alt="Ageless Literature"
                 width={140}
                 height={42}
@@ -611,7 +622,7 @@ export default function Header() {
               >
                 Booksellers
               </Link>
-              
+
               {/* Vendor Live Chat - Only visible to vendors */}
               {vendorStatus?.isActive && (
                 <Link
@@ -681,7 +692,10 @@ export default function Header() {
                           className="flex items-center gap-3 py-3 text-primary hover:text-secondary hover:translate-x-2 transition-all duration-300"
                           onClick={() => setMobileMenuOpen(false)}
                         >
-                          <FontAwesomeIcon icon={['fal', 'file-invoice-dollar']} className="text-lg" />
+                          <FontAwesomeIcon
+                            icon={['fal', 'file-invoice-dollar']}
+                            className="text-lg"
+                          />
                           <span className="text-base">Vendor Orders</span>
                         </Link>
                         <Link
@@ -723,6 +737,9 @@ export default function Header() {
 
       {/* Spacer for non-homepage only - prevents content from going under header */}
       {!isHomePage && <div className="h-24 lg:h-48" />}
+
+      {/* Search Modal */}
+      <SearchModal isOpen={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
     </>
   );
 }

@@ -208,8 +208,8 @@ export default function VendorCollectiblesPage() {
                   <div>
                     <p className="text-sm text-gray-700">
                       Showing <span className="font-medium">{(page - 1) * 20 + 1}</span> to{' '}
-                      <span className="font-medium">{Math.min(page * 20, pagination.total)}</span> of{' '}
-                      <span className="font-medium">{pagination.total}</span> results
+                      <span className="font-medium">{Math.min(page * 20, pagination.total)}</span>{' '}
+                      of <span className="font-medium">{pagination.total}</span> results
                     </p>
                   </div>
                   <div>

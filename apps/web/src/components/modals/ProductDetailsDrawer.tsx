@@ -154,8 +154,6 @@ export default function ProductDetailsDrawer({
                       <p className="mt-1 text-gray-900">{(product as any).author}</p>
                     </div>
                   )}
-
-
                 </>
               )}
 
@@ -209,7 +207,9 @@ export default function ProductDetailsDrawer({
 
               {(product as any).shortDescription && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-500">Short Description</label>
+                  <label className="block text-sm font-medium text-gray-500">
+                    Short Description
+                  </label>
                   <p className="mt-1 text-gray-600">{(product as any).shortDescription}</p>
                 </div>
               )}
@@ -217,7 +217,7 @@ export default function ProductDetailsDrawer({
               {(() => {
                 const prod = product as any;
                 let descText = '';
-                
+
                 // Try fullDescription first
                 if (prod.fullDescription) {
                   if (typeof prod.fullDescription === 'object') {
@@ -226,7 +226,7 @@ export default function ProductDetailsDrawer({
                     descText = prod.fullDescription;
                   }
                 }
-                
+
                 // Fall back to description
                 if (!descText && prod.description) {
                   if (typeof prod.description === 'object') {
@@ -235,18 +235,18 @@ export default function ProductDetailsDrawer({
                     descText = prod.description;
                   }
                 }
-                
+
                 if (!descText || descText.trim() === '') {
                   return null;
                 }
-                
+
                 return (
                   <div>
                     <label className="block text-sm font-medium text-gray-500">Description</label>
-                    <div 
+                    <div
                       className="mt-1 text-gray-900 prose max-w-none"
                       dangerouslySetInnerHTML={{
-                        __html: descText.replace(/\\n/g, '<br>').replace(/\n/g, '<br>')
+                        __html: descText.replace(/\\n/g, '<br>').replace(/\n/g, '<br>'),
                       }}
                     />
                   </div>
@@ -269,7 +269,7 @@ export default function ProductDetailsDrawer({
             {/* Actions */}
             <div className="mt-6 flex gap-3">
               <a
-                href={`https://dev.agelessliterature.com/v2/products/${product.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}/${(product as any).sid || product.id}`}
+                href={`https://dev.agelessliterature.com/products/${product.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}/${(product as any).sid || product.id}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 px-4 py-2 bg-gray-600 text-white hover:bg-gray-700 transition-colors text-center"

@@ -102,8 +102,9 @@ const start = async () => {
     // Create HTTP server
     const httpServer = createServer(app);
 
-    // Initialize Socket.IO
-    initializeSocket(httpServer);
+    // Initialize Socket.IO and attach to app for access in controllers
+    const io = initializeSocket(httpServer);
+    app.set('io', io);
 
     // Schedule auction status updates (runs every minute)
     cron.schedule('* * * * *', async () => {

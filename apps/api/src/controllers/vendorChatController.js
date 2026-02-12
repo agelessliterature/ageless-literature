@@ -185,6 +185,20 @@ export const sendMessage = async (req, res) => {
     // Update conversation timestamp
     await conversation.update({ updatedAt: new Date() });
 
+    // Emit socket event for real-time update
+    const io = req.app.get('io');
+    if (io) {
+      io.of('/chat').to(`conversation:${conversationId}`).emit('message:new', {
+        id: newMessage.id,
+        conversationId,
+        senderId: userId,
+        content: message.trim(),
+        message: message.trim(),
+        createdAt: newMessage.createdAt,
+        isVendor: true,
+      });
+    }
+
     return res.status(201).json({
       success: true,
       data: {

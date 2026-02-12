@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import Link from 'next/link';
 import { Play, Pause, ChevronDown, ChevronUp } from 'lucide-react';
 
 // Cloudinary base URL
@@ -230,6 +231,28 @@ export default function AboutPage() {
         </p>
       </div>
 
+      {/* FAQ Banner - Prominent for Potential Vendors */}
+      <div className="max-w-4xl mx-auto px-4 mb-8">
+        <div className="bg-gradient-to-br from-primary/5 to-secondary/10 border-2 border-secondary/30 rounded-lg p-6 sm:p-8">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-center sm:text-left">
+              <h2 className="text-xl sm:text-2xl font-bold text-primary mb-2">
+                Questions About Becoming a Bookseller?
+              </h2>
+              <p className="text-gray-700">
+                Get all your questions answered in our comprehensive FAQ section
+              </p>
+            </div>
+            <Link
+              href="/faq"
+              className="bg-primary hover:bg-primary/90 text-white px-8 py-3 font-semibold transition-all duration-300 hover:scale-105 whitespace-nowrap shadow-md hover:shadow-lg"
+            >
+              View FAQ
+            </Link>
+          </div>
+        </div>
+      </div>
+
       {/* Content Container */}
       <div className="w-full">
         {/* Initial Pages */}
@@ -240,7 +263,7 @@ export default function AboutPage() {
         </div>
 
         {/* Learn More Section */}
-        <div className="text-center py-12 border-t border-b border-gray-200 my-8">
+        <div className="text-center py-12 border-t border-b border-gray-200 my-8 px-4 sm:px-0">
           {isLoadingMore ? (
             <div className="flex flex-col items-center gap-4">
               <div className="w-12 h-12 border-4 border-gray-200 border-t-primary rounded-full animate-spin" />
@@ -249,12 +272,14 @@ export default function AboutPage() {
           ) : (
             <button
               onClick={handleLearnMore}
-              className="inline-flex items-center gap-2 px-8 py-4 bg-primary hover:bg-primary/90 
-                         text-white font-semibold rounded-lg transition-all duration-300
-                         text-lg shadow-md hover:shadow-lg"
+              className="inline-flex items-center justify-center gap-3 bg-black hover:bg-secondary text-white hover:text-black font-bold transition-all duration-300 border-2 border-black hover:border-secondary hover:scale-105 w-full sm:w-auto px-8 py-4 sm:px-12 sm:py-5 text-base sm:text-lg shadow-lg hover:shadow-xl"
+              style={{ borderRadius: '1.5rem' }}
             >
-              {showAll ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-              {showAll ? 'Show Less' : 'Learn More - View Additional Content'}
+              {showAll ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
+              <span className="hidden sm:inline">
+                {showAll ? 'Show Less' : 'Learn More - View Additional Content'}
+              </span>
+              <span className="inline sm:hidden">{showAll ? 'Show Less' : 'Learn More'}</span>
             </button>
           )}
         </div>

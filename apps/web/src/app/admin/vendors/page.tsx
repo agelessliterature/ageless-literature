@@ -83,8 +83,8 @@ export default function VendorsAdminPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [commissionFilter, setCommissionFilter] = useState('');
-  const [sortBy, _setSortBy] = useState('createdAt');
-  const [sortOrder, _setSortOrder] = useState<'ASC' | 'DESC'>('DESC');
+  const [sortBy] = useState('createdAt');
+  const [sortOrder] = useState<'ASC' | 'DESC'>('DESC');
 
   // Modals
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -172,6 +172,7 @@ export default function VendorsAdminPage() {
         setPagination(data.data.pagination);
       }
     } catch (error) {
+      console.error('Failed to fetch vendors:', error);
     } finally {
       setLoading(false);
     }
@@ -193,7 +194,9 @@ export default function VendorsAdminPage() {
       if (data.success) {
         setStats(data.data);
       }
-    } catch (error) {}
+    } catch (error) {
+      console.error('Failed to fetch stats:', error);
+    }
   };
 
   useEffect(() => {
@@ -233,7 +236,9 @@ export default function VendorsAdminPage() {
       if (data.success) {
         setSearchResults(data.data);
       }
-    } catch (error) {}
+    } catch (error) {
+      console.error('Failed to search vendors:', error);
+    }
   };
 
   // Handle create vendor
@@ -804,8 +809,8 @@ export default function VendorsAdminPage() {
                 </tr>
               ) : (
                 vendors.map((vendor) => (
-                  <tr 
-                    key={vendor.id} 
+                  <tr
+                    key={vendor.id}
                     className="hover:bg-gray-50 transition-colors cursor-pointer"
                     onClick={() => router.push(`/admin/vendors/${vendor.id}`)}
                   >
@@ -878,7 +883,10 @@ export default function VendorsAdminPage() {
                     <td className="px-6 py-4 text-sm text-gray-500">
                       {new Date(vendor.createdAt).toLocaleDateString()}
                     </td>
-                    <td className="px-3 sm:px-6 py-4 text-right text-sm font-medium whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                    <td
+                      className="px-3 sm:px-6 py-4 text-right text-sm font-medium whitespace-nowrap"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <button
                         onClick={() => router.push(`/admin/vendors/${vendor.id}`)}
                         className="text-blue-600 hover:text-blue-900 mr-1.5 sm:mr-2"

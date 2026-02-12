@@ -20,10 +20,10 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
     Array<{ url: string; publicId: string; thumbnail?: string }>
   >(product?.images || []);
   const [categoryIds, setCategoryIds] = useState<number[]>(
-    product?.categories?.map((c) => c.id) || []
+    product?.categories?.map((c) => c.id) || [],
   );
   const [includeShortDescription, setIncludeShortDescription] = useState<boolean>(
-    !!product?.shortDescription
+    !!product?.shortDescription,
   );
   const [formData, setFormData] = useState<Partial<ProductFormData>>({
     title: product?.title || '',
@@ -125,15 +125,29 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
                 onChange={(e) => setIncludeShortDescription(e.target.checked)}
                 className="h-4 w-4 text-black border-gray-300 focus:ring-black"
               />
-              <label htmlFor="includeShortDescription" className="text-sm font-medium text-gray-700 cursor-pointer">
+              <label
+                htmlFor="includeShortDescription"
+                className="text-sm font-medium text-gray-700 cursor-pointer"
+              >
                 Add a short description
               </label>
-              <span 
-                className="inline-block text-gray-400 hover:text-gray-600 cursor-help" 
+              <span
+                className="inline-block text-gray-400 hover:text-gray-600 cursor-help"
                 title="A brief description (1-2 sentences) that will appear in product listings and search results. The full description will be shown on the product detail page."
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
               </span>
             </div>
@@ -141,7 +155,9 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
             {/* Short Description Field - Conditionally Rendered */}
             {includeShortDescription && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Short Description</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Short Description
+                </label>
                 <textarea
                   value={formData.shortDescription || ''}
                   onChange={(e) => handleChange('shortDescription', e.target.value)}

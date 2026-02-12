@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { withAssetPrefix } from '@/lib/basePath';
 import { useTranslations } from '@/lib/clientTranslations';
 import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
 import { useSession, signOut } from 'next-auth/react';
@@ -119,7 +120,7 @@ export default function Footer() {
           {/* Contact Column */}
           <div>
             <Image
-              src={process.env.NODE_ENV === 'production' ? '/v2/ageless-literature-logo.svg' : '/ageless-literature-logo.svg'}
+              src={withAssetPrefix('/ageless-literature-logo.svg')}
               alt="Ageless Literature"
               width={180}
               height={54}

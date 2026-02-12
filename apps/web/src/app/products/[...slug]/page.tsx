@@ -13,7 +13,7 @@ import ImageZoomModal from '@/components/modals/ImageZoomModal';
 import AuctionBadge from '@/components/auctions/AuctionBadge';
 import AuctionDetailsPanel from '@/components/auctions/AuctionDetailsPanel';
 import PlaceBidModal from '@/components/auctions/PlaceBidModal';
-import CreateOfferModal from '@/components/modals/CreateOfferModal';
+import BuyerOfferModal from '@/components/modals/BuyerOfferModal';
 import { AuctionSummary } from '@/types/Auction';
 
 export default function ProductDetailPage() {
@@ -152,8 +152,13 @@ export default function ProductDetailPage() {
       console.error('Add to cart error:', error);
       const status = error.response?.status;
       const message = error.response?.data?.message || error.response?.data?.error;
-      
-      if (status === 401 || status === 403 || message?.includes('token') || message?.includes('token required')) {
+
+      if (
+        status === 401 ||
+        status === 403 ||
+        message?.includes('token') ||
+        message?.includes('token required')
+      ) {
         toast.error('Please log in to add items to your cart');
         // Optionally redirect to login
         // router.push('/auth/login');
@@ -362,123 +367,127 @@ export default function ProductDetailPage() {
       <div className="mb-6 sm:mb-8">
         {activeAuction ? (
           // Auction Mode - Show Place Bid Button
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+          <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={handlePlaceBid}
-              className="flex-[2] bg-secondary text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-secondary-700 hover:bg-secondary-800 hover:scale-105 transition-all text-base sm:text-lg font-semibold"
+              className="flex-[2] bg-black hover:bg-secondary text-white hover:text-black py-4 px-6 flex items-center justify-center gap-2 hover:scale-105 transition-all text-base sm:text-lg font-semibold border-2 border-black hover:border-secondary"
               style={{ borderRadius: '1.5rem' }}
             >
               <FontAwesomeIcon
                 icon={['fal', 'gavel'] as [string, string]}
                 className="text-xl sm:text-2xl"
               />
-              <span className="whitespace-nowrap">{session ? 'Place Bid' : 'Login to Bid'}</span>
+              <span>{session ? 'Place Bid' : 'Login to Bid'}</span>
             </button>
 
             <button
               onClick={handleMessageSeller}
-              className="flex-1 bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-gray-800 hover:scale-105 transition-all text-base sm:text-lg"
+              className="flex-1 bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-gray-800 hover:scale-105 transition-all text-base sm:text-lg font-medium"
               style={{ borderRadius: '1.5rem' }}
             >
               <FontAwesomeIcon
                 icon={['fal', 'envelope'] as [string, string]}
                 className="text-xl sm:text-2xl"
               />
-              <span className="hidden md:inline">Message</span>
+              <span>Message</span>
             </button>
 
             <button
               onClick={handleShare}
-              className="flex-1 bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-gray-800 hover:scale-105 transition-all text-base sm:text-lg"
+              className="flex-1 bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-gray-800 hover:scale-105 transition-all text-base sm:text-lg font-medium"
               style={{ borderRadius: '1.5rem' }}
             >
               <FontAwesomeIcon
                 icon={['fal', 'share-alt'] as [string, string]}
                 className="text-xl sm:text-2xl"
               />
-              <span className="hidden md:inline">Share</span>
+              <span>Share</span>
             </button>
           </div>
         ) : (
-          // Regular Purchase Mode - All buttons in one row on desktop, stack on mobile
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+          // Regular Purchase Mode - Stack on mobile, row on desktop
+          <div className="flex flex-col sm:flex-row sm:flex-wrap lg:flex-nowrap gap-3">
             <button
               onClick={handleMessageSeller}
-              className="bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-gray-800 hover:scale-105 transition-all text-base sm:text-lg"
+              className="bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-secondary hover:text-black hover:scale-105 transition-all duration-300 text-base sm:text-lg font-medium sm:flex-1 border-2 border-black hover:border-secondary"
               style={{ borderRadius: '1.5rem' }}
             >
               <FontAwesomeIcon
                 icon={['fal', 'envelope'] as [string, string]}
                 className="text-xl sm:text-2xl"
               />
-              <span className="hidden xl:inline">Message</span>
+              <span>Message</span>
             </button>
 
             <button
               onClick={() => addToCartMutation.mutate()}
               disabled={addToCartMutation.isPending || product.quantity < 1}
-              className="bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-gray-800 hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-base sm:text-lg"
+              className="bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-secondary hover:text-black hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-base sm:text-lg font-medium sm:flex-1 border-2 border-black hover:border-secondary"
               style={{ borderRadius: '1.5rem' }}
             >
               <FontAwesomeIcon
                 icon={['fal', 'shopping-cart'] as [string, string]}
                 className="text-xl sm:text-2xl"
               />
-              <span className="hidden xl:inline">
-                {product.quantity < 1 ? 'Out of Stock' : 'Add to cart'}
-              </span>
+              <span>{product.quantity < 1 ? 'Out of Stock' : 'Add to Cart'}</span>
             </button>
 
             {/* Hide Reserve button for auctions */}
             {!activeAuction && (
               <button
                 onClick={handleReserve}
-                className="bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-gray-800 hover:scale-105 transition-all text-base sm:text-lg"
+                className="bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-secondary hover:text-black hover:scale-105 transition-all duration-300 text-base sm:text-lg font-medium sm:flex-1 border-2 border-black hover:border-secondary"
                 style={{ borderRadius: '1.5rem' }}
               >
                 <FontAwesomeIcon
                   icon={['fal', 'lock'] as [string, string]}
                   className="text-xl sm:text-2xl"
                 />
-                <span className="hidden xl:inline">{session ? 'Reserve' : 'Login to Reserve'}</span>
+                <span>{session ? 'Reserve' : 'Login to Reserve'}</span>
               </button>
             )}
 
             <button
-              onClick={() => setShowOfferModal(true)}
-              className="bg-primary text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-primary-dark hover:scale-105 transition-all text-base sm:text-lg"
+              onClick={() => {
+                if (!session) {
+                  toast.error('Please log in to send an offer');
+                  return;
+                }
+                setShowOfferModal(true);
+              }}
+              className="bg-primary text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-secondary hover:text-black hover:scale-105 transition-all duration-300 text-base sm:text-lg font-medium sm:flex-1 border-2 border-primary hover:border-secondary"
               style={{ borderRadius: '1.5rem' }}
             >
               <FontAwesomeIcon
                 icon={['fal', 'tags'] as [string, string]}
                 className="text-xl sm:text-2xl"
               />
-              <span className="hidden xl:inline">Send Offer</span>
+              <span>{session ? 'Send Offer' : 'Login to Send Offer'}</span>
             </button>
 
             <button
               onClick={() => addToWishlistMutation.mutate()}
               disabled={addToWishlistMutation.isPending}
-              className="bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-gray-800 hover:scale-105 transition-all text-base sm:text-lg"
+              className="bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-secondary hover:text-black hover:scale-105 transition-all duration-300 text-base sm:text-lg font-medium sm:flex-1 border-2 border-black hover:border-secondary"
               style={{ borderRadius: '1.5rem' }}
             >
               <FontAwesomeIcon
                 icon={['fal', 'heart'] as [string, string]}
                 className="text-xl sm:text-2xl"
               />
-              <span className="hidden xl:inline">Wishlist</span>
+              <span>Wishlist</span>
             </button>
 
             <button
               onClick={handleShare}
-              className="bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-gray-800 hover:scale-105 transition-all text-base sm:text-lg"
+              className="bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-secondary hover:text-black hover:scale-105 transition-all duration-300 text-base sm:text-lg font-medium sm:flex-1 border-2 border-black hover:border-secondary"
               style={{ borderRadius: '1.5rem' }}
             >
               <FontAwesomeIcon
                 icon={['fal', 'share-alt'] as [string, string]}
                 className="text-xl sm:text-2xl"
               />
-              <span className="hidden xl:inline">Share</span>
+              <span>Share</span>
             </button>
           </div>
         )}
@@ -490,7 +499,7 @@ export default function ProductDetailPage() {
         {product.shortDescription && (
           <p className="text-base text-gray-700 mb-6 leading-relaxed">
             {typeof product.shortDescription === 'object'
-              ? (product.shortDescription?.en || product.shortDescription?.html || '')
+              ? product.shortDescription?.en || product.shortDescription?.html || ''
               : product.shortDescription}
           </p>
         )}
@@ -502,7 +511,7 @@ export default function ProductDetailPage() {
           {(() => {
             // Get description from various possible sources
             let descText = '';
-            
+
             // Try fullDescription first (books)
             if (product.fullDescription) {
               if (typeof product.fullDescription === 'object') {
@@ -511,7 +520,7 @@ export default function ProductDetailPage() {
                 descText = product.fullDescription;
               }
             }
-            
+
             // Fall back to description
             if (!descText && product.description) {
               if (typeof product.description === 'object') {
@@ -520,24 +529,30 @@ export default function ProductDetailPage() {
                 descText = product.description;
               }
             }
-            
+
             if (!descText || descText.trim() === '') {
               return <p className="text-gray-500 italic">No description available.</p>;
             }
-            
-            // Process the description text
-            const processedHtml = descText.replace(/\\n/g, '<br>').replace(/\n/g, '<br>');
-            
+
+            // Process the description text - reduce excessive spacing
+            const processedHtml = descText
+              .replace(/\\n\\n+/g, '</p><p class="mt-3">') // Double newlines become paragraph breaks with reduced spacing
+              .replace(/\\n/g, '<br>') // Single newlines become line breaks
+              .replace(/\n\n+/g, '</p><p class="mt-3">') // Handle regular double newlines
+              .replace(/\n/g, '<br>'); // Single newlines
+
             return (
               <>
                 <div
-                  className={!showFullDescription ? 'line-clamp-3' : ''}
-                  dangerouslySetInnerHTML={{ __html: processedHtml }}
+                  className={`prose prose-sm sm:prose-base max-w-none ${!showFullDescription ? 'line-clamp-3' : ''}`}
+                  dangerouslySetInnerHTML={{ __html: `<p class="mt-0">${processedHtml}</p>` }}
+                  style={{ lineHeight: '1.6' }}
                 />
                 {descText.length > 200 && (
                   <button
                     onClick={() => setShowFullDescription(!showFullDescription)}
-                    className="mt-4 bg-secondary text-white px-6 py-2 hover:bg-secondary/90 transition-colors inline-block"
+                    className="mt-4 bg-black hover:bg-secondary text-white hover:text-black px-6 py-3 transition-all duration-300 inline-flex items-center gap-2 border-2 border-black hover:border-secondary hover:scale-105 font-semibold"
+                    style={{ borderRadius: '1.5rem' }}
                   >
                     {showFullDescription ? 'Show Less' : 'Read More'}
                   </button>
@@ -548,10 +563,7 @@ export default function ProductDetailPage() {
         </div>
 
         {/* Additional Details */}
-        {(product.category ||
-          product.categories ||
-          product.materials ||
-          product.dimensions) && (
+        {(product.category || product.categories || product.materials || product.dimensions) && (
           <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
             {product.categories && product.categories.length > 0 ? (
               <div>
@@ -582,18 +594,17 @@ export default function ProductDetailPage() {
                 <span className="text-gray-700">{product.dimensions}</span>
               </div>
             )}
-
           </div>
         )}
       </div>
 
       {/* Vendor/Seller Info */}
       {product.vendor && (
-        <div className="bg-gray-50 p-8 mb-12">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-6">
+        <div className="bg-gray-50 p-4 sm:p-6 md:p-8 mb-8 sm:mb-12">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
+            <div className="flex items-center gap-4 sm:gap-6 flex-1 min-w-0">
               {/* Vendor Logo */}
-              <div className="w-24 h-24 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
                 {product.vendor.logoUrl ? (
                   <img
                     src={product.vendor.logoUrl}
@@ -603,23 +614,25 @@ export default function ProductDetailPage() {
                 ) : (
                   <FontAwesomeIcon
                     icon={['fal', 'store'] as [string, string]}
-                    className="text-4xl text-gray-400"
+                    className="text-2xl sm:text-3xl md:text-4xl text-gray-400"
                   />
                 )}
               </div>
 
               {/* Vendor Details */}
-              <div>
-                <h3 className="text-2xl font-bold text-gray-900">
+              <div className="flex-1 min-w-0">
+                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 truncate">
                   {product.vendor.shopName || product.vendor.businessName}
                 </h3>
                 {product.vendor.isTrustedDealer && (
-                  <div className="flex items-center gap-2 mt-2">
+                  <div className="flex items-center gap-2 mt-1 sm:mt-2">
                     <FontAwesomeIcon
                       icon={['fas', 'shield-check'] as [string, string]}
-                      className="text-xl text-green-600"
+                      className="text-base sm:text-lg md:text-xl text-green-600"
                     />
-                    <span className="text-green-600 font-semibold">Trusted Dealer</span>
+                    <span className="text-sm sm:text-base text-green-600 font-semibold">
+                      Trusted Dealer
+                    </span>
                   </div>
                 )}
               </div>
@@ -627,11 +640,14 @@ export default function ProductDetailPage() {
 
             {/* View Store Button */}
             <Link
-              href={withBasePath(`/shop/${product.vendor.shopUrl || product.vendor.slug || product.vendor.id}`)}
-              className="bg-black text-white px-8 py-3 hover:bg-gray-800 transition-colors flex items-center gap-2"
+              href={withBasePath(
+                `/shop/${product.vendor.shopUrl || product.vendor.slug || product.vendor.id}`,
+              )}
+              className="bg-black text-white px-6 py-3 sm:px-8 hover:bg-secondary hover:text-black transition-all duration-300 flex items-center justify-center gap-2 border-2 border-black hover:border-secondary hover:scale-105 w-full sm:w-auto"
+              style={{ borderRadius: '1.5rem' }}
             >
               <FontAwesomeIcon icon={['fal', 'store'] as [string, string]} className="text-lg" />
-              View Store
+              <span className="font-semibold">View Store</span>
             </Link>
           </div>
         </div>
@@ -661,7 +677,9 @@ export default function ProductDetailPage() {
                     <img src={itemImage} alt={item.title} className="w-full h-full object-cover" />
                   </div>
                   <div className="p-4">
-                    <h3 className="font-semibold line-clamp-2 mb-2 h-12 text-white">{item.title}</h3>
+                    <h3 className="font-semibold line-clamp-2 mb-2 h-12 text-white">
+                      {item.title}
+                    </h3>
                     <span className="text-lg font-bold text-white">
                       ${Number(item.price || 0).toFixed(2)}
                     </span>
@@ -676,21 +694,33 @@ export default function ProductDetailPage() {
       {/* Feature Images */}
       <div className="w-full mt-24 mb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div 
+          <div
             className="w-full aspect-[4/3] bg-center bg-no-repeat bg-contain"
-            style={{ backgroundImage: "url('https://res.cloudinary.com/dvohtcqvi/image/upload/v1769726418/footer_0001_Layer-1-tiny_fogott.webp')" }}
+            style={{
+              backgroundImage:
+                "url('https://res.cloudinary.com/dvohtcqvi/image/upload/v1769726418/footer_0001_Layer-1-tiny_fogott.webp')",
+            }}
           />
-          <div 
+          <div
             className="w-full aspect-[4/3] bg-center bg-no-repeat bg-contain"
-            style={{ backgroundImage: "url('https://res.cloudinary.com/dvohtcqvi/image/upload/v1769726417/footer_0000_Layer-2-tiny_sufogw.webp')" }}
+            style={{
+              backgroundImage:
+                "url('https://res.cloudinary.com/dvohtcqvi/image/upload/v1769726417/footer_0000_Layer-2-tiny_sufogw.webp')",
+            }}
           />
-          <div 
+          <div
             className="w-full aspect-[4/3] bg-center bg-no-repeat bg-contain"
-            style={{ backgroundImage: "url('https://res.cloudinary.com/dvohtcqvi/image/upload/v1769726420/footer_0002_Layer-3-tiny_oa85zq.webp')" }}
+            style={{
+              backgroundImage:
+                "url('https://res.cloudinary.com/dvohtcqvi/image/upload/v1769726420/footer_0002_Layer-3-tiny_oa85zq.webp')",
+            }}
           />
-          <div 
+          <div
             className="w-full aspect-[4/3] bg-center bg-no-repeat bg-contain"
-            style={{ backgroundImage: "url('https://res.cloudinary.com/dvohtcqvi/image/upload/v1769726422/footer_0003_Layer-4-tiny_u9eik8.webp')" }}
+            style={{
+              backgroundImage:
+                "url('https://res.cloudinary.com/dvohtcqvi/image/upload/v1769726422/footer_0003_Layer-4-tiny_u9eik8.webp')",
+            }}
           />
         </div>
       </div>
@@ -705,18 +735,25 @@ export default function ProductDetailPage() {
       )}
 
       {/* Send Offer Modal */}
-      {showOfferModal && (
-        <CreateOfferModal
+      {showOfferModal && session && (
+        <BuyerOfferModal
           onClose={() => setShowOfferModal(false)}
           onSuccess={() => {
             setShowOfferModal(false);
-            toast.success('Offer sent successfully!');
+            toast.success('Offer submitted! The seller will review your offer.');
           }}
-          preselectedItem={{
+          item={{
             type: product.type === 'book' ? 'book' : 'product',
             id: product.id,
             title: product.title,
             price: product.price,
+            primaryImage: images?.[0]?.url || images?.[0],
+            vendor: product.vendor
+              ? {
+                  id: product.vendor.id,
+                  shopName: product.vendor.shopName || product.vendor.businessName,
+                }
+              : undefined,
           }}
         />
       )}

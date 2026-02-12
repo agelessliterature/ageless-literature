@@ -93,16 +93,18 @@ export default function NewProductPage() {
       } else {
         console.error('Unexpected vendors data structure:', data);
       }
-      
+
       // Filter to only active vendors
-      vendorsList = vendorsList.filter(v => v.status === 'active' || v.status === 'approved');
+      vendorsList = vendorsList.filter((v) => v.status === 'active' || v.status === 'approved');
       setVendors(vendorsList);
-      
+
       // Auto-select current user's vendor if they have one
       if (vendorsList.length > 0 && session?.user?.id) {
-        const userVendor = vendorsList.find(v => v.user?.id === session.user.id || v.userId === session.user.id);
+        const userVendor = vendorsList.find(
+          (v) => v.user?.id === session.user.id || v.userId === session.user.id,
+        );
         if (userVendor && !formData.vendorId) {
-          setFormData(prev => ({ ...prev, vendorId: userVendor.id }));
+          setFormData((prev) => ({ ...prev, vendorId: userVendor.id }));
         }
       }
     } catch (err) {
@@ -385,9 +387,7 @@ export default function NewProductPage() {
 
               {productType === 'product' && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Sale Price
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Sale Price</label>
                   <input
                     type="number"
                     name="salePrice"
@@ -490,9 +490,7 @@ export default function NewProductPage() {
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Description
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
                 <textarea
                   name="description"
                   value={formData.description}

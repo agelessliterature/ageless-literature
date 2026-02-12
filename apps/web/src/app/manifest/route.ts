@@ -1,8 +1,8 @@
 import { MetadataRoute } from 'next';
 
 export async function GET() {
-  const basePath = process.env.NODE_ENV === 'production' ? '/v2' : '';
-  
+  const basePath = '';
+
   const manifest: MetadataRoute.Manifest = {
     name: 'Ageless Literature',
     short_name: 'Ageless Lit',

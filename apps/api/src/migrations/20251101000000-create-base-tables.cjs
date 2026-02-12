@@ -1,6 +1,6 @@
 /**
  * Migration: Create Base Tables
- * Creates all core tables for the application
+ * Creates all core tables for the application with INTEGER IDs
  * This migration must run FIRST before all others
  * Created: Nov 1, 2025
  */
@@ -12,8 +12,8 @@ module.exports = {
     // 1. Create users table
     await queryInterface.createTable('users', {
       id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
       },
       email: {
@@ -21,25 +21,25 @@ module.exports = {
         allowNull: false,
         unique: true,
       },
-      password: {
+      hash: {
         type: Sequelize.STRING,
-        allowNull: true, // Can be null for OAuth users
+        allowNull: true,
       },
       first_name: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       last_name: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
-      phone: {
+      phone_number: {
         type: Sequelize.STRING,
         allowNull: true,
       },
       role: {
-        type: Sequelize.ENUM('buyer', 'vendor', 'admin'),
-        defaultValue: 'buyer',
+        type: Sequelize.ENUM('admin', 'vendor', 'customer'),
+        defaultValue: 'customer',
       },
       created_at: {
         type: Sequelize.DATE,
@@ -59,26 +59,35 @@ module.exports = {
     // 2. Create vendors table
     await queryInterface.createTable('vendors', {
       id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
       },
       user_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: false,
         unique: true,
         references: { model: 'users', key: 'id' },
         onDelete: 'CASCADE',
       },
-      business_name: {
+      shop_name: {
         type: Sequelize.STRING,
         allowNull: false,
+      },
+      shop_url: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true,
       },
       description: {
         type: Sequelize.TEXT,
         allowNull: true,
       },
       logo: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      phone_number: {
         type: Sequelize.STRING,
         allowNull: true,
       },
@@ -103,8 +112,8 @@ module.exports = {
     // 3. Create categories table
     await queryInterface.createTable('categories', {
       id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
       },
       name: {
@@ -138,8 +147,8 @@ module.exports = {
     // 4. Create tags table
     await queryInterface.createTable('tags', {
       id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
       },
       name: {
@@ -169,8 +178,8 @@ module.exports = {
     // 5. Create collections table
     await queryInterface.createTable('collections', {
       id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
       },
       name: {
@@ -205,8 +214,8 @@ module.exports = {
     // 6. Create books table
     await queryInterface.createTable('books', {
       id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
       },
       title: {
@@ -234,7 +243,7 @@ module.exports = {
         allowNull: false,
       },
       description: {
-        type: Sequelize.TEXT,
+        type: Sequelize.JSONB,
         allowNull: true,
       },
       price: {
@@ -268,18 +277,18 @@ module.exports = {
     // 7. Create book_categories junction table
     await queryInterface.createTable('book_categories', {
       id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
       },
       book_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: false,
         references: { model: 'books', key: 'id' },
         onDelete: 'CASCADE',
       },
       category_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: false,
         references: { model: 'categories', key: 'id' },
         onDelete: 'CASCADE',
@@ -303,18 +312,18 @@ module.exports = {
     // 8. Create book_tags junction table
     await queryInterface.createTable('book_tags', {
       id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
       },
       book_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: false,
         references: { model: 'books', key: 'id' },
         onDelete: 'CASCADE',
       },
       tag_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: false,
         references: { model: 'tags', key: 'id' },
         onDelete: 'CASCADE',
@@ -338,18 +347,18 @@ module.exports = {
     // 9. Create book_collections junction table
     await queryInterface.createTable('book_collections', {
       id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
       },
       book_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: false,
         references: { model: 'books', key: 'id' },
         onDelete: 'CASCADE',
       },
       collection_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: false,
         references: { model: 'collections', key: 'id' },
         onDelete: 'CASCADE',
@@ -372,12 +381,12 @@ module.exports = {
     // 10. Create orders table
     await queryInterface.createTable('orders', {
       id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
       },
       user_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: false,
         references: { model: 'users', key: 'id' },
         onDelete: 'CASCADE',
@@ -421,21 +430,21 @@ module.exports = {
     await queryInterface.addIndex('orders', ['user_id']);
     await queryInterface.addIndex('orders', ['status']);
 
-    // 12. Create order_items table
+    // 11. Create order_items table
     await queryInterface.createTable('order_items', {
       id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
       },
       order_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: false,
         references: { model: 'orders', key: 'id' },
         onDelete: 'CASCADE',
       },
       book_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: true,
         references: { model: 'books', key: 'id' },
         onDelete: 'SET NULL',
@@ -464,15 +473,15 @@ module.exports = {
     await queryInterface.addIndex('order_items', ['order_id']);
     await queryInterface.addIndex('order_items', ['book_id']);
 
-    // 13. Create carts table
+    // 12. Create carts table
     await queryInterface.createTable('carts', {
       id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
       },
       user_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: false,
         unique: true,
         references: { model: 'users', key: 'id' },
@@ -492,21 +501,21 @@ module.exports = {
 
     await queryInterface.addIndex('carts', ['user_id']);
 
-    // 14. Create cart_items table
+    // 13. Create cart_items table
     await queryInterface.createTable('cart_items', {
       id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
       },
       cart_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: false,
         references: { model: 'carts', key: 'id' },
         onDelete: 'CASCADE',
       },
       book_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: true,
         references: { model: 'books', key: 'id' },
         onDelete: 'CASCADE',
@@ -531,15 +540,15 @@ module.exports = {
     await queryInterface.addIndex('cart_items', ['cart_id']);
     await queryInterface.addIndex('cart_items', ['book_id']);
 
-    // 15. Create wishlists table
+    // 14. Create wishlists table
     await queryInterface.createTable('wishlists', {
       id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
       },
       user_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: false,
         unique: true,
         references: { model: 'users', key: 'id' },
@@ -559,21 +568,21 @@ module.exports = {
 
     await queryInterface.addIndex('wishlists', ['user_id']);
 
-    // 16. Create wishlist_items table
+    // 15. Create wishlist_items table
     await queryInterface.createTable('wishlist_items', {
       id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
       },
       wishlist_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: false,
         references: { model: 'wishlists', key: 'id' },
         onDelete: 'CASCADE',
       },
       book_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: false,
         references: { model: 'books', key: 'id' },
         onDelete: 'CASCADE',
@@ -593,21 +602,21 @@ module.exports = {
     await queryInterface.addIndex('wishlist_items', ['wishlist_id']);
     await queryInterface.addIndex('wishlist_items', ['book_id']);
 
-    // 17. Create reservations table
+    // 16. Create reservations table
     await queryInterface.createTable('reservations', {
       id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
       },
       user_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: false,
         references: { model: 'users', key: 'id' },
         onDelete: 'CASCADE',
       },
       book_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: false,
         references: { model: 'books', key: 'id' },
         onDelete: 'CASCADE',
@@ -636,21 +645,21 @@ module.exports = {
     await queryInterface.addIndex('reservations', ['book_id']);
     await queryInterface.addIndex('reservations', ['status']);
 
-    // 18. Create conversations table
+    // 17. Create conversations table
     await queryInterface.createTable('conversations', {
       id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
       },
       user1_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: false,
         references: { model: 'users', key: 'id' },
         onDelete: 'CASCADE',
       },
       user2_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: false,
         references: { model: 'users', key: 'id' },
         onDelete: 'CASCADE',
@@ -671,21 +680,21 @@ module.exports = {
     await queryInterface.addIndex('conversations', ['user2_id']);
     await queryInterface.addIndex('conversations', ['user1_id', 'user2_id'], { unique: true });
 
-    // 19. Create messages table
+    // 18. Create messages table
     await queryInterface.createTable('messages', {
       id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
       },
       conversation_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: false,
         references: { model: 'conversations', key: 'id' },
         onDelete: 'CASCADE',
       },
       sender_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: false,
         references: { model: 'users', key: 'id' },
         onDelete: 'CASCADE',
@@ -713,15 +722,15 @@ module.exports = {
     await queryInterface.addIndex('messages', ['conversation_id']);
     await queryInterface.addIndex('messages', ['sender_id']);
 
-    // 20. Create notifications table
+    // 19. Create notifications table
     await queryInterface.createTable('notifications', {
       id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
       },
       user_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: false,
         references: { model: 'users', key: 'id' },
         onDelete: 'CASCADE',
@@ -757,11 +766,11 @@ module.exports = {
     await queryInterface.addIndex('notifications', ['user_id']);
     await queryInterface.addIndex('notifications', ['read']);
 
-    // 21. Create membership_plans table
+    // 20. Create membership_plans table
     await queryInterface.createTable('membership_plans', {
       id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
       },
       name: {
@@ -800,21 +809,21 @@ module.exports = {
       },
     });
 
-    // 22. Create membership_subscriptions table
+    // 21. Create membership_subscriptions table
     await queryInterface.createTable('membership_subscriptions', {
       id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
       },
       user_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: false,
         references: { model: 'users', key: 'id' },
         onDelete: 'CASCADE',
       },
       plan_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: false,
         references: { model: 'membership_plans', key: 'id' },
         onDelete: 'CASCADE',
@@ -851,15 +860,15 @@ module.exports = {
     await queryInterface.addIndex('membership_subscriptions', ['plan_id']);
     await queryInterface.addIndex('membership_subscriptions', ['status']);
 
-    // 23. Create membership_invoices table
+    // 22. Create membership_invoices table
     await queryInterface.createTable('membership_invoices', {
       id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
       },
       subscription_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: false,
         references: { model: 'membership_subscriptions', key: 'id' },
         onDelete: 'CASCADE',
@@ -899,15 +908,15 @@ module.exports = {
     await queryInterface.addIndex('membership_invoices', ['subscription_id']);
     await queryInterface.addIndex('membership_invoices', ['status']);
 
-    // 24. Create collector_profiles table
+    // 23. Create collector_profiles table
     await queryInterface.createTable('collector_profiles', {
       id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
       },
       user_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: false,
         unique: true,
         references: { model: 'users', key: 'id' },
@@ -935,11 +944,11 @@ module.exports = {
 
     await queryInterface.addIndex('collector_profiles', ['user_id']);
 
-    // 25. Create glossary_terms table
+    // 24. Create glossary_terms table
     await queryInterface.createTable('glossary_terms', {
       id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
       },
       term: {
@@ -969,11 +978,11 @@ module.exports = {
 
     await queryInterface.addIndex('glossary_terms', ['term']);
 
-    // 26. Create email_templates table
+    // 25. Create email_templates table
     await queryInterface.createTable('email_templates', {
       id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
       },
       name: {
@@ -1005,15 +1014,15 @@ module.exports = {
       },
     });
 
-    // 27. Create vendor_payout_settings table
+    // 26. Create vendor_payout_settings table
     await queryInterface.createTable('vendor_payout_settings', {
       id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
       },
       vendor_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: false,
         unique: true,
         references: { model: 'vendors', key: 'id' },
@@ -1041,15 +1050,15 @@ module.exports = {
 
     await queryInterface.addIndex('vendor_payout_settings', ['vendor_id']);
 
-    // 28. Create vendor_withdrawals table
+    // 27. Create vendor_withdrawals table
     await queryInterface.createTable('vendor_withdrawals', {
       id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
       },
       vendor_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: false,
         references: { model: 'vendors', key: 'id' },
         onDelete: 'CASCADE',
