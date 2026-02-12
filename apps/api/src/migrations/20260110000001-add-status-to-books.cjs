@@ -16,8 +16,7 @@ module.exports = {
       await queryInterface.addColumn('books', 'status', {
         type: Sequelize.ENUM('draft', 'pending', 'published'),
         allowNull: false,
-        defaultValue: 'published',
-        comment: 'Publication status: draft (not visible), pending (awaiting review), published (visible)',
+        defaultValue: 'published'
       });
 
       // Add index for status column
