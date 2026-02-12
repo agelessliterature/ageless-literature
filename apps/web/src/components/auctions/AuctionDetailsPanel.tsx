@@ -33,14 +33,14 @@ export default function AuctionDetailsPanel({ auction, className = '' }: Auction
       className={`bg-gradient-to-br from-secondary-50 to-secondary-100 border-2 border-secondary-300 p-6 ${className}`}
     >
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Current Bid */}
+        {/* Bid Price */}
         <div className="text-center md:text-left">
           <div className="flex items-center gap-2 text-sm text-secondary-700 font-semibold mb-2">
             <FontAwesomeIcon icon={['fal', 'hammer'] as [string, string]} />
-            <span>CURRENT BID</span>
+            <span>{auction.bidCount ? 'CURRENT BID' : 'STARTING BID'}</span>
           </div>
           <div className="text-3xl font-bold text-secondary-900">
-            {formatCurrency(auction.currentBid)}
+            {formatCurrency(auction.bidCount ? auction.currentBid : auction.startingPrice)}
           </div>
           <div className="text-sm text-gray-600 mt-1">
             {auction.bidCount} {auction.bidCount === 1 ? 'bid' : 'bids'}

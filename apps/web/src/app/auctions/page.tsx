@@ -18,7 +18,7 @@ export default function AuctionsPage() {
 
   // Fetch all active auctions
   const { data: auctions, isLoading } = useQuery<Auction[]>({
-    queryKey: ['all-auctions', sortBy, category],
+    queryKey: ['all-auctions', sortBy],
     queryFn: async () => {
       const response = await api.get('/auctions', {
         params: {
@@ -76,7 +76,7 @@ export default function AuctionsPage() {
     <div className="min-h-screen bg-white">
       {/* Hero Section - Clean, No Border Radius */}
       <section className="bg-primary py-16 md:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 tracking-tight">
             Live Auctions
           </h1>
@@ -236,11 +236,16 @@ export default function AuctionsPage() {
                         {itemTitle}
                       </h3>
 
-                      {/* Current Bid */}
+                      {/* Bid Price */}
                       <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-700">
-                        <span className="text-sm text-gray-300 font-semibold">CURRENT BID</span>
+                        <span className="text-sm text-gray-300 font-semibold">
+                          {auction.bidCount ? 'CURRENT BID' : 'STARTING BID'}
+                        </span>
                         <span className="text-2xl font-bold text-white">
-                          {Math.floor(Number(auction.currentBid || auction.startingPrice))} USD
+                          {Math.floor(
+                            Number(auction.bidCount ? auction.currentBid : auction.startingPrice),
+                          )}{' '}
+                          USD
                         </span>
                       </div>
 

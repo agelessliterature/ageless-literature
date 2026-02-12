@@ -290,11 +290,16 @@ export default function Home() {
                           {itemTitle}
                         </h3>
 
-                        {/* Current Bid */}
+                        {/* Bid Price */}
                         <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-700">
-                          <span className="text-sm text-gray-300 font-semibold">CURRENT BID</span>
+                          <span className="text-sm text-gray-300 font-semibold">
+                            {auction.bidCount ? 'CURRENT BID' : 'STARTING BID'}
+                          </span>
                           <span className="text-2xl font-bold text-white">
-                            {Math.floor(Number(auction.currentBid || auction.startingPrice))} USD
+                            {Math.floor(
+                              Number(auction.bidCount ? auction.currentBid : auction.startingPrice),
+                            )}{' '}
+                            USD
                           </span>
                         </div>
 
