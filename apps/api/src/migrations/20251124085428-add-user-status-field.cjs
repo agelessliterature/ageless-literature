@@ -2,17 +2,20 @@
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    // Add status enum type
+    // Add status enum type (skip if exists)
     await queryInterface.sequelize.query(`
-      CREATE TYPE enum_users_status AS ENUM ('active', 'inactive', 'pending', 'revoked');
+      DO $$ BEGIN
+        CREATE TYPE enum_users_status AS ENUM ('active', 'inactive', 'pending', 'revoked');
+      EXCEPTION
+        WHEN duplicate_object THEN null;
+      END $$;
     `);
 
     // Add status column to users table with default 'active'
     await queryInterface.addColumn('users', 'status', {
       type: Sequelize.ENUM('active', 'inactive', 'pending', 'revoked'),
       allowNull: false,
-      defaultValue: 'active',
-      comment: 'User account status: active (normal users/verified), inactive (disabled), pending (awaiting verification), revoked (banned)'
+      defaultValue: 'active'
     });
 
     // Add index on status for performance
