@@ -110,7 +110,7 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          console.error('[NextAuth] Missing credentials');
+          console.error('[NextAuth Credentials] Missing email or password');
           throw new Error('Email and password required');
         }
 
@@ -120,7 +120,7 @@ export const authOptions: NextAuthOptions = {
           const baseUrl = getInternalApiBaseUrl();
           const loginUrl = `${baseUrl}/api/auth/login`;
 
-          console.log('[NextAuth] Attempting login to:', loginUrl);
+          console.log('[NextAuth Credentials] Calling API:', loginUrl);
 
           const response = await fetch(loginUrl, {
             method: 'POST',
@@ -134,37 +134,43 @@ export const authOptions: NextAuthOptions = {
           });
 
           const data = await response.json();
-          console.log('[NextAuth] Backend response:', {
-            success: data.success,
-            status: response.status,
-          });
+          console.log('[NextAuth Credentials] API response status:', response.status);
+          console.log('[NextAuth Credentials] API response success:', data.success);
 
-          if (!response.ok) {
-            console.error('[NextAuth] Authentication failed:', data.message);
+          if (!response.ok || !data.success) {
+            console.error('[NextAuth Credentials] Authentication failed:', data.message);
             throw new Error(data.message || 'Authentication failed');
           }
 
-          if (data.success && data.data.user) {
-            console.log(
-              '[NextAuth] Login successful for:',
-              data.data.user.email,
-              'Role:',
-              data.data.user.role,
-            );
-            return {
-              id: data.data.user.id.toString(),
+          if (data.data?.user && data.data?.token) {
+            const userObj = {
+              id: data.data.user.id?.toString(),
               email: data.data.user.email,
-              name: `${data.data.user.firstName} ${data.data.user.lastName}`,
+              name: `${data.data.user.firstName || ''} ${data.data.user.lastName || ''}`.trim(),
               role: data.data.user.role,
               token: data.data.token,
-              defaultLanguage: data.data.user.defaultLanguage || 'en', // i18n: language-preference fix
+              defaultLanguage: data.data.user.defaultLanguage || 'en',
             };
-          }
 
-          console.error('[NextAuth] Unexpected response format');
-          return null;
+            console.log('[NextAuth Credentials] ✓ Login successful, returning user object:', {
+              id: userObj.id,
+              email: userObj.email,
+              role: userObj.role,
+              hasToken: !!userObj.token,
+              tokenPreview: userObj.token ? `${userObj.token.substring(0, 20)}...` : 'null',
+            });
+
+            return userObj;
+          } else {
+            console.error('[NextAuth Credentials] API returned success but missing user or token');
+            console.error('[NextAuth Credentials] Response data:', {
+              hasUser: !!data.data?.user,
+              hasToken: !!data.data?.token,
+            });
+            return null;
+          }
         } catch (error: any) {
-          console.error('[NextAuth] Authorization error:', error.message);
+          console.error('[NextAuth Credentials] Authorize error:', error.message);
           throw new Error(error.message || 'Authentication failed');
         }
       },
@@ -254,25 +260,62 @@ export const authOptions: NextAuthOptions = {
 
       return true;
     },
-    async jwt({ token, user, account }) {
-      // Initial sign in
-      if (user) {
-        token.id = user.id;
-        token.role = user.role || 'collector'; // Default role for OAuth users
-        token.accessToken = user.token;
-        token.provider = account?.provider || 'credentials';
-        token.defaultLanguage = user.defaultLanguage || 'en'; // i18n: language-preference fix
-        token.picture = user.image; // Store profile photo
+    async jwt({ token, user, account, trigger, isNewUser }) {
+      // IMPORTANT: In NextAuth v4, we need to handle token preservation carefully
+      // The user object only has the properties from authorize() during initial sign-in
 
-        // For OAuth, set default values if not from credentials
-        if (!user.token && (account?.provider === 'google' || account?.provider === 'apple')) {
-          token.accessToken = (account.access_token as string) || '';
+      console.log('[NextAuth JWT] Callback triggered:', {
+        trigger,
+        hasUser: !!user,
+        isNewUser,
+        tokenExists: !!token,
+      });
+
+      // Initial sign in - user object is populated
+      if (user) {
+        console.log('[NextAuth JWT] Initial sign-in user object received:', {
+          id: user.id,
+          email: user.email,
+          role: user.role,
+          hasToken: !!user.token,
+          tokenPreview: user.token ? `[JWT: ${user.token.substring(0, 20)}...]` : 'MISSING',
+          allUserKeys: Object.keys(user),
+        });
+
+        // Copy all properties from user to token
+        token.id = user.id;
+        token.role = user.role || 'collector';
+        token.defaultLanguage = user.defaultLanguage || 'en';
+        token.provider = account?.provider || 'credentials';
+        token.picture = user.image;
+        token.email = user.email;
+
+        // CRITICAL: Store the authorization token from the backend
+        // This is the JWT that admin endpoints require
+        if (user.token) {
+          token.accessToken = user.token;
+          console.log('[NextAuth JWT] ✓ Successfully stored accessToken from user.token');
+        } else {
+          console.warn('[NextAuth JWT] ⚠️  user.token not present in user object');
+          console.warn('[NextAuth JWT]    This means the API did not return the token');
+          console.warn(
+            '[NextAuth JWT]    or CredentialsProvider.authorize() returned incomplete data',
+          );
+
+          // Don't throw error - just log it
+          // This could happen with OAuth providers that don't return a token property
+          // Try to use OAuth access token if available
+          if (account?.access_token) {
+            token.accessToken = account.access_token as string;
+            console.log('[NextAuth JWT] Using OAuth access_token instead');
+          } else {
+            console.warn('[NextAuth JWT] ⚠️  No token available from any source!');
+          }
         }
 
-        // i18n: language-preference fix - Fetch user's defaultLanguage from backend
+        // Language preference
         if (user.email && !user.defaultLanguage && typeof window === 'undefined') {
           try {
-            // Use internal API URL — do NOT use NEXT_PUBLIC_* (inlined by SWC)
             const baseUrl = getInternalApiBaseUrl();
             const response = await fetch(
               `${baseUrl}/api/users/profile?email=${encodeURIComponent(user.email)}`,
@@ -288,21 +331,78 @@ export const authOptions: NextAuthOptions = {
               token.picture = data.data.profilePhotoUrl;
             }
           } catch (error) {
-            token.defaultLanguage = 'en';
+            // Silently fail, keep defaults
           }
         }
+      } else {
+        // Token refresh without user object
+        console.log('[NextAuth JWT] Token refresh/update (no user object)');
+        if (!token.accessToken) {
+          console.warn('[NextAuth JWT] ⚠️  accessToken missing during refresh!');
+        }
       }
+
+      // Log final token state before signing
+      console.log('[NextAuth JWT] Final token state before signing:', {
+        id: token.id,
+        role: token.role,
+        email: token.email,
+        hasAccessToken: !!token.accessToken,
+        accessTokenPreview: token.accessToken
+          ? `${token.accessToken.substring(0, 20)}...`
+          : 'MISSING',
+        allTokenKeys: Object.keys(token).filter(
+          (k) => !k.startsWith('iss') && !k.startsWith('sub'),
+        ),
+      });
+
       return token;
     },
     async session({ session, token }) {
+      console.log('[NextAuth Session] Session callback building session');
+      console.log('[NextAuth Session] Token contents:', {
+        id: token.id,
+        role: token.role,
+        email: token.email,
+        hasAccessToken: !!token.accessToken,
+        accessTokenPreview: token.accessToken
+          ? `${token.accessToken.substring(0, 20)}...`
+          : 'MISSING',
+        allTokenKeys: Object.keys(token).filter(
+          (k) => !k.startsWith('iss') && !k.startsWith('sub'),
+        ),
+      });
+
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
-        session.accessToken = token.accessToken as string;
         session.user.provider = token.provider as string;
-        session.user.defaultLanguage = token.defaultLanguage as string; // i18n: language-preference fix
-        session.user.image = (token.picture as string) || null; // Add profile photo to session
+        session.user.defaultLanguage = token.defaultLanguage as string;
+        session.user.image = (token.picture as string) || null;
+
+        // CRITICAL: Copy the accessToken to session
+        // This is what the admin dashboard will use for API calls
+        if (token.accessToken) {
+          session.accessToken = token.accessToken as string;
+          console.log('[NextAuth Session] ✓ accessToken successfully copied to session');
+        } else {
+          console.warn('[NextAuth Session] ⚠️  accessToken not found in token!');
+          console.warn('[NextAuth Session]    Check the JWT callback logs above');
+          session.accessToken = ''; // Set empty string instead of undefined
+        }
+
+        console.log('[NextAuth Session] Final session object:', {
+          userId: session.user?.id,
+          userRole: session.user?.role,
+          hasAccessToken: !!session.accessToken,
+          accessTokenPreview: session.accessToken
+            ? `${session.accessToken.substring(0, 20)}...`
+            : 'MISSING',
+        });
+      } else {
+        console.error('[NextAuth Session] No session.user object!');
       }
+
       return session;
     },
   },

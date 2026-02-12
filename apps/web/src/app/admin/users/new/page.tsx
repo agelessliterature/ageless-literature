@@ -26,8 +26,22 @@ export default function AdminUserCreatePage() {
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
       const session = await getSession();
+
+      if (!session?.accessToken) {
+        console.error('No accessToken in session:', session);
+        throw new Error('Authentication token not available. Please log in again.');
+      }
+
+      console.log(
+        '[AdminUserCreate] Using accessToken:',
+        session.accessToken.substring(0, 20) + '...',
+      );
+
       const response = await adminApi.post('/admin/users/create', data, {
-        headers: { Authorization: `Bearer ${session?.accessToken}` },
+        headers: {
+          Authorization: `Bearer ${session.accessToken}`,
+          'Content-Type': 'application/json',
+        },
       });
       return response.data;
     },
@@ -37,9 +51,11 @@ export default function AdminUserCreatePage() {
       router.push('/admin/users');
     },
     onError: (error: any) => {
-      const errorMessage = error.response?.data?.message || 'Failed to create user';
+      const errorMessage =
+        error.response?.data?.message || error.message || 'Failed to create user';
       setError(errorMessage);
       toast.error(errorMessage);
+      console.error('[AdminUserCreate] Error:', error);
     },
   });
 
