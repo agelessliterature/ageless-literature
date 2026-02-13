@@ -156,13 +156,13 @@ export const getChartData = async (req, res) => {
         createdAt: { [Op.gte]: periodDate },
       },
       attributes: [
-        [sequelize.fn('DATE', sequelize.col('createdAt')), 'date'],
-        [sequelize.fn('SUM', sequelize.col('netAmount')), 'totalEarnings'],
-        [sequelize.fn('SUM', sequelize.col('platformFee')), 'totalCommission'],
+        [sequelize.fn('DATE', sequelize.col('created_at')), 'date'],
+        [sequelize.fn('SUM', sequelize.col('net_amount')), 'totalEarnings'],
+        [sequelize.fn('SUM', sequelize.col('platform_fee')), 'totalCommission'],
         [sequelize.fn('COUNT', sequelize.col('id')), 'orderCount'],
       ],
-      group: [sequelize.fn('DATE', sequelize.col('createdAt'))],
-      order: [[sequelize.fn('DATE', sequelize.col('createdAt')), 'ASC']],
+      group: [sequelize.fn('DATE', sequelize.col('created_at'))],
+      order: [[sequelize.fn('DATE', sequelize.col('created_at')), 'ASC']],
       raw: true,
     });
 

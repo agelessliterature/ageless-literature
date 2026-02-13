@@ -202,14 +202,15 @@ const nextConfig = {
 
   // API rewrites to backend
   async rewrites() {
+    const apiDest = process.env.API_URL || process.env.INTERNAL_API_URL || 'http://localhost:3001';
     return [
       {
         source: '/api/admin/:path*',
-        destination: 'http://localhost:3001/api/admin/:path*',
+        destination: `${apiDest}/api/admin/:path*`,
       },
       {
         source: '/api/:path((?!auth).*)*',
-        destination: 'http://localhost:3001/api/:path*',
+        destination: `${apiDest}/api/:path*`,
       },
     ];
   },

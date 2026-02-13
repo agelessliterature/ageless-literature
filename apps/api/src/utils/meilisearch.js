@@ -34,6 +34,8 @@ export const initializeIndexes = async () => {
         'condition',
         'price',
         'status',
+        'quantity',
+        'trackQuantity',
         'isFeatured',
       ],
       sortableAttributes: ['price', 'createdAt', 'title'],
@@ -49,6 +51,7 @@ export const initializeIndexes = async () => {
         'description',
         'shortDescription',
         'quantity',
+        'trackQuantity',
         'status',
         'primaryImage',
         'vendor',
@@ -77,6 +80,8 @@ export const initializeIndexes = async () => {
         'condition',
         'price',
         'status',
+        'quantity',
+        'trackQuantity',
         'isSigned',
         'isAuthenticated',
         'isFeatured',
@@ -94,6 +99,7 @@ export const initializeIndexes = async () => {
         'description',
         'shortDescription',
         'quantity',
+        'trackQuantity',
         'status',
         'yearMade',
         'materials',
@@ -136,6 +142,7 @@ const transformBookForIndex = async (book) => {
     description: bookData.description || '',
     shortDescription: bookData.shortDescription || '',
     quantity: bookData.quantity || 0,
+    trackQuantity: bookData.trackQuantity !== false, // Default to true
     status: bookData.status || 'draft',
     vendorId: bookData.vendorId || null,
     isFeatured: bookData.isFeatured || false,
@@ -173,6 +180,7 @@ const transformProductForIndex = (product) => {
     description: productData.description || '',
     shortDescription: productData.shortDescription || '',
     quantity: productData.quantity || 0,
+    trackQuantity: productData.trackQuantity !== false, // Default to true
     status: productData.status || 'draft',
     vendorId: productData.vendorId || null,
     yearMade: productData.yearMade || null,
@@ -360,10 +368,18 @@ export const search = async (query, options = {}) => {
       sort = [],
     } = options;
 
+    // Build filter to exclude sold items and items with no inventory
+    const inventoryFilters = ['status = "published"', '(quantity > 0 OR trackQuantity = false)'];
+
+    // Combine with user-provided filters
+    const combinedFilters = filters
+      ? `(${inventoryFilters.join(' AND ')}) AND (${filters})`
+      : inventoryFilters.join(' AND ');
+
     const searchOptions = {
       limit,
       offset,
-      filter: filters,
+      filter: combinedFilters,
       sort,
     };
 

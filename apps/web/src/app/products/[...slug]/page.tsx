@@ -690,41 +690,6 @@ export default function ProductDetailPage() {
           </div>
         </div>
       )}
-
-      {/* Feature Images */}
-      <div className="w-full mt-24 mb-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div
-            className="w-full aspect-[4/3] bg-center bg-no-repeat bg-contain"
-            style={{
-              backgroundImage:
-                "url('https://res.cloudinary.com/dvohtcqvi/image/upload/v1769726418/footer_0001_Layer-1-tiny_fogott.webp')",
-            }}
-          />
-          <div
-            className="w-full aspect-[4/3] bg-center bg-no-repeat bg-contain"
-            style={{
-              backgroundImage:
-                "url('https://res.cloudinary.com/dvohtcqvi/image/upload/v1769726417/footer_0000_Layer-2-tiny_sufogw.webp')",
-            }}
-          />
-          <div
-            className="w-full aspect-[4/3] bg-center bg-no-repeat bg-contain"
-            style={{
-              backgroundImage:
-                "url('https://res.cloudinary.com/dvohtcqvi/image/upload/v1769726420/footer_0002_Layer-3-tiny_oa85zq.webp')",
-            }}
-          />
-          <div
-            className="w-full aspect-[4/3] bg-center bg-no-repeat bg-contain"
-            style={{
-              backgroundImage:
-                "url('https://res.cloudinary.com/dvohtcqvi/image/upload/v1769726422/footer_0003_Layer-4-tiny_u9eik8.webp')",
-            }}
-          />
-        </div>
-      </div>
-
       {/* Place Bid Modal */}
       {activeAuction && (
         <PlaceBidModal

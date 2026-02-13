@@ -169,7 +169,7 @@ export default function AuctionsPage() {
 
       {/* Auctions Grid - Clean, No Border Radius */}
       <section className="py-12 md:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8">
           {isLoading ? (
             // Loading Grid
             <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -263,7 +263,7 @@ export default function AuctionsPage() {
 
                       {/* Bid Button - Black/Gold Style */}
                       <div
-                        className="flex items-center justify-center gap-2 bg-black hover:bg-secondary text-white hover:text-black px-6 py-2 text-sm font-semibold transition-all duration-300 w-full border-2 border-black hover:border-secondary cursor-pointer"
+                        className="flex items-center justify-center gap-2 bg-secondary hover:bg-secondary text-white hover:text-black px-6 py-2 text-sm font-semibold transition-all duration-300 w-full border-2 border-black hover:border-secondary cursor-pointer"
                         style={{ borderRadius: '1.5rem' }}
                         role="button"
                         tabIndex={0}

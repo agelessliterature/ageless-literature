@@ -483,6 +483,7 @@ export default function AdminProductsPage() {
                 <option value="">All Statuses</option>
                 <option value="published">Published</option>
                 <option value="draft">Draft</option>
+                <option value="sold">Sold</option>
                 <option value="archived">Archived</option>
               </select>
             </div>

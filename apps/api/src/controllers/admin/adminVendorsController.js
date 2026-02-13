@@ -154,23 +154,19 @@ export const getVendorById = async (req, res) => {
         where: { vendorId: id },
         attributes: [
           [
-            db.sequelize.fn(
-              'COALESCE',
-              db.sequelize.fn('SUM', db.sequelize.col('vendorEarnings')),
-              0,
-            ),
+            db.sequelize.fn('COALESCE', db.sequelize.fn('SUM', db.sequelize.col('net_amount')), 0),
             'totalEarnings',
           ],
           [
             db.sequelize.fn(
               'COALESCE',
-              db.sequelize.fn('SUM', db.sequelize.col('platformCommission')),
+              db.sequelize.fn('SUM', db.sequelize.col('platform_fee')),
               0,
             ),
             'totalCommission',
           ],
           [
-            db.sequelize.fn('COALESCE', db.sequelize.fn('SUM', db.sequelize.col('grossAmount')), 0),
+            db.sequelize.fn('COALESCE', db.sequelize.fn('SUM', db.sequelize.col('amount')), 0),
             'totalGross',
           ],
           [db.sequelize.fn('COUNT', db.sequelize.col('id')), 'totalTransactions'],
@@ -433,7 +429,7 @@ export const getVendorStats = async (req, res) => {
           [
             db.sequelize.fn(
               'COALESCE',
-              db.sequelize.fn('SUM', db.sequelize.col('lifetimeGrossSales')),
+              db.sequelize.fn('SUM', db.sequelize.col('lifetime_gross_sales')),
               0,
             ),
             'totalSales',
@@ -441,7 +437,7 @@ export const getVendorStats = async (req, res) => {
           [
             db.sequelize.fn(
               'COALESCE',
-              db.sequelize.fn('SUM', db.sequelize.col('lifetimeCommissionTaken')),
+              db.sequelize.fn('SUM', db.sequelize.col('lifetime_commission_taken')),
               0,
             ),
             'totalCommissions',
@@ -449,7 +445,7 @@ export const getVendorStats = async (req, res) => {
           [
             db.sequelize.fn(
               'COALESCE',
-              db.sequelize.fn('SUM', db.sequelize.col('lifetimeVendorEarnings')),
+              db.sequelize.fn('SUM', db.sequelize.col('lifetime_vendor_earnings')),
               0,
             ),
             'totalEarnings',
@@ -457,7 +453,7 @@ export const getVendorStats = async (req, res) => {
           [
             db.sequelize.fn(
               'COALESCE',
-              db.sequelize.fn('SUM', db.sequelize.col('balanceAvailable')),
+              db.sequelize.fn('SUM', db.sequelize.col('balance_available')),
               0,
             ),
             'totalBalanceAvailable',

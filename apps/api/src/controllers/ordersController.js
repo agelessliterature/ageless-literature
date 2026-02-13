@@ -2,123 +2,167 @@ import db from '../models/index.js';
 import { generateOrderNumber } from '../utils/helpers.js';
 import { sendTemplatedEmail, sendSms } from '../services/emailService.js';
 import { emitNotification } from '../sockets/index.js';
+import inventoryService from '../services/inventoryService.js';
 
 const { Order, OrderItem, Book, Product, Vendor, VendorEarning, User, Notification, sequelize } =
   db;
 
 export const createOrder = async (req, res) => {
+  const transaction = await sequelize.transaction();
+
   try {
     const { userId } = req.user;
     const { items, shippingAddress, billingAddress } = req.body;
 
-    // Calculate totals
+    // Validate and reserve inventory for all items first
+    const validatedItems = [];
     let subtotal = 0;
-    const orderItems = [];
 
     for (const item of items) {
-      let itemData, vendorId, itemPrice;
+      let itemData, vendorId, itemPrice, inventoryResult;
 
       // Check if it's a book or product
       if (item.bookId) {
-        const book = await Book.findByPk(item.bookId);
-        if (!book || book.status !== 'active') {
+        const book = await Book.findByPk(item.bookId, { transaction });
+        if (!book) {
+          await transaction.rollback();
           return res.status(400).json({
             success: false,
-            error: `Book ${item.bookId} not available`,
+            error: `Book ${item.bookId} not found`,
           });
         }
-        itemData = book;
+
+        // Check availability and reserve inventory
+        inventoryResult = await inventoryService.reserveBookInventory(
+          item.bookId,
+          item.quantity || 1,
+          transaction,
+        );
+
+        if (!inventoryResult.success) {
+          await transaction.rollback();
+          return res.status(400).json({
+            success: false,
+            error: `Book "${book.title}" is not available: ${inventoryResult.error}`,
+          });
+        }
+
+        itemData = inventoryResult.book;
         vendorId = book.vendorId;
         itemPrice = book.price;
       } else if (item.productId) {
-        const product = await Product.findByPk(item.productId);
-        if (!product || product.status !== 'published') {
+        const product = await Product.findByPk(item.productId, { transaction });
+        if (!product) {
+          await transaction.rollback();
           return res.status(400).json({
             success: false,
-            error: `Product ${item.productId} not available`,
+            error: `Product ${item.productId} not found`,
           });
         }
-        itemData = product;
+
+        // Reserve product inventory
+        inventoryResult = await inventoryService.reserveProductInventory(
+          item.productId,
+          item.quantity || 1,
+          transaction,
+        );
+
+        if (!inventoryResult.success) {
+          await transaction.rollback();
+          return res.status(400).json({
+            success: false,
+            error: `Product "${product.title}" is not available: ${inventoryResult.error}`,
+          });
+        }
+
+        itemData = inventoryResult.product;
         vendorId = product.vendorId;
         itemPrice = product.salePrice || product.price;
       } else {
+        await transaction.rollback();
         return res.status(400).json({
           success: false,
           error: 'Each item must have either bookId or productId',
         });
       }
 
-      const itemSubtotal = parseFloat(itemPrice) * item.quantity;
+      const itemSubtotal = parseFloat(itemPrice) * (item.quantity || 1);
       subtotal += itemSubtotal;
 
-      // Store item data for order creation
-      if (!itemData) {
-        return res.status(500).json({
-          success: false,
-          error: 'Failed to retrieve item data',
-        });
-      }
-
-      orderItems.push({
+      validatedItems.push({
         bookId: item.bookId || null,
         productId: item.productId || null,
+        title: itemData.title,
         vendorId: vendorId,
-        quantity: item.quantity,
+        quantity: item.quantity || 1,
         price: itemPrice,
         subtotal: itemSubtotal,
       });
     }
 
     const tax = subtotal * 0.08; // Example tax rate
-    const shipping = 10.0; // Flat shipping
-    const total = subtotal + tax + shipping;
+    const shippingCost = 10.0; // Flat shipping
+    const totalAmount = subtotal + tax + shippingCost;
 
-    const order = await Order.create({
-      userId,
-      orderNumber: generateOrderNumber(),
-      status: 'pending',
-      subtotal,
-      tax,
-      shipping,
-      total,
-      shippingAddress,
-      billingAddress,
+    // Create order
+    const order = await Order.create(
+      {
+        userId,
+        orderNumber: generateOrderNumber(),
+        status: 'pending',
+        paymentStatus: 'pending',
+        subtotal,
+        tax,
+        shippingCost,
+        totalAmount,
+        shippingAddress,
+        billingAddress,
+      },
+      { transaction },
+    );
+
+    // Create order items
+    for (const item of validatedItems) {
+      await OrderItem.create({ ...item, orderId: order.id }, { transaction });
+    }
+
+    // Commit transaction - inventory is now reserved
+    await transaction.commit();
+
+    // Send order confirmation emails (async, don't block)
+    setImmediate(() => {
+      sendOrderNotifications(order.id, userId, validatedItems).catch((err) => {
+        console.error('Failed to send order emails:', err.message);
+      });
     });
 
-    for (const item of orderItems) {
-      await OrderItem.create({ ...item, orderId: order.id });
-    }
+    // Send SMS notification if user opted in (async)
+    setImmediate(async () => {
+      try {
+        const user = await User.findByPk(userId);
+        const metadata = user?.metadata || {};
 
-    // Send order confirmation emails (never block order creation)
-    try {
-      await sendOrderNotifications(order.id, userId, orderItems);
-    } catch (emailError) {
-      console.error('Failed to send order emails:', emailError.message);
-    }
-
-    // Send SMS notification if user opted in
-    try {
-      const user = await User.findByPk(userId);
-      const metadata = user.metadata || {};
-      
-      if (metadata.smsOptIn && user.phoneNumber) {
-        await sendSms(
-          user.phoneNumber,
-          `Ageless Literature: Order #${order.orderNumber} confirmed! Total: $${total.toFixed(2)}. Track your order at agelessliterature.com/account/orders`,
-          {
-            type: 'order_confirmation',
-            entityId: order.id,
-            correlationId: `order_${order.id}`
-          }
-        );
-        console.log(`[Order] SMS confirmation sent to user ${userId}`);
+        if (metadata.smsOptIn && user?.phoneNumber) {
+          await sendSms(
+            user.phoneNumber,
+            `Ageless Literature: Order #${order.orderNumber} confirmed! Total: $${totalAmount.toFixed(2)}. Track your order at agelessliterature.com/account/orders`,
+            {
+              type: 'order_confirmation',
+              entityId: order.id,
+              correlationId: `order_${order.id}`,
+            },
+          );
+          console.log(`[Order] SMS confirmation sent to user ${userId}`);
+        }
+      } catch (smsError) {
+        console.error('Failed to send order SMS:', smsError.message);
       }
-    } catch (smsError) {
-      console.error('Failed to send order SMS:', smsError.message);
-    }
+    });
 
     res.status(201).json({ success: true, data: order });
   } catch (error) {
+    await transaction.rollback();
+    console.error('Error creating order:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 };

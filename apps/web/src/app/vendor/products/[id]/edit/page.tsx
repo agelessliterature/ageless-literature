@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import ProductForm from '@/components/forms/ProductForm';
 import AuctionModal from '@/components/modals/AuctionModal';
 import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
-import axios from 'axios';
+import api from '@/lib/api';
 
 export default function EditProductPage() {
   const params = useParams();
@@ -16,7 +16,7 @@ export default function EditProductPage() {
   const { data: product, isLoading } = useQuery({
     queryKey: ['product', productId],
     queryFn: async () => {
-      const response = await axios.get(`/api/vendor/collectibles/${productId}`);
+      const response = await api.get(`/vendor/collectibles/${productId}`);
       return response.data.data;
     },
   });
@@ -25,7 +25,7 @@ export default function EditProductPage() {
   const { data: activeAuction } = useQuery({
     queryKey: ['product-auction', productId],
     queryFn: async () => {
-      const response = await axios.get(`/api/auctions?type=product&status=active`);
+      const response = await api.get(`/auctions?type=product&status=active`);
       const auctions = response.data.data || [];
       return auctions.find((a: any) => a.auctionableId === productId);
     },

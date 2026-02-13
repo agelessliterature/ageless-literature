@@ -36,6 +36,12 @@ router.post('/products', authMiddleware, vendorProductsController.createProduct)
 router.put('/products/:id', authMiddleware, vendorProductsController.updateProduct);
 router.delete('/products/:id', authMiddleware, vendorProductsController.deleteProduct);
 router.patch('/products/:id/status', authMiddleware, vendorProductsController.updateProductStatus);
+router.patch(
+  '/products/:id/quantity',
+  authMiddleware,
+  vendorProductsController.updateProductQuantity,
+);
+router.post('/products/:id/relist', authMiddleware, vendorProductsController.relistProduct);
 
 router.get('/collectibles', authMiddleware, vendorCollectiblesController.getVendorCollectibles);
 router.get('/collectibles/stats', authMiddleware, vendorCollectiblesController.getCollectibleStats);

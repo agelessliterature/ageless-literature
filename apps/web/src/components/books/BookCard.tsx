@@ -160,7 +160,7 @@ export function BookCard({ book }: BookCardProps) {
                 onClick={(_e) => {
                   // Let the parent Link handle navigation
                 }}
-                className="flex-1 bg-black hover:bg-secondary text-white hover:text-black py-2 px-4 font-semibold transition-all duration-300 text-center border-2 border-black hover:border-secondary"
+                className="flex-1 bg-secondary hover:bg-secondary/90 text-white hover:text-black py-2 px-4 font-semibold transition-all duration-300 text-center border-2 border-black hover:border-secondary"
                 style={{ borderRadius: '1.5rem' }}
               >
                 {'hasActiveAuction' in book && book.hasActiveAuction ? 'PLACE BID' : 'VIEW'}

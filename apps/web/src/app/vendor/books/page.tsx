@@ -264,13 +264,16 @@ export default function VendorBooksPage() {
                       Price
                     </th>
                     <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Quantity
+                    </th>
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
                     </th>
                     <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Views
                     </th>
                     <th className="px-3 sm:px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Edit
+                      Actions
                     </th>
                   </tr>
                 </thead>
@@ -330,13 +333,20 @@ export default function VendorBooksPage() {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">
+                            {product.trackQuantity !== false ? product.quantity || 0 : '∞'}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
                           <span
                             className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                               product.status === 'published'
                                 ? 'bg-green-100 text-green-800'
                                 : product.status === 'draft'
                                   ? 'bg-yellow-100 text-yellow-800'
-                                  : 'bg-gray-100 text-gray-800'
+                                  : product.status === 'sold'
+                                    ? 'bg-red-100 text-red-800'
+                                    : 'bg-gray-100 text-gray-800'
                             }`}
                           >
                             {product.status}
@@ -352,12 +362,47 @@ export default function VendorBooksPage() {
                           className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <Link
-                            href={`/vendor/books/${product.id}/edit`}
-                            className="text-primary hover:text-secondary inline-flex items-center justify-center"
-                          >
-                            <FontAwesomeIcon icon={['fal', 'edit']} className="text-base" />
-                          </Link>
+                          <div className="flex items-center justify-center gap-2">
+                            <Link
+                              href={`/vendor/books/${product.id}/edit`}
+                              className="text-primary hover:text-secondary inline-flex items-center justify-center"
+                              title="Edit"
+                            >
+                              <FontAwesomeIcon icon={['fal', 'edit']} className="text-base" />
+                            </Link>
+                            {product.status === 'sold' && product.quantity > 0 && (
+                              <button
+                                onClick={async () => {
+                                  if (confirm('Relist this product as available for purchase?')) {
+                                    try {
+                                      const res = await fetch(
+                                        getApiUrl(`api/vendor/products/${product.id}/relist`),
+                                        {
+                                          method: 'POST',
+                                          headers: {
+                                            Authorization: `Bearer ${session?.accessToken}`,
+                                          },
+                                        },
+                                      );
+                                      if (res.ok) {
+                                        refetch();
+                                      } else {
+                                        const error = await res.json();
+                                        alert(error.message || 'Failed to relist product');
+                                      }
+                                    } catch (error) {
+                                      console.error('Relist failed:', error);
+                                      alert('Failed to relist product');
+                                    }
+                                  }
+                                }}
+                                className="text-green-600 hover:text-green-800 inline-flex items-center justify-center"
+                                title="Relist product"
+                              >
+                                <FontAwesomeIcon icon={['fal', 'redo']} className="text-base" />
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );

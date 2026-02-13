@@ -157,6 +157,12 @@ export default function CartPage() {
             <div className="lg:col-span-2 space-y-4">
               {items.map((item) => {
                 const product = item.product;
+
+                // Skip items with null/deleted products
+                if (!product) {
+                  return null;
+                }
+
                 const imageUrl =
                   product.images?.[0]?.url || product.media?.[0]?.imageUrl || '/placeholder.jpg';
                 const productUrl = withBasePath(`/products/${product.sid || product.id}`);

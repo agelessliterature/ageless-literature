@@ -89,27 +89,6 @@ export default function Home() {
       imageUrl:
         'https://res.cloudinary.com/dvohtcqvi/image/upload/v1767984886/categories/first-editions.jpg',
     },
-    {
-      id: 4,
-      name: 'ONE-OF-ONE',
-      slug: 'african-american',
-      imageUrl:
-        'https://res.cloudinary.com/dvohtcqvi/image/upload/v1767984844/categories/african-american.jpg',
-    },
-    {
-      id: 5,
-      name: 'ANTIQUARIAN',
-      slug: 'americana',
-      imageUrl:
-        'https://res.cloudinary.com/dvohtcqvi/image/upload/v1767984846/categories/americana.jpg',
-    },
-    {
-      id: 6,
-      name: 'FIRST PRINTINGS',
-      slug: 'first-editions',
-      imageUrl:
-        'https://res.cloudinary.com/dvohtcqvi/image/upload/v1767984886/categories/first-editions.jpg',
-    },
   ];
 
   // Fetch active auctions
@@ -317,7 +296,7 @@ export default function Home() {
 
                         {/* Bid Button */}
                         <div
-                          className="flex items-center justify-center gap-2 bg-black hover:bg-secondary text-white hover:text-black px-6 py-2 text-sm font-semibold transition-all duration-300 w-full border-2 border-black hover:border-secondary cursor-pointer"
+                          className="flex items-center justify-center gap-2 bg-secondary hover:bg-secondary/700 text-white hover:text-black px-6 py-2 text-sm font-semibold transition-all duration-300 w-full border-2 border-black hover:border-secondary cursor-pointer"
                           style={{ borderRadius: '1.5rem' }}
                           role="button"
                           tabIndex={0}
@@ -509,10 +488,10 @@ export default function Home() {
                 HIGH SPOTS
               </h2>
               <p className="text-lg md:text-base text-gray-600 leading-relaxed mb-8 max-w-[700px]">
-                Highlights of our recently added inventory include a Gutenberg Bible leaf,
-                Mercator's Magna Opera, a truly storied 1591 Greek New Testament, a rare Russian
-                Royal portrait by Thaddeus Kossler, accompanied by a 1st Albert Camus typewriter,
-                and an orbit illustration of Shakespeare's Bamabek.
+                Highlights of our recently added inventory include a Gutenberg Bible leaf, Merian's
+                Magnus Opus, a richly colored 1550 Greek New Testament, a 1521 Roman Missal printed
+                by Thielman Kerver, an unpublished Aleister Crowley typescript, and an 1818
+                Declaration of Independence broadside.
               </p>
               <div>
                 <Link

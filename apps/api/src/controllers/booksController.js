@@ -31,6 +31,16 @@ export const getAllBooks = async (req, res) => {
     const offset = (page - 1) * limit;
     const where = {
       status: 'published', // Only show published books
+      // Ensure items are not sold and have inventory if tracked
+      [Op.or]: [
+        { trackQuantity: false }, // Items that don't track quantity are always available
+        {
+          [Op.and]: [
+            { trackQuantity: true },
+            { quantity: { [Op.gt]: 0 } }, // Items with tracked quantity must have stock
+          ],
+        },
+      ],
     };
 
     // Apply filters (note: status is VIRTUAL field, defaults to 'active')
@@ -65,14 +75,14 @@ export const getAllBooks = async (req, res) => {
 
     // Map sortBy values to Sequelize model attribute names
     const sortByMap = {
-      'createdAt': 'createdAt',
-      'created_at': 'createdAt',
-      'menu_order': 'menuOrder',
-      'menuOrder': 'menuOrder',
-      'price': 'price',
-      'title': 'title',
-      'author': 'author',
-      'id': 'id',
+      createdAt: 'createdAt',
+      created_at: 'createdAt',
+      menu_order: 'menuOrder',
+      menuOrder: 'menuOrder',
+      price: 'price',
+      title: 'title',
+      author: 'author',
+      id: 'id',
     };
     const resolvedSortBy = sortByMap[sortBy] || 'menuOrder';
 
@@ -205,7 +215,7 @@ export const getBookById = async (req, res) => {
     let where = {
       status: 'published', // Only show published books
     };
-    
+
     if (id.match(/^\d+$/)) {
       // Integer ID
       where.id = parseInt(id);
