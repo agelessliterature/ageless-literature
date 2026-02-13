@@ -3,9 +3,9 @@
  * Tracks commission and earnings for each vendor sale
  * Created for 8% platform commission system
  *
- * IMPORTANT: This model matches the actual database schema
- * Database columns: id, vendorId, orderId, amount, platformFee, netAmount,
- * status, paidAt, payoutId, description, createdAt, updatedAt,
+ * IMPORTANT: This model matches the actual database schema (underscored: true)
+ * Database columns: id, vendor_id, order_id, amount, platform_fee, net_amount,
+ * status, paid_at, payout_id, description, created_at, updated_at,
  * commission_rate_bps, transaction_type, completed_at
  */
 
@@ -91,7 +91,7 @@ export default (sequelize, DataTypes) => {
     {
       tableName: 'vendor_earnings',
       timestamps: true,
-      underscored: false,
+      underscored: true,
       indexes: [{ fields: ['vendorId'] }, { fields: ['orderId'] }, { fields: ['status'] }],
     },
   );

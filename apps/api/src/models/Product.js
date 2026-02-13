@@ -188,7 +188,7 @@ export default (sequelize, DataTypes) => {
     {
       tableName: 'products',
       timestamps: true,
-      underscored: false,
+      underscored: true,
       hooks: {
         beforeCreate: async (product) => {
           // Generate sid if not present

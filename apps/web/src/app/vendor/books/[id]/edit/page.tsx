@@ -6,28 +6,47 @@ import { useQuery } from '@tanstack/react-query';
 import BookForm from '@/components/forms/BookForm';
 import AuctionModal from '@/components/modals/AuctionModal';
 import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
-import axios from 'axios';
+import api from '@/lib/api';
 
 export default function EditBookPage() {
   const params = useParams();
   const bookId = params.id as string;
   const [showAuctionModal, setShowAuctionModal] = useState(false);
 
-  const { data: book, isLoading } = useQuery({
+  const {
+    data: book,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['book', bookId],
     queryFn: async () => {
-      const response = await axios.get(`/api/vendor/products/${bookId}`);
-      return response.data.data;
+      try {
+        const response = await api.get(`/vendor/products/${bookId}`);
+        return response.data.data;
+      } catch (error: any) {
+        if (error.response?.status === 404) {
+          throw new Error('Product not found');
+        }
+        throw error;
+      }
     },
+    retry: false, // Don't retry on 404
   });
 
   // Check for existing active auction
   const { data: activeAuction } = useQuery({
     queryKey: ['book-auction', bookId],
     queryFn: async () => {
-      const response = await axios.get(`/api/auctions?type=book&status=active`);
-      const auctions = response.data.data || [];
-      return auctions.find((a: any) => a.auctionableId === bookId);
+      try {
+        const response = await api.get(`/auctions?type=book&status=active`);
+        const auctions = response.data.data || [];
+        // Convert bookId to number for comparison since auctionableId is a number
+        const bookIdNum = parseInt(bookId, 10);
+        return auctions.find((a: any) => a.auctionableId === bookIdNum);
+      } catch (error) {
+        console.error('Failed to fetch auctions:', error);
+        return null;
+      }
     },
     enabled: !!bookId,
   });
@@ -42,11 +61,34 @@ export default function EditBookPage() {
     );
   }
 
-  if (!book) {
+  if (error || !book) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center py-12">Book not found</div>
+          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <FontAwesomeIcon
+                  icon={['fal', 'exclamation-triangle']}
+                  className="text-yellow-400"
+                />
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-yellow-700">
+                  Product not found (ID: {bookId}). This product may have been deleted or doesn't
+                  exist in this environment.
+                </p>
+                <div className="mt-4">
+                  <a
+                    href="/vendor/books"
+                    className="text-sm font-medium text-yellow-700 hover:text-yellow-600"
+                  >
+                    ← Back to Products
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );

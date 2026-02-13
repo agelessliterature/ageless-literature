@@ -157,19 +157,11 @@ export const getVendorProfile = async (req, res) => {
       where: { vendorId: vendor.id },
       attributes: [
         [
-          db.sequelize.fn(
-            'COALESCE',
-            db.sequelize.fn('SUM', db.sequelize.col('netAmount')),
-            0,
-          ),
+          db.sequelize.fn('COALESCE', db.sequelize.fn('SUM', db.sequelize.col('net_amount')), 0),
           'totalEarnings',
         ],
         [
-          db.sequelize.fn(
-            'COALESCE',
-            db.sequelize.fn('SUM', db.sequelize.col('platformFee')),
-            0,
-          ),
+          db.sequelize.fn('COALESCE', db.sequelize.fn('SUM', db.sequelize.col('platform_fee')), 0),
           'totalCommission',
         ],
         [
@@ -425,19 +417,11 @@ export const getVendorDashboard = async (req, res) => {
       where: { vendorId: vendor.id },
       attributes: [
         [
-          db.sequelize.fn(
-            'COALESCE',
-            db.sequelize.fn('SUM', db.sequelize.col('netAmount')),
-            0,
-          ),
+          db.sequelize.fn('COALESCE', db.sequelize.fn('SUM', db.sequelize.col('net_amount')), 0),
           'totalEarnings',
         ],
         [
-          db.sequelize.fn(
-            'COALESCE',
-            db.sequelize.fn('SUM', db.sequelize.col('platformFee')),
-            0,
-          ),
+          db.sequelize.fn('COALESCE', db.sequelize.fn('SUM', db.sequelize.col('platform_fee')), 0),
           'totalCommission',
         ],
         [
@@ -457,9 +441,11 @@ export const getVendorDashboard = async (req, res) => {
     };
 
     // Get inventory counts
-    const productCount = await Book.count({ where: { vendorId: vendor.id } });
+    const productCount = await Book.count({ where: { vendor_id: vendor.id } });
     const { Auction, VendorPayout, VendorWithdrawal } = db;
-    const auctionCount = Auction ? await Auction.count({ where: { vendorId: vendor.id } }) : 0;
+    const auctionCount = Auction
+      ? await Auction.count({ where: { vendorId: vendor.id, status: 'active' } })
+      : 0;
 
     // Get pending orders count from VendorEarnings with pending/processing orders
     const pendingOrdersCount = await VendorEarning.count({
@@ -600,6 +586,7 @@ export const getVendorDashboard = async (req, res) => {
         },
         stats: {
           activeListingsCount: productCount,
+          auctionCount,
           pendingOrdersCount,
           conversionRate: parseFloat(conversionRate),
         },
@@ -814,7 +801,14 @@ export const getPayoutSettings = async (req, res) => {
  */
 export const getPublicVendors = async (req, res) => {
   try {
-    const { featured, page = 1, limit = 20, search, sortBy = 'menuOrder', sortOrder = 'ASC' } = req.query;
+    const {
+      featured,
+      page = 1,
+      limit = 20,
+      search,
+      sortBy = 'menuOrder',
+      sortOrder = 'ASC',
+    } = req.query;
     const now = new Date();
 
     const where = {
@@ -845,56 +839,65 @@ export const getPublicVendors = async (req, res) => {
 
     // Map URL-friendly sort params to Sequelize attribute names
     const sortByMap = {
-      'menu_order': 'menuOrder',
-      'menuOrder': 'menuOrder',
+      menu_order: 'menuOrder',
+      menuOrder: 'menuOrder',
       'menu-order': 'menuOrder',
-      'shopName': 'shopName',
-      'shop_name': 'shopName',
-      'createdAt': 'createdAt',
-      'created_at': 'createdAt',
-      'isFeatured': 'isFeatured',
-      'is_featured': 'isFeatured',
-      'featuredPriority': 'featuredPriority',
-      'featured_priority': 'featuredPriority',
+      shopName: 'shopName',
+      shop_name: 'shopName',
+      createdAt: 'createdAt',
+      created_at: 'createdAt',
+      isFeatured: 'isFeatured',
+      is_featured: 'isFeatured',
+      featuredPriority: 'featuredPriority',
+      featured_priority: 'featuredPriority',
     };
 
     // Determine sorting
     let order;
-    if (featured === 'true' && (sortBy === 'shopName' || sortBy === 'menuOrder' || sortBy === 'menu_order')) {
+    if (
+      featured === 'true' &&
+      (sortBy === 'shopName' || sortBy === 'menuOrder' || sortBy === 'menu_order')
+    ) {
       // For featured vendors, prioritize by featuredPriority, then by requested sort
       const mappedSort = sortByMap[sortBy] || 'menuOrder';
       const sortDirection = sortOrder.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
-      
+
       // Convert to column names
       const attributeToColumn = {
-        'menuOrder': 'menu_order',
-        'shopName': 'shop_name',
+        menuOrder: 'menu_order',
+        shopName: 'shop_name',
       };
       const sortColumn = attributeToColumn[mappedSort] || mappedSort;
-      
+
       order = [
         [sequelize.col('featured_priority'), 'DESC'],
         [sequelize.col(sortColumn), sortDirection],
       ];
     } else {
       // Use requested sort with mapping
-      const validSortFields = ['shopName', 'createdAt', 'isFeatured', 'menuOrder', 'featuredPriority'];
+      const validSortFields = [
+        'shopName',
+        'createdAt',
+        'isFeatured',
+        'menuOrder',
+        'featuredPriority',
+      ];
       const mappedSort = sortByMap[sortBy] || 'menuOrder';
       const sortField = validSortFields.includes(mappedSort) ? mappedSort : 'menuOrder';
       const sortDirection = sortOrder.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
-      
+
       // Convert attribute names to actual column names for ORDER BY
       const attributeToColumn = {
-        'menuOrder': 'menu_order',
-        'shopName': 'shop_name',
-        'createdAt': 'created_at',
-        'isFeatured': 'is_featured',
-        'featuredPriority': 'featured_priority',
+        menuOrder: 'menu_order',
+        shopName: 'shop_name',
+        createdAt: 'created_at',
+        isFeatured: 'is_featured',
+        featuredPriority: 'featured_priority',
       };
-      
+
       const columnName = attributeToColumn[sortField] || sortField;
       order = [[sequelize.col(columnName), sortDirection]];
-      
+
       // Add secondary sort by menu_order then shop_name for consistency
       if (sortField !== 'menuOrder') {
         order.push([sequelize.col('menu_order'), 'ASC']);

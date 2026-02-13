@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import ImageUploader from '@/components/shared/ImageUploader';
 import { ProductFormData, Product } from '@/types/Product';
-import axios from 'axios';
+import api from '@/lib/api';
+import RichTextEditor from '@/components/forms/RichTextEditor';
 
 const PRODUCT_CONDITIONS = ['New', 'Like New', 'Very Good', 'Good', 'Fair', 'Poor'];
 
@@ -27,8 +28,16 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
   );
   const [formData, setFormData] = useState<Partial<ProductFormData>>({
     title: product?.title || '',
-    description: product?.description || '',
-    shortDescription: product?.shortDescription || '',
+    description:
+      typeof product?.description === 'object'
+        ? (product?.description as any)?.en || (product?.description as any)?.html || ''
+        : product?.description || '',
+    shortDescription: (typeof product?.shortDescription === 'object'
+      ? (product?.shortDescription as any)?.en || (product?.shortDescription as any)?.html || ''
+      : product?.shortDescription || ''
+    )
+      .replace(/<[^>]*>/g, '')
+      .trim(),
     price: product?.price?.toString() || '',
     condition: product?.condition || 'Good',
     quantity: product?.quantity || 1,
@@ -43,7 +52,7 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
   const { data: categoriesData } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
-      const response = await axios.get('/api/categories');
+      const response = await api.get('/categories');
       return response.data;
     },
   });
@@ -51,10 +60,10 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
   const mutation = useMutation({
     mutationFn: async (data: ProductFormData) => {
       if (isEdit && product?.id) {
-        const response = await axios.put(`/api/vendor/collectibles/${product.id}`, data);
+        const response = await api.put(`/vendor/collectibles/${product.id}`, data);
         return response.data;
       } else {
-        const response = await axios.post('/api/vendor/collectibles', data);
+        const response = await api.post('/vendor/collectibles', data);
         return response.data;
       }
     },
@@ -175,12 +184,10 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Description <span className="text-red-500">*</span>
               </label>
-              <textarea
-                value={formData.description}
-                onChange={(e) => handleChange('description', e.target.value)}
-                className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black h-32"
+              <RichTextEditor
+                value={formData.description || ''}
+                onChange={(value) => handleChange('description', value)}
                 placeholder="Detailed description of the item..."
-                required
               />
             </div>
           </div>

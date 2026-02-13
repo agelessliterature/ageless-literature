@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import ImageUploader from '@/components/shared/ImageUploader';
 import { BookFormData, Book } from '@/types/Book';
-import axios from 'axios';
+import api from '@/lib/api';
 import { getApiUrl } from '@/lib/api-url';
+import RichTextEditor from '@/components/forms/RichTextEditor';
 
 const BOOK_CONDITIONS = ['New', 'Like New', 'Very Good', 'Good', 'Fair', 'Poor'];
 const BOOK_BINDINGS = ['Hardcover', 'Softcover', 'Leather', 'Cloth', 'Paper'];
@@ -34,8 +35,16 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
   const [formData, setFormData] = useState<Partial<BookFormData>>({
     title: book?.title || '',
     author: book?.author || '',
-    description: book?.description || '',
-    shortDescription: book?.shortDescription || '',
+    description:
+      typeof book?.description === 'object'
+        ? (book?.description as any)?.en || (book?.description as any)?.html || ''
+        : book?.description || '',
+    shortDescription: (typeof book?.shortDescription === 'object'
+      ? (book?.shortDescription as any)?.en || (book?.shortDescription as any)?.html || ''
+      : book?.shortDescription || ''
+    )
+      .replace(/<[^>]*>/g, '')
+      .trim(),
     price: book?.price?.toString() || '',
     condition: book?.condition || 'Good',
     quantity: book?.quantity || 1,
@@ -67,10 +76,10 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
   const mutation = useMutation({
     mutationFn: async (data: BookFormData) => {
       if (isEdit && book?.id) {
-        const response = await axios.put(`/api/vendor/products/${book.id}`, data);
+        const response = await api.put(`/vendor/products/${book.id}`, data);
         return response.data;
       } else {
-        const response = await axios.post('/api/vendor/products', data);
+        const response = await api.post('/vendor/products', data);
         return response.data;
       }
     },
@@ -205,12 +214,10 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Description <span className="text-red-500">*</span>
               </label>
-              <textarea
-                value={formData.description}
-                onChange={(e) => handleChange('description', e.target.value)}
-                className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black h-32"
+              <RichTextEditor
+                value={formData.description || ''}
+                onChange={(value) => handleChange('description', value)}
                 placeholder="Detailed description of the book..."
-                required
               />
             </div>
           </div>

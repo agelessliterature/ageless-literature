@@ -51,9 +51,17 @@ export default (sequelize, DataTypes) => {
         allowNull: false,
       },
       quantity: {
-        type: DataTypes.DECIMAL,
-        allowNull: true,
+        type: DataTypes.INTEGER,
+        allowNull: false,
         defaultValue: 1,
+        comment: 'Available quantity in stock',
+      },
+      trackQuantity: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: true,
+        field: 'track_quantity',
+        comment: 'Whether to track inventory quantity for this book',
       },
       condition: {
         type: DataTypes.STRING,
@@ -75,10 +83,11 @@ export default (sequelize, DataTypes) => {
         comment: 'Vendor ID - owner of this book listing',
       },
       status: {
-        type: DataTypes.ENUM('draft', 'pending', 'published'),
+        type: DataTypes.ENUM('draft', 'pending', 'published', 'sold', 'archived'),
         allowNull: false,
         defaultValue: 'published',
-        comment: 'Publication status: draft (not visible), pending (awaiting review), published (visible)',
+        comment:
+          'Publication status: draft (not visible), pending (awaiting review), published (visible), sold (out of stock), archived (hidden)',
       },
       menuOrder: {
         type: DataTypes.INTEGER,
