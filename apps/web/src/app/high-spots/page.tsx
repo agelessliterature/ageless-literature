@@ -3,6 +3,9 @@
 import { ReactNode, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 
+/* -----------------------------
+   Sections Data
+------------------------------ */
 const sections = [
   {
     title: 'Admiral Michiel Adriaensz',
@@ -160,6 +163,9 @@ const sections = [
   },
 ];
 
+/* -----------------------------
+   Animated Block
+------------------------------ */
 interface AnimatedBlockProps {
   children: ReactNode;
   direction: 'left' | 'right';
@@ -170,7 +176,7 @@ function AnimatedBlock({ children, direction, style }: AnimatedBlockProps) {
   const ref = useRef<HTMLDivElement | null>(null);
   const isInView = useInView(ref, {
     amount: 0.35,
-    margin: '-50px 0px -50px 0px', // smoother trigger zone
+    margin: '-50px 0px -50px 0px',
   });
 
   const offset = direction === 'left' ? -60 : 60;
@@ -181,7 +187,7 @@ function AnimatedBlock({ children, direction, style }: AnimatedBlockProps) {
       style={style}
       initial={{ opacity: 0, x: offset }}
       animate={{
-        opacity: isInView ? 1 : 0.4, // don’t fully disappear
+        opacity: isInView ? 1 : 0.4,
         x: isInView ? 0 : offset,
       }}
       transition={{
@@ -196,11 +202,85 @@ function AnimatedBlock({ children, direction, style }: AnimatedBlockProps) {
   );
 }
 
+/* -----------------------------
+   Page
+------------------------------ */
 export default function HighSpotsPage() {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
-      {/* Hero */}
+      {/* ---------- RESPONSIVE STYLES ---------- */}
+      <style>{`
+        .highspots-grid {
+          display: grid;
+          grid-template-columns: 1.2fr 1.2fr;
+          gap: 3rem;
+          align-items: center;
+        }
+
+        .highspot-image {
+          width: 100%;
+          aspect-ratio: 14 / 16;
+          object-fit: contain;
+        }
+
+        .hero-title {
+          font-size: 3.5rem;
+          letter-spacing: 0.05em;
+        }
+
+        @media (max-width: 1024px) {
+          .hero-title {
+            font-size: 2.5rem;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .hero {
+            height: 500px;
+          }
+
+          .hero-title {
+            font-size: 2rem;
+            top: 2rem;
+          }
+
+          .hero-description {
+            font-size: 1.1rem;
+          }
+
+          .highspots-grid {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+          }
+
+          /* Remove alternating order on mobile */
+          .highspots-grid > div {
+            order: unset !important;
+          }
+
+          .highspot-image {
+            aspect-ratio: 4 / 5;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .hero {
+            height: 420px;
+          }
+
+          .hero-title {
+            font-size: 1.75rem;
+          }
+
+          .hero-description {
+            font-size: 1rem;
+          }
+        }
+      `}</style>
+
+      {/* ---------- HERO ---------- */}
       <div
+        className="hero"
         style={{
           position: 'relative',
           height: '700px',
@@ -214,21 +294,19 @@ export default function HighSpotsPage() {
           color: '#ffffff',
         }}
       >
-        {/* Top Title */}
         <h1
+          className="hero-title"
           style={{
             position: 'absolute',
             top: '3rem',
             left: '50%',
             transform: 'translateX(-50%)',
-            fontSize: '3rem',
             fontWeight: 'bold',
           }}
         >
           High Spots
         </h1>
 
-        {/* Centered Description */}
         <div
           style={{
             height: '100%',
@@ -240,11 +318,12 @@ export default function HighSpotsPage() {
           }}
         >
           <p
+            className="hero-description"
             style={{
-              fontSize: '1.25rem',
               maxWidth: '48rem',
               lineHeight: '1.6',
               color: '#e5e7eb',
+              fontSize: '1.25rem',
             }}
           >
             Your insight into the most captivating and significant moments in literature, art, and
@@ -256,6 +335,7 @@ export default function HighSpotsPage() {
         </div>
       </div>
 
+      {/* ---------- CONTENT ---------- */}
       <section style={{ paddingBottom: '6rem', paddingLeft: '1rem', paddingRight: '1rem' }}>
         <div style={{ maxWidth: '100%', padding: '0 1rem' }}>
           {sections.map((section, index) => {
@@ -263,14 +343,7 @@ export default function HighSpotsPage() {
 
             return (
               <div key={index} style={{ padding: '4rem 0' }}>
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: '1.2fr 1.2fr',
-                    gap: '3rem',
-                    alignItems: 'center',
-                  }}
-                >
+                <div className="highspots-grid">
                   {/* Image */}
                   <AnimatedBlock
                     direction={isReversed ? 'right' : 'left'}
@@ -283,15 +356,7 @@ export default function HighSpotsPage() {
                         boxShadow: '0 10px 15px rgba(0,0,0,0.1)',
                       }}
                     >
-                      <img
-                        src={section.image}
-                        alt={section.title}
-                        style={{
-                          width: '100%',
-                          aspectRatio: '14/16',
-                          objectFit: 'contain',
-                        }}
-                      />
+                      <img src={section.image} alt={section.title} className="highspot-image" />
                     </div>
                   </AnimatedBlock>
 
@@ -335,7 +400,27 @@ export default function HighSpotsPage() {
                       {section.button && (
                         <a
                           href={section.button.href}
-                          className="inline-block mt-4  bg-black text-white px-8 py-3 text-sm font-semibold hover:bg-[#d4af37] hover:text-black hover:-translate-y-1 transition-all duration-300"
+                          style={{
+                            display: 'inline-block',
+                            marginTop: '1.5rem',
+                            backgroundColor: '#000',
+                            color: '#fff',
+                            padding: '0.75rem 2rem',
+                            fontSize: '0.9rem',
+                            fontWeight: 600,
+                            textDecoration: 'none',
+                            transition: 'all 0.3s ease',
+                          }}
+                          onMouseOver={(e) => {
+                            e.currentTarget.style.backgroundColor = '#d4af37';
+                            e.currentTarget.style.color = '#000';
+                            e.currentTarget.style.transform = 'translateY(-4px)';
+                          }}
+                          onMouseOut={(e) => {
+                            e.currentTarget.style.backgroundColor = '#000';
+                            e.currentTarget.style.color = '#fff';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                          }}
                         >
                           {section.button.text}
                         </a>
