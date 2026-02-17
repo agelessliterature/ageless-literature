@@ -21,13 +21,13 @@ export default (sequelize, DataTypes) => {
       type: { type: DataTypes.STRING(50), allowNull: false },
       title: { type: DataTypes.STRING(255), allowNull: false },
       message: { type: DataTypes.TEXT, allowNull: false },
-      data: { 
-        type: DataTypes.JSONB, 
+      data: {
+        type: DataTypes.JSONB,
         defaultValue: {},
         get() {
           // Also make it available as 'metadata' for backward compatibility
           return this.getDataValue('data');
-        }
+        },
       },
       metadata: {
         type: DataTypes.VIRTUAL,
@@ -36,7 +36,7 @@ export default (sequelize, DataTypes) => {
         },
         set(value) {
           this.setDataValue('data', value);
-        }
+        },
       },
       isRead: {
         type: DataTypes.BOOLEAN,

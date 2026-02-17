@@ -9,13 +9,24 @@ import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
 import { CloudinaryImage } from '@/components/ui/CloudinaryImage';
 import AuctionCountdown from '@/components/auctions/AuctionCountdown';
 import { getApiUrl } from '@/lib/api';
+import PageLoading from '@/components/ui/PageLoading';
+import EmptyState from '@/components/ui/EmptyState';
+import ResponsiveDataView from '@/components/ui/ResponsiveDataView';
+import MobileCard from '@/components/ui/MobileCard';
+import MobileCardList from '@/components/ui/MobileCardList';
+import { formatMoney } from '@/lib/format';
 
 export default function VendorAuctionsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [statusFilter, setStatusFilter] = useState('all');
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const { data: auctionsData, isLoading } = useQuery({
+  const {
+    data: auctionsData,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ['vendor-auctions', statusFilter],
     queryFn: async () => {
       const params = new URLSearchParams({
@@ -42,7 +53,17 @@ export default function VendorAuctionsPage() {
         }) || [];
 
       // Apply status filter on client side
-      if (statusFilter !== 'all') {
+      if (statusFilter === 'ended') {
+        // Show all ended states
+        vendorAuctions = vendorAuctions.filter(
+          (auction: any) => auction.status.startsWith('ended_') || auction.status === 'ended',
+        );
+      } else if (statusFilter === 'needs_action') {
+        // Show ended auctions that need vendor action
+        vendorAuctions = vendorAuctions.filter((auction: any) =>
+          ['ended_no_bids', 'ended_reserve_not_met', 'ended_no_sale'].includes(auction.status),
+        );
+      } else if (statusFilter !== 'all') {
         vendorAuctions = vendorAuctions.filter((auction: any) => auction.status === statusFilter);
       }
 
@@ -53,12 +74,96 @@ export default function VendorAuctionsPage() {
     enabled: !!session,
   });
 
+  // Action handlers
+  const handleRelist = async (auctionId: number) => {
+    if (!confirm('Relist this auction with the same settings?')) return;
+
+    setActionLoading(`relist-${auctionId}`);
+    try {
+      const res = await fetch(getApiUrl(`api/auctions/${auctionId}/relist`), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.accessToken}`,
+        },
+        body: JSON.stringify({ durationDays: 7 }),
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || 'Failed to relist auction');
+      }
+
+      alert('Auction relisted successfully!');
+      refetch();
+    } catch (error: any) {
+      alert(error.message || 'Failed to relist auction');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleConvertToFixed = async (auctionId: number) => {
+    const price = prompt('Enter fixed price (leave empty to use reserve price):');
+    if (price === null) return; // Cancelled
+
+    setActionLoading(`convert-${auctionId}`);
+    try {
+      const body: any = {};
+      if (price) body.price = parseFloat(price);
+
+      const res = await fetch(getApiUrl(`api/auctions/${auctionId}/convert-to-fixed`), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.accessToken}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || 'Failed to convert auction');
+      }
+
+      alert('Auction converted to fixed price successfully!');
+      refetch();
+    } catch (error: any) {
+      alert(error.message || 'Failed to convert auction');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleUnlist = async (auctionId: number) => {
+    if (!confirm('Archive this auction item? It will be removed from public listings.')) return;
+
+    setActionLoading(`unlist-${auctionId}`);
+    try {
+      const res = await fetch(getApiUrl(`api/auctions/${auctionId}/unlist`), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.accessToken}`,
+        },
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || 'Failed to unlist auction');
+      }
+
+      alert('Auction item unlisted successfully!');
+      refetch();
+    } catch (error: any) {
+      alert(error.message || 'Failed to unlist auction');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   if (status === 'loading') {
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center">Loading...</div>
-      </div>
-    );
+    return <PageLoading message="Loading auctions..." fullPage={false} />;
   }
 
   if (status === 'unauthenticated') {
@@ -72,13 +177,13 @@ export default function VendorAuctionsPage() {
   const activeCount = auctions.filter(
     (a: any) => a.status === 'active' || a.status === 'upcoming',
   ).length;
-  const completedCount = auctions.filter(
-    (a: any) => a.status === 'closed' || a.status === 'ended',
+  const soldCount = auctions.filter((a: any) => a.status === 'ended_sold').length;
+  const needsActionCount = auctions.filter((a: any) =>
+    ['ended_no_bids', 'ended_reserve_not_met', 'ended_no_sale'].includes(a.status),
   ).length;
-  const totalBids = auctions.reduce((sum: number, a: any) => sum + (a.bidCount || 0), 0);
   const totalValue = auctions.reduce((sum: number, a: any) => {
-    if ((a.status === 'closed' || a.status === 'ended') && a.winningBidAmount) {
-      return sum + parseFloat(a.winningBidAmount);
+    if (a.status === 'ended_sold' && a.currentBid) {
+      return sum + parseFloat(a.currentBid);
     }
     return sum;
   }, 0);
@@ -118,20 +223,8 @@ export default function VendorAuctionsPage() {
         <div className="bg-white border border-gray-200 p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Total Bids</p>
-              <p className="text-2xl font-bold text-primary">{totalBids}</p>
-            </div>
-            <div className="w-12 h-12 bg-blue-500 flex items-center justify-center">
-              <FontAwesomeIcon icon={['fal', 'hand-paper']} className="text-white text-xl" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white border border-gray-200 p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Completed</p>
-              <p className="text-2xl font-bold text-primary">{completedCount}</p>
+              <p className="text-sm text-gray-600 mb-1">Sold</p>
+              <p className="text-2xl font-bold text-primary">{soldCount}</p>
             </div>
             <div className="w-12 h-12 bg-green-500 flex items-center justify-center">
               <FontAwesomeIcon icon={['fal', 'check-circle']} className="text-white text-xl" />
@@ -142,8 +235,25 @@ export default function VendorAuctionsPage() {
         <div className="bg-white border border-gray-200 p-4">
           <div className="flex items-center justify-between">
             <div>
+              <p className="text-sm text-gray-600 mb-1">Needs Action</p>
+              <p className="text-2xl font-bold text-orange-600">{needsActionCount}</p>
+            </div>
+            <div className="w-12 h-12 bg-orange-500 flex items-center justify-center">
+              <FontAwesomeIcon
+                icon={['fal', 'exclamation-circle']}
+                className="text-white text-xl"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white border border-gray-200 p-4">
+          <div className="flex items-center justify-between">
+            <div>
               <p className="text-sm text-gray-600 mb-1">Total Value</p>
-              <p className="text-2xl font-bold text-primary">${totalValue.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-primary">
+                {formatMoney(totalValue, { fromCents: false })}
+              </p>
             </div>
             <div className="w-12 h-12 bg-yellow-500 flex items-center justify-center">
               <FontAwesomeIcon icon={['fal', 'dollar-sign']} className="text-white text-xl" />
@@ -163,8 +273,11 @@ export default function VendorAuctionsPage() {
             <option value="all">All Status</option>
             <option value="upcoming">Upcoming</option>
             <option value="active">Active</option>
-            <option value="closed">Closed</option>
-            <option value="ended">Ended</option>
+            <option value="ended">All Ended</option>
+            <option value="ended_sold">Sold</option>
+            <option value="needs_action">⚠️ Needs Action</option>
+            <option value="ended_no_bids">No Bids</option>
+            <option value="ended_reserve_not_met">Reserve Not Met</option>
             <option value="cancelled">Cancelled</option>
           </select>
         </div>
@@ -172,172 +285,438 @@ export default function VendorAuctionsPage() {
 
       {/* Auctions Table */}
       {isLoading ? (
-        <div className="bg-white border border-gray-200 p-12 text-center">
-          <p className="text-gray-500">Loading auctions...</p>
-        </div>
+        <PageLoading message="Loading auctions..." fullPage={false} />
       ) : auctions.length === 0 ? (
-        <div className="bg-white border border-gray-200 p-12 text-center">
-          <div className="w-16 h-16 bg-purple-500 flex items-center justify-center mx-auto mb-4">
-            <FontAwesomeIcon icon={['fal', 'gavel']} className="text-white text-2xl" />
-          </div>
-          <p className="text-gray-500 mb-4">No auctions found</p>
-          <p className="text-sm text-gray-400 mb-6">
-            Create an auction from your product edit page to get started
-          </p>
-          <Link
-            href="/vendor/books"
-            className="inline-flex items-center gap-2 bg-primary text-white px-6 py-2 hover:bg-opacity-90 transition"
-          >
-            <FontAwesomeIcon icon={['fal', 'box']} className="text-base" />
-            View Products
-          </Link>
-        </div>
+        <EmptyState
+          icon={['fal', 'gavel']}
+          title="No auctions found"
+          description="Create an auction from your product edit page to get started"
+          actionLabel="View Products"
+          actionHref="/vendor/books"
+        />
       ) : (
         <>
-          <div className="bg-white border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Item
-                    </th>
-                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Starting Bid
-                    </th>
-                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Current Bid
-                    </th>
-                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Bids
-                    </th>
-                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Time Remaining
-                    </th>
-                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {auctions.map((auction: any) => {
-                    const item = auction.item || auction.book || auction.product;
-                    return (
-                      <tr key={auction.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="flex-shrink-0 h-16 w-12 overflow-hidden">
-                              <CloudinaryImage
-                                src={item?.imageUrl}
-                                alt={item?.title || 'Item'}
-                                width={96}
-                                height={128}
-                                className="w-full h-full"
-                                fallbackIcon={[
-                                  'fal',
-                                  auction.auctionableType === 'book' ? 'book' : 'box',
-                                ]}
-                                fallbackText="No image"
-                              />
-                            </div>
-                            <div className="ml-4 max-w-xs">
-                              <div className="text-sm font-medium text-gray-900 truncate">
-                                {item?.title || 'Unknown'}
-                              </div>
-                              <div className="text-xs text-purple-600 font-semibold">
-                                {auction.auctionableType?.toUpperCase()}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            $
-                            {parseFloat(auction.startingBid || auction.startingPrice || 0).toFixed(
-                              2,
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-semibold text-primary">
-                            {auction.currentBid
-                              ? `$${parseFloat(auction.currentBid).toFixed(2)}`
-                              : '-'}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center text-sm text-gray-500">
-                            <FontAwesomeIcon
-                              icon={['fal', 'hand-paper']}
-                              className="text-base mr-1"
-                            />
-                            {auction.bidCount || 0}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {auction.status === 'active' || auction.status === 'upcoming' ? (
-                            <AuctionCountdown
-                              endsAt={auction.endsAt || auction.endDate}
-                              className="text-sm"
-                            />
-                          ) : (
-                            <span className="text-sm text-gray-500">Ended</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+          <ResponsiveDataView
+            breakpoint="md"
+            mobile={
+              <MobileCardList gap="md">
+                {auctions.map((auction: any) => {
+                  const item = auction.item || auction.book || auction.product;
+                  const getAuctionStatusBadge = () => {
+                    const statusMap: Record<string, { bg: string; label: string }> = {
+                      active: { bg: 'bg-green-100 text-green-800', label: 'Active' },
+                      upcoming: { bg: 'bg-blue-100 text-blue-800', label: 'Upcoming' },
+                      ended_sold: { bg: 'bg-green-100 text-green-800', label: 'Sold' },
+                      ended_no_bids: { bg: 'bg-orange-100 text-orange-800', label: 'No Bids' },
+                      ended_reserve_not_met: {
+                        bg: 'bg-yellow-100 text-yellow-800',
+                        label: 'Reserve Not Met',
+                      },
+                      ended_no_sale: { bg: 'bg-gray-100 text-gray-800', label: 'No Sale' },
+                    };
+                    const s = statusMap[auction.status] || {
+                      bg: 'bg-red-100 text-red-800',
+                      label: auction.status,
+                    };
+                    return s;
+                  };
+                  const statusBadge = getAuctionStatusBadge();
+                  const needsAction = [
+                    'ended_no_bids',
+                    'ended_reserve_not_met',
+                    'ended_no_sale',
+                  ].includes(auction.status);
+                  const outOfStock = item?.trackQuantity && (!item?.quantity || item?.quantity < 1);
+
+                  return (
+                    <MobileCard
+                      key={auction.id}
+                      thumbnail={
+                        <CloudinaryImage
+                          src={item?.imageUrl}
+                          alt={item?.title || 'Item'}
+                          width={96}
+                          height={128}
+                          className="w-full h-full"
+                          fallbackIcon={[
+                            'fal',
+                            auction.auctionableType === 'book' ? 'book' : 'box',
+                          ]}
+                          fallbackText="No image"
+                        />
+                      }
+                      title={item?.title || 'Unknown'}
+                      subtitle={
+                        <span className="text-xs text-purple-600 font-semibold">
+                          {auction.auctionableType?.toUpperCase()}
+                        </span>
+                      }
+                      badge={
+                        <div className="flex flex-col gap-1 items-end">
                           <span
-                            className={`px-2 inline-flex text-xs leading-5 font-semibold ${
-                              auction.status === 'active'
-                                ? 'bg-green-100 text-green-800'
-                                : auction.status === 'upcoming'
-                                  ? 'bg-blue-100 text-blue-800'
-                                  : auction.status === 'closed' || auction.status === 'ended'
-                                    ? 'bg-gray-100 text-gray-800'
-                                    : 'bg-red-100 text-red-800'
-                            }`}
+                            className={`px-2 py-0.5 text-xs font-semibold rounded-full ${statusBadge.bg}`}
                           >
-                            {auction.status}
+                            {statusBadge.label}
                           </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="flex items-center justify-end gap-2">
-                            <Link
-                              href={`/auctions/${auction.id}`}
-                              className="text-primary hover:text-secondary"
-                              title="View Details"
+                          {needsAction && (
+                            <span className="px-2 py-0.5 text-xs font-semibold bg-orange-500 text-white rounded-full">
+                              Action Required
+                            </span>
+                          )}
+                          {auction.relistCount > 0 && (
+                            <span className="text-xs text-gray-500">
+                              Relisted {auction.relistCount}x
+                            </span>
+                          )}
+                        </div>
+                      }
+                      details={[
+                        {
+                          label: 'Starting Bid',
+                          value: formatMoney(
+                            parseFloat(auction.startingBid || auction.startingPrice || 0),
+                            { fromCents: false },
+                          ),
+                        },
+                        {
+                          label: 'Current Bid',
+                          value: auction.currentBid
+                            ? formatMoney(parseFloat(auction.currentBid), { fromCents: false })
+                            : '-',
+                        },
+                        { label: 'Bids', value: String(auction.bidCount || 0) },
+                        {
+                          label: 'Time',
+                          value:
+                            auction.status === 'active' || auction.status === 'upcoming'
+                              ? 'Live'
+                              : 'Ended',
+                        },
+                      ]}
+                    >
+                      {/* Countdown for active/upcoming */}
+                      {(auction.status === 'active' || auction.status === 'upcoming') && (
+                        <div className="mt-2 px-1">
+                          <AuctionCountdown
+                            endsAt={auction.endsAt || auction.endDate}
+                            className="text-sm"
+                          />
+                        </div>
+                      )}
+                      {/* Actions */}
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <Link
+                          href={`/auctions/${auction.id}`}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-gray-100 text-gray-700 rounded hover:bg-gray-200 min-h-[36px]"
+                        >
+                          <FontAwesomeIcon icon={['fal', 'eye']} className="text-sm" /> View
+                        </Link>
+                        {needsAction && (
+                          <>
+                            <button
+                              onClick={() => handleRelist(auction.id)}
+                              disabled={actionLoading === `relist-${auction.id}` || outOfStock}
+                              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-green-100 text-green-700 rounded hover:bg-green-200 disabled:opacity-50 min-h-[36px]"
                             >
-                              <FontAwesomeIcon icon={['fal', 'eye']} className="text-base" />
-                            </Link>
-                            {auction.auctionableType === 'book' && (
-                              <Link
-                                href={`/vendor/books/${auction.auctionableId}/edit`}
-                                className="text-gray-600 hover:text-primary"
-                                title="Edit Product"
-                              >
-                                <FontAwesomeIcon icon={['fal', 'edit']} className="text-base" />
-                              </Link>
-                            )}
-                            {auction.auctionableType === 'product' && (
-                              <Link
-                                href={`/vendor/products/${auction.auctionableId}/edit`}
-                                className="text-gray-600 hover:text-primary"
-                                title="Edit Product"
-                              >
-                                <FontAwesomeIcon icon={['fal', 'edit']} className="text-base" />
-                              </Link>
-                            )}
-                          </div>
-                        </td>
+                              <FontAwesomeIcon
+                                icon={
+                                  actionLoading === `relist-${auction.id}`
+                                    ? ['fal', 'spinner']
+                                    : ['fal', 'redo']
+                                }
+                                className={`text-sm ${actionLoading === `relist-${auction.id}` ? 'animate-spin' : ''}`}
+                              />{' '}
+                              Relist
+                            </button>
+                            <button
+                              onClick={() => handleConvertToFixed(auction.id)}
+                              disabled={actionLoading === `convert-${auction.id}` || outOfStock}
+                              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-blue-100 text-blue-700 rounded hover:bg-blue-200 disabled:opacity-50 min-h-[36px]"
+                            >
+                              <FontAwesomeIcon
+                                icon={
+                                  actionLoading === `convert-${auction.id}`
+                                    ? ['fal', 'spinner']
+                                    : ['fal', 'tag']
+                                }
+                                className={`text-sm ${actionLoading === `convert-${auction.id}` ? 'animate-spin' : ''}`}
+                              />{' '}
+                              Fixed Price
+                            </button>
+                            <button
+                              onClick={() => handleUnlist(auction.id)}
+                              disabled={actionLoading === `unlist-${auction.id}`}
+                              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-red-100 text-red-700 rounded hover:bg-red-200 disabled:opacity-50 min-h-[36px]"
+                            >
+                              <FontAwesomeIcon
+                                icon={
+                                  actionLoading === `unlist-${auction.id}`
+                                    ? ['fal', 'spinner']
+                                    : ['fal', 'archive']
+                                }
+                                className={`text-sm ${actionLoading === `unlist-${auction.id}` ? 'animate-spin' : ''}`}
+                              />{' '}
+                              Unlist
+                            </button>
+                          </>
+                        )}
+                        {auction.auctionableType === 'book' && (
+                          <Link
+                            href={`/vendor/books/${auction.auctionableId}/edit`}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-gray-100 text-gray-700 rounded hover:bg-gray-200 min-h-[36px]"
+                          >
+                            <FontAwesomeIcon icon={['fal', 'edit']} className="text-sm" /> Edit
+                          </Link>
+                        )}
+                        {auction.auctionableType === 'product' && (
+                          <Link
+                            href={`/vendor/products/${auction.auctionableId}/edit`}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-gray-100 text-gray-700 rounded hover:bg-gray-200 min-h-[36px]"
+                          >
+                            <FontAwesomeIcon icon={['fal', 'edit']} className="text-sm" /> Edit
+                          </Link>
+                        )}
+                      </div>
+                    </MobileCard>
+                  );
+                })}
+              </MobileCardList>
+            }
+            desktop={
+              <div className="bg-white border border-gray-200 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Item
+                        </th>
+                        <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Starting Bid
+                        </th>
+                        <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Current Bid
+                        </th>
+                        <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Bids
+                        </th>
+                        <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Time Remaining
+                        </th>
+                        <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {auctions.map((auction: any) => {
+                        const item = auction.item || auction.book || auction.product;
+                        return (
+                          <tr key={auction.id} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center">
+                                <div className="flex-shrink-0 h-16 w-12 overflow-hidden">
+                                  <CloudinaryImage
+                                    src={item?.imageUrl}
+                                    alt={item?.title || 'Item'}
+                                    width={96}
+                                    height={128}
+                                    className="w-full h-full"
+                                    fallbackIcon={[
+                                      'fal',
+                                      auction.auctionableType === 'book' ? 'book' : 'box',
+                                    ]}
+                                    fallbackText="No image"
+                                  />
+                                </div>
+                                <div className="ml-4 max-w-xs">
+                                  <div className="text-sm font-medium text-gray-900 truncate">
+                                    {item?.title || 'Unknown'}
+                                  </div>
+                                  <div className="text-xs text-purple-600 font-semibold">
+                                    {auction.auctionableType?.toUpperCase()}
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">
+                                {formatMoney(
+                                  parseFloat(auction.startingBid || auction.startingPrice || 0),
+                                  { fromCents: false },
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm font-semibold text-primary">
+                                {auction.currentBid
+                                  ? formatMoney(parseFloat(auction.currentBid), {
+                                      fromCents: false,
+                                    })
+                                  : '-'}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center text-sm text-gray-500">
+                                <FontAwesomeIcon
+                                  icon={['fal', 'hand-paper']}
+                                  className="text-base mr-1"
+                                />
+                                {auction.bidCount || 0}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              {auction.status === 'active' || auction.status === 'upcoming' ? (
+                                <AuctionCountdown
+                                  endsAt={auction.endsAt || auction.endDate}
+                                  className="text-sm"
+                                />
+                              ) : (
+                                <span className="text-sm text-gray-500">Ended</span>
+                              )}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex flex-col gap-1">
+                                <span
+                                  className={`px-2 inline-flex text-xs leading-5 font-semibold ${auction.status === 'active' ? 'bg-green-100 text-green-800' : auction.status === 'upcoming' ? 'bg-blue-100 text-blue-800' : auction.status === 'ended_sold' ? 'bg-green-100 text-green-800' : auction.status === 'ended_no_bids' ? 'bg-orange-100 text-orange-800' : auction.status === 'ended_reserve_not_met' ? 'bg-yellow-100 text-yellow-800' : auction.status === 'ended_no_sale' ? 'bg-gray-100 text-gray-800' : 'bg-red-100 text-red-800'}`}
+                                >
+                                  {auction.status === 'ended_sold'
+                                    ? 'Sold'
+                                    : auction.status === 'ended_no_bids'
+                                      ? 'No Bids'
+                                      : auction.status === 'ended_reserve_not_met'
+                                        ? 'Reserve Not Met'
+                                        : auction.status === 'ended_no_sale'
+                                          ? 'No Sale'
+                                          : auction.status}
+                                </span>
+                                {[
+                                  'ended_no_bids',
+                                  'ended_reserve_not_met',
+                                  'ended_no_sale',
+                                ].includes(auction.status) && (
+                                  <span className="px-2 inline-flex text-xs leading-5 font-semibold bg-orange-500 text-white">
+                                    Action Required
+                                  </span>
+                                )}
+                                {auction.relistCount > 0 && (
+                                  <span className="text-xs text-gray-500">
+                                    Relisted {auction.relistCount}x
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                              <div className="flex items-center justify-end gap-2">
+                                <Link
+                                  href={`/auctions/${auction.id}`}
+                                  className="text-primary hover:text-secondary"
+                                  title="View Details"
+                                >
+                                  <FontAwesomeIcon icon={['fal', 'eye']} className="text-base" />
+                                </Link>
+                                {[
+                                  'ended_no_bids',
+                                  'ended_reserve_not_met',
+                                  'ended_no_sale',
+                                ].includes(auction.status) && (
+                                  <>
+                                    <button
+                                      onClick={() => handleRelist(auction.id)}
+                                      disabled={
+                                        actionLoading === `relist-${auction.id}` ||
+                                        (item?.trackQuantity &&
+                                          (!item?.quantity || item?.quantity < 1))
+                                      }
+                                      className="text-green-600 hover:text-green-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                                      title="Relist Auction"
+                                    >
+                                      {actionLoading === `relist-${auction.id}` ? (
+                                        <FontAwesomeIcon
+                                          icon={['fal', 'spinner']}
+                                          className="text-base animate-spin"
+                                        />
+                                      ) : (
+                                        <FontAwesomeIcon
+                                          icon={['fal', 'redo']}
+                                          className="text-base"
+                                        />
+                                      )}
+                                    </button>
+                                    <button
+                                      onClick={() => handleConvertToFixed(auction.id)}
+                                      disabled={
+                                        actionLoading === `convert-${auction.id}` ||
+                                        (item?.trackQuantity &&
+                                          (!item?.quantity || item?.quantity < 1))
+                                      }
+                                      className="text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                                      title="Convert to Fixed Price"
+                                    >
+                                      {actionLoading === `convert-${auction.id}` ? (
+                                        <FontAwesomeIcon
+                                          icon={['fal', 'spinner']}
+                                          className="text-base animate-spin"
+                                        />
+                                      ) : (
+                                        <FontAwesomeIcon
+                                          icon={['fal', 'tag']}
+                                          className="text-base"
+                                        />
+                                      )}
+                                    </button>
+                                    <button
+                                      onClick={() => handleUnlist(auction.id)}
+                                      disabled={actionLoading === `unlist-${auction.id}`}
+                                      className="text-red-600 hover:text-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                                      title="Unlist Item"
+                                    >
+                                      {actionLoading === `unlist-${auction.id}` ? (
+                                        <FontAwesomeIcon
+                                          icon={['fal', 'spinner']}
+                                          className="text-base animate-spin"
+                                        />
+                                      ) : (
+                                        <FontAwesomeIcon
+                                          icon={['fal', 'archive']}
+                                          className="text-base"
+                                        />
+                                      )}
+                                    </button>
+                                  </>
+                                )}
+                                {auction.auctionableType === 'book' && (
+                                  <Link
+                                    href={`/vendor/books/${auction.auctionableId}/edit`}
+                                    className="text-gray-600 hover:text-primary"
+                                    title="Edit Product"
+                                  >
+                                    <FontAwesomeIcon icon={['fal', 'edit']} className="text-base" />
+                                  </Link>
+                                )}
+                                {auction.auctionableType === 'product' && (
+                                  <Link
+                                    href={`/vendor/products/${auction.auctionableId}/edit`}
+                                    className="text-gray-600 hover:text-primary"
+                                    title="Edit Product"
+                                  >
+                                    <FontAwesomeIcon icon={['fal', 'edit']} className="text-base" />
+                                  </Link>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            }
+          />
         </>
       )}
     </div>

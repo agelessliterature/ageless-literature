@@ -1,5 +1,7 @@
 'use client';
 
+import { formatMoney } from '@/lib/format';
+
 interface CreateVendorPayoutModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -32,7 +34,7 @@ export default function CreateVendorPayoutModal({
           <p className="mb-4 text-sm">
             Available Balance:{' '}
             <span className="text-xl font-bold text-green-600">
-              ${parseFloat(String(availableBalance || 0)).toFixed(2)}
+              {formatMoney(availableBalance)}
             </span>
           </p>
           <form onSubmit={onSubmit}>

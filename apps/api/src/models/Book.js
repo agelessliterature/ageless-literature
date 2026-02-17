@@ -163,6 +163,12 @@ export default (sequelize, DataTypes) => {
         defaultValue: 0,
         comment: 'View count',
       },
+      auctionLockedUntil: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        field: 'auction_locked_until',
+        comment: 'If set, item cannot be sold as fixed price until this time',
+      },
     },
     {
       tableName: 'books',
@@ -187,6 +193,7 @@ export default (sequelize, DataTypes) => {
         { fields: ['vendor_id'] },
         { fields: ['created_at'] },
         { fields: ['sid'], unique: true },
+        { fields: ['auction_locked_until'] },
       ],
     },
   );

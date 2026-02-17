@@ -4,11 +4,14 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
+import Pagination from '@/components/shared/Pagination';
 import { CloudinaryImage } from '@/components/ui/CloudinaryImage';
 import CreateOfferModal from '@/components/modals/CreateOfferModal';
 import { getApiUrl } from '@/lib/api';
+import PageLoading from '@/components/ui/PageLoading';
+import EmptyState from '@/components/ui/EmptyState';
 
 interface Offer {
   id: string;
@@ -92,11 +95,7 @@ export default function VendorOffersPage() {
   });
 
   if (status === 'loading') {
-    return (
-      <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center">Loading...</div>
-      </div>
-    );
+    return <PageLoading message="Loading offers..." fullPage={false} />;
   }
 
   if (status === 'unauthenticated') {
@@ -175,19 +174,15 @@ export default function VendorOffersPage() {
 
       {/* Offers List */}
       {isLoading ? (
-        <div className="text-center py-12">Loading offers...</div>
+        <PageLoading message="Loading offers..." fullPage={false} />
       ) : offers.length === 0 ? (
-        <div className="bg-white border border-gray-200 p-8 text-center">
-          <FontAwesomeIcon icon={['fal', 'tag']} className="text-4xl text-gray-300 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">No offers yet</h3>
-          <p className="text-gray-600 mb-4">Create custom offers to send to specific customers</p>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="bg-primary text-white px-4 py-2 hover:bg-opacity-90 transition"
-          >
-            Create Your First Offer
-          </button>
-        </div>
+        <EmptyState
+          icon={['fal', 'tag']}
+          title="No offers yet"
+          description="Create custom offers to send to specific customers"
+          actionLabel="Create Your First Offer"
+          actionOnClick={() => setShowCreateModal(true)}
+        />
       ) : (
         <div className="space-y-4">
           {offers.map((offer) => (
@@ -320,28 +315,14 @@ export default function VendorOffersPage() {
         </div>
       )}
 
-      {/* Pagination */}
-      {pagination.totalPages > 1 && (
-        <div className="mt-6 flex justify-center gap-2">
-          <button
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page === 1}
-            className="px-3 py-1 border border-gray-300 disabled:opacity-50"
-          >
-            Previous
-          </button>
-          <span className="px-3 py-1">
-            Page {page} of {pagination.totalPages}
-          </span>
-          <button
-            onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
-            disabled={page === pagination.totalPages}
-            className="px-3 py-1 border border-gray-300 disabled:opacity-50"
-          >
-            Next
-          </button>
-        </div>
-      )}
+      <Pagination
+        currentPage={page}
+        totalPages={pagination.totalPages || 1}
+        totalItems={pagination.total || 0}
+        itemsPerPage={20}
+        onPageChange={setPage}
+        className="mt-6"
+      />
 
       {/* Create Offer Modal */}
       {showCreateModal && (

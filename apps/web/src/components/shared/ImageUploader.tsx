@@ -50,10 +50,14 @@ export default function ImageUploader({ images, onChange, maxImages = 10 }: Imag
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-3 gap-3">
         {images.map((image, index) => (
-          <div key={index} className="relative group border rounded overflow-hidden">
-            <img src={image.url} alt={`Upload ${index + 1}`} className="w-full h-40 object-cover" />
+          <div key={index} className="relative group border rounded overflow-hidden aspect-[4/3]">
+            <img
+              src={image.url}
+              alt={`Upload ${index + 1}`}
+              className="w-full h-full object-cover"
+            />
             <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
               {index > 0 && (
                 <button

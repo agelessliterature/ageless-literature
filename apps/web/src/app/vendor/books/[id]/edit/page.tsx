@@ -7,6 +7,8 @@ import BookForm from '@/components/forms/BookForm';
 import AuctionModal from '@/components/modals/AuctionModal';
 import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
 import api from '@/lib/api';
+import PageLoading from '@/components/ui/PageLoading';
+import InlineError from '@/components/ui/InlineError';
 
 export default function EditBookPage() {
   const params = useParams();
@@ -55,7 +57,7 @@ export default function EditBookPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center py-12">Loading...</div>
+          <PageLoading message="Loading product..." fullPage={false} />
         </div>
       </div>
     );
@@ -65,29 +67,16 @@ export default function EditBookPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <FontAwesomeIcon
-                  icon={['fal', 'exclamation-triangle']}
-                  className="text-yellow-400"
-                />
-              </div>
-              <div className="ml-3">
-                <p className="text-sm text-yellow-700">
-                  Product not found (ID: {bookId}). This product may have been deleted or doesn't
-                  exist in this environment.
-                </p>
-                <div className="mt-4">
-                  <a
-                    href="/vendor/books"
-                    className="text-sm font-medium text-yellow-700 hover:text-yellow-600"
-                  >
-                    ← Back to Products
-                  </a>
-                </div>
-              </div>
-            </div>
+          <InlineError
+            message={`Product not found (ID: ${bookId}). This product may have been deleted or doesn't exist.`}
+          />
+          <div className="text-center mt-4">
+            <a
+              href="/vendor/books"
+              className="text-sm font-medium text-primary hover:text-secondary"
+            >
+              ← Back to Products
+            </a>
           </div>
         </div>
       </div>
@@ -96,14 +85,14 @@ export default function EditBookPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="max-w-4xl mx-auto">
+      <div className="mx-auto">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold">Edit Book</h1>
 
           <div className="flex items-center gap-3">
             {/* View Product Button */}
             <a
-              href={`/books/${book.slug || book.sid || book.id}`}
+              href={`/shop/${book.slug || book.sid || book.id}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white text-sm font-medium hover:bg-gray-700 transition-colors"

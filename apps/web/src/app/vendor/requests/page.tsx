@@ -7,6 +7,9 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
 import { getApiUrl } from '@/lib/api';
+import PageLoading from '@/components/ui/PageLoading';
+import EmptyState from '@/components/ui/EmptyState';
+import { formatMoney } from '@/lib/format';
 
 export default function VendorRequestsPage() {
   const { data: session, status } = useSession();
@@ -31,11 +34,7 @@ export default function VendorRequestsPage() {
   });
 
   if (status === 'loading') {
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center">Loading...</div>
-      </div>
-    );
+    return <PageLoading message="Loading requests..." fullPage={false} />;
   }
 
   if (status === 'unauthenticated') {
@@ -80,17 +79,13 @@ export default function VendorRequestsPage() {
 
       {/* Requests List */}
       {isLoading ? (
-        <div className="bg-white border border-gray-200 p-12 text-center">
-          <p className="text-gray-500">Loading requests...</p>
-        </div>
+        <PageLoading message="Loading requests..." fullPage={false} />
       ) : requests.length === 0 ? (
-        <div className="bg-white border border-gray-200 p-12 text-center">
-          <p className="text-gray-500 mb-4">No requests found</p>
-          <p className="text-sm text-gray-400">
-            Customer requests for rare books will appear here when they're looking for specific
-            titles.
-          </p>
-        </div>
+        <EmptyState
+          icon={['fal', 'search']}
+          title="No requests found"
+          description="Customer requests for rare books will appear here when they're looking for specific titles"
+        />
       ) : (
         <div className="space-y-4">
           {requests.map((request: any) => (
@@ -113,8 +108,8 @@ export default function VendorRequestsPage() {
                   <span className="font-medium">Condition Sought:</span> {request.condition}
                 </p>
                 <p className="text-sm text-gray-700 mb-2">
-                  <span className="font-medium">Budget:</span> $
-                  {parseFloat(request.maxPrice || 0).toFixed(2)}
+                  <span className="font-medium">Budget:</span>{' '}
+                  {formatMoney(request.maxPrice, { fromCents: false })}
                 </p>
                 {request.description && (
                   <p className="text-sm text-gray-700">

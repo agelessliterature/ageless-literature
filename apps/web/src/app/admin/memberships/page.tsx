@@ -4,6 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
 import { getApiUrl } from '@/lib/api-url';
+import ResponsiveDataView from '@/components/ui/ResponsiveDataView';
+import MobileCard from '@/components/ui/MobileCard';
+import MobileCardList from '@/components/ui/MobileCardList';
 
 interface MembershipPlan {
   id: string;
@@ -582,122 +585,196 @@ export default function AdminMembershipsPage() {
 
       {/* Subscriptions Table */}
       <div className="bg-white border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Member
-                </th>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Plan
-                </th>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Renewal Date
-                </th>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+        <ResponsiveDataView
+          breakpoint="md"
+          mobile={
+            <div>
               {loading ? (
-                <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                    Loading subscriptions...
-                  </td>
-                </tr>
+                <div className="px-6 py-12 text-center text-gray-500">Loading subscriptions...</div>
               ) : subscriptions.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                    No subscriptions found
-                  </td>
-                </tr>
+                <div className="px-6 py-12 text-center text-gray-500">No subscriptions found</div>
               ) : (
-                subscriptions.map((subscription) => (
-                  <tr
-                    key={subscription.id}
-                    className="hover:bg-gray-50 transition-colors cursor-pointer"
-                    onClick={() => openEditModal(subscription)}
-                  >
-                    <td className="px-6 py-4">
-                      <div className="flex items-center">
-                        {subscription.user.profilePhotoUrl || subscription.user.image ? (
-                          <div className="h-10 w-10 flex-shrink-0 rounded-full relative overflow-hidden">
-                            <img
-                              src={
-                                subscription.user.profilePhotoUrl || subscription.user.image || ''
-                              }
-                              alt={`${subscription.user.firstName} ${subscription.user.lastName}`}
-                              className="h-full w-full object-cover"
-                            />
-                          </div>
+                <MobileCardList gap="sm">
+                  {subscriptions.map((subscription) => (
+                    <MobileCard
+                      key={subscription.id}
+                      onClick={() => openEditModal(subscription)}
+                      thumbnail={
+                        subscription.user.profilePhotoUrl || subscription.user.image ? (
+                          <img
+                            src={subscription.user.profilePhotoUrl || subscription.user.image || ''}
+                            alt={`${subscription.user.firstName} ${subscription.user.lastName}`}
+                            className="h-full w-full object-cover rounded-full"
+                          />
                         ) : (
-                          <div className="h-10 w-10 flex-shrink-0 rounded-full bg-primary text-white flex items-center justify-center text-xs font-semibold">
+                          <div className="h-10 w-10 rounded-full bg-primary text-white flex items-center justify-center text-xs font-semibold">
                             {(() => {
                               const firstName = subscription.user.firstName || '';
                               const lastName = subscription.user.lastName || '';
-                              if (firstName && lastName) {
+                              if (firstName && lastName)
                                 return `${firstName[0]}${lastName[0]}`.toUpperCase();
-                              }
                               return subscription.user.email.substring(0, 2).toUpperCase();
                             })()}
                           </div>
-                        )}
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {subscription.user.firstName || ''} {subscription.user.lastName || ''}
-                          </div>
-                          <div className="text-sm text-gray-500">{subscription.user.email}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-semibold text-gray-900">
-                        {subscription.plan.name}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        ${subscription.plan.price}/{subscription.plan.interval}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {getStatusBadge(subscription.status)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
-                    </td>
-                    <td
-                      className="px-6 py-4 whitespace-nowrap text-sm"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <div className="flex items-center gap-3">
-                        <button
-                          onClick={() => openEditModal(subscription)}
-                          className="text-yellow-600 hover:text-yellow-900"
-                          title="Edit Membership"
-                        >
-                          <FontAwesomeIcon icon={['fal', 'edit']} className="text-base" />
-                        </button>
-                        {subscription.status === 'active' && (
-                          <button
-                            onClick={() => handleCancelSubscription(subscription.id)}
-                            disabled={isCancelling}
-                            className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                          >
-                            <FontAwesomeIcon icon={['fal', 'ban']} className="mr-1" />
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                        )
+                      }
+                      title={`${subscription.user.firstName || ''} ${subscription.user.lastName || ''}`}
+                      subtitle={subscription.user.email}
+                      badge={getStatusBadge(subscription.status)}
+                      details={[
+                        {
+                          label: 'Plan',
+                          value: `${subscription.plan.name} ($${subscription.plan.price}/${subscription.plan.interval})`,
+                        },
+                        {
+                          label: 'Renewal',
+                          value: new Date(subscription.currentPeriodEnd).toLocaleDateString(),
+                        },
+                      ]}
+                      actions={[
+                        {
+                          label: 'Edit',
+                          onClick: () => openEditModal(subscription),
+                          variant: 'primary',
+                        },
+                        ...(subscription.status === 'active'
+                          ? [
+                              {
+                                label: 'Cancel',
+                                onClick: () => handleCancelSubscription(subscription.id),
+                                variant: 'danger' as const,
+                              },
+                            ]
+                          : []),
+                      ]}
+                    />
+                  ))}
+                </MobileCardList>
               )}
-            </tbody>
-          </table>
-        </div>
+            </div>
+          }
+          desktop={
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Member
+                    </th>
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Plan
+                    </th>
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Renewal Date
+                    </th>
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {loading ? (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                        Loading subscriptions...
+                      </td>
+                    </tr>
+                  ) : subscriptions.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                        No subscriptions found
+                      </td>
+                    </tr>
+                  ) : (
+                    subscriptions.map((subscription) => (
+                      <tr
+                        key={subscription.id}
+                        className="hover:bg-gray-50 transition-colors cursor-pointer"
+                        onClick={() => openEditModal(subscription)}
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex items-center">
+                            {subscription.user.profilePhotoUrl || subscription.user.image ? (
+                              <div className="h-10 w-10 flex-shrink-0 rounded-full relative overflow-hidden">
+                                <img
+                                  src={
+                                    subscription.user.profilePhotoUrl ||
+                                    subscription.user.image ||
+                                    ''
+                                  }
+                                  alt={`${subscription.user.firstName} ${subscription.user.lastName}`}
+                                  className="h-full w-full object-cover"
+                                />
+                              </div>
+                            ) : (
+                              <div className="h-10 w-10 flex-shrink-0 rounded-full bg-primary text-white flex items-center justify-center text-xs font-semibold">
+                                {(() => {
+                                  const firstName = subscription.user.firstName || '';
+                                  const lastName = subscription.user.lastName || '';
+                                  if (firstName && lastName) {
+                                    return `${firstName[0]}${lastName[0]}`.toUpperCase();
+                                  }
+                                  return subscription.user.email.substring(0, 2).toUpperCase();
+                                })()}
+                              </div>
+                            )}
+                            <div className="ml-4">
+                              <div className="text-sm font-medium text-gray-900">
+                                {subscription.user.firstName || ''}{' '}
+                                {subscription.user.lastName || ''}
+                              </div>
+                              <div className="text-sm text-gray-500">{subscription.user.email}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-semibold text-gray-900">
+                            {subscription.plan.name}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            ${subscription.plan.price}/{subscription.plan.interval}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {getStatusBadge(subscription.status)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
+                        </td>
+                        <td
+                          className="px-6 py-4 whitespace-nowrap text-sm"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <div className="flex items-center gap-3">
+                            <button
+                              onClick={() => openEditModal(subscription)}
+                              className="text-yellow-600 hover:text-yellow-900"
+                              title="Edit Membership"
+                            >
+                              <FontAwesomeIcon icon={['fal', 'edit']} className="text-base" />
+                            </button>
+                            {subscription.status === 'active' && (
+                              <button
+                                onClick={() => handleCancelSubscription(subscription.id)}
+                                disabled={isCancelling}
+                                className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                              >
+                                <FontAwesomeIcon icon={['fal', 'ban']} className="mr-1" />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          }
+        />
       </div>
 
       {/* Pagination */}
@@ -781,10 +858,10 @@ export default function AdminMembershipsPage() {
                             <img
                               src={user.profilePhotoUrl || user.image}
                               alt={`${user.firstName} ${user.lastName}`}
-                              className="text-3xl object-cover rounded-full"
+                              className="w-12 h-12 object-cover rounded-full"
                             />
                           ) : (
-                            <div className="text-3xl rounded-full bg-primary text-white flex items-center justify-center text-xs font-semibold">
+                            <div className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center text-xs font-semibold">
                               {(() => {
                                 const firstName = user.firstName || '';
                                 const lastName = user.lastName || '';
@@ -1007,10 +1084,10 @@ export default function AdminMembershipsPage() {
                           ''
                         }
                         alt={`${editingSubscription.user.firstName} ${editingSubscription.user.lastName}`}
-                        className="text-4xl rounded-full object-cover"
+                        className="w-16 h-16 rounded-full object-cover"
                       />
                     ) : (
-                      <div className="text-4xl rounded-full bg-primary text-white flex items-center justify-center text-sm font-semibold">
+                      <div className="w-16 h-16 rounded-full bg-primary text-white flex items-center justify-center text-sm font-semibold">
                         {(() => {
                           const firstName = editingSubscription.user.firstName || '';
                           const lastName = editingSubscription.user.lastName || '';

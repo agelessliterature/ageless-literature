@@ -13,6 +13,19 @@ const __dirname = path.dirname(__filename);
 // Load environment variables from workspace root
 dotenv.config({ path: path.resolve(__dirname, '../../../../.env') });
 
+// SSL configuration helper
+const getDialectOptions = () => {
+  if (process.env.DB_SSL === 'true') {
+    return {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false,
+      },
+    };
+  }
+  return {};
+};
+
 export default {
   development: {
     use_env_variable: 'DATABASE_URL',
@@ -25,6 +38,7 @@ export default {
       idle: 10000,
       evict: 1000,
     },
+    dialectOptions: getDialectOptions(), // Support SSL in dev (for remote dev server)
   },
   test: {
     use_env_variable: 'DATABASE_URL',
@@ -36,6 +50,7 @@ export default {
       acquire: 30000,
       idle: 10000,
     },
+    dialectOptions: getDialectOptions(),
   },
   production: {
     use_env_variable: 'DATABASE_URL',
@@ -48,11 +63,6 @@ export default {
       idle: 10000,
       evict: 1000,
     },
-    dialectOptions: process.env.DB_SSL === 'true' ? {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false,
-      },
-    } : {},
+    dialectOptions: getDialectOptions(),
   },
 };

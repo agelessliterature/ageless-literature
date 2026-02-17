@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
 import { CloudinaryImage } from '@/components/ui/CloudinaryImage';
 import AuctionCountdown from '@/components/auctions/AuctionCountdown';
 import Link from 'next/link';
+import { formatMoney } from '@/lib/format';
 
 interface AuctionDetailsDrawerProps {
   isOpen: boolean;
@@ -114,20 +115,18 @@ export default function AuctionDetailsDrawer({
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Starting Bid:</span>
                   <span className="font-medium">
-                    ${parseFloat(auction.startingPrice || auction.startingBid || 0).toFixed(2)}
+                    {formatMoney(auction.startingPrice || auction.startingBid || 0)}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Current Bid:</span>
                   <span className="font-bold text-primary">
-                    {auction.currentBid ? `$${parseFloat(auction.currentBid).toFixed(2)}` : '-'}
+                    {auction.currentBid ? formatMoney(auction.currentBid) : '-'}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Reserve Price:</span>
-                  <span className="font-medium">
-                    ${parseFloat(auction.reservePrice || 0).toFixed(2)}
-                  </span>
+                  <span className="font-medium">{formatMoney(auction.reservePrice || 0)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Total Bids:</span>
@@ -221,7 +220,7 @@ export default function AuctionDetailsDrawer({
                         </div>
                       </div>
                       <div className="text-lg font-bold text-primary">
-                        ${parseFloat(bid.amount).toFixed(2)}
+                        {formatMoney(bid.amount)}
                       </div>
                     </div>
                   ))}

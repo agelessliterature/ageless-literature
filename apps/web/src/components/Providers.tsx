@@ -14,18 +14,33 @@ export function Providers({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 1000 * 60 * 5, // 5 minutes
+            staleTime: 1000 * 60 * 5, // 5 minutes - data considered fresh
+            gcTime: 1000 * 60 * 15, // 15 minutes - cache garbage collection time
             refetchOnWindowFocus: false,
+            refetchOnMount: false, // Don't refetch if data is fresh
+            refetchOnReconnect: 'always',
+            retry: (failureCount, error: any) => {
+              // Don't retry on 4xx errors (client errors)
+              if (error?.status >= 400 && error?.status < 500) return false;
+              // Retry up to 2 times for network/server errors
+              return failureCount < 2;
+            },
+            retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
+          },
+          mutations: {
             retry: 1,
+            // Optimistic caching for mutations
+            onSuccess: () => {
+              // Most mutations should invalidate related queries
+              // This will be overridden by specific mutation implementations
+            },
           },
         },
       }),
   );
 
   return (
-    <SessionProvider
-      basePath={process.env.NODE_ENV === 'production' ? '/v2/api/auth' : '/api/auth'}
-    >
+    <SessionProvider basePath={`${process.env.NEXT_PUBLIC_BASE_PATH || ''}/api/auth`}>
       <QueryClientProvider client={queryClient}>
         {children}
         <Toaster

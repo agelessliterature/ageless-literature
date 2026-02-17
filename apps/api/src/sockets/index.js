@@ -23,11 +23,11 @@ const initializeSocket = (httpServer) => {
         lazyConnect: true,
       });
       const subClient = pubClient.duplicate();
-      
+
       pubClient.on('error', (err) => {
         console.warn('Redis Pub Client Error (Socket.IO will work without Redis):', err.message);
       });
-      
+
       subClient.on('error', (err) => {
         console.warn('Redis Sub Client Error (Socket.IO will work without Redis):', err.message);
       });
@@ -39,10 +39,16 @@ const initializeSocket = (httpServer) => {
           console.log('Socket.IO Redis adapter enabled');
         })
         .catch((err) => {
-          console.warn('Could not connect to Redis, running Socket.IO in single-server mode:', err.message);
+          console.warn(
+            'Could not connect to Redis, running Socket.IO in single-server mode:',
+            err.message,
+          );
         });
     } catch (error) {
-      console.warn('Redis adapter initialization failed, running Socket.IO in single-server mode:', error.message);
+      console.warn(
+        'Redis adapter initialization failed, running Socket.IO in single-server mode:',
+        error.message,
+      );
     }
   } else {
     console.log('Socket.IO running in single-server mode (no Redis)');

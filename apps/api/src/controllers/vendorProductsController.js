@@ -82,14 +82,14 @@ export const getVendorProducts = async (req, res) => {
     }
 
     // Transform products to match frontend expectations
-    const transformedProducts = products.map(product => {
+    const transformedProducts = products.map((product) => {
       const productData = product.toJSON();
-      
+
       // Get primary image or first image from media array
-      const primaryImage = productData.media?.find(m => m.isPrimary);
+      const primaryImage = productData.media?.find((m) => m.isPrimary);
       const firstImage = productData.media?.[0];
       const imageSource = primaryImage || firstImage;
-      
+
       // Debug logging
       if (productData.id === 394 || productData.id === 550) {
         console.log(`[DEBUG] Product ${productData.id} - ${productData.title}`);
@@ -97,9 +97,12 @@ export const getVendorProducts = async (req, res) => {
         console.log(`[DEBUG] First media:`, firstImage);
         console.log(`[DEBUG] Primary image:`, primaryImage);
         console.log(`[DEBUG] Image source:`, imageSource);
-        console.log(`[DEBUG] Final imageUrl:`, imageSource?.imageUrl || imageSource?.thumbnailUrl || null);
+        console.log(
+          `[DEBUG] Final imageUrl:`,
+          imageSource?.imageUrl || imageSource?.thumbnailUrl || null,
+        );
       }
-      
+
       return {
         ...productData,
         inventory: productData.quantity || 0, // Map quantity to inventory for frontend
@@ -169,12 +172,12 @@ export const getVendorProduct = async (req, res) => {
 
     // Transform product to match frontend expectations
     const productData = product.toJSON();
-    
+
     // Get primary image or first image from media array
-    const primaryImage = productData.media?.find(m => m.isPrimary);
+    const primaryImage = productData.media?.find((m) => m.isPrimary);
     const firstImage = productData.media?.[0];
     const imageSource = primaryImage || firstImage;
-    
+
     const transformedProduct = {
       ...productData,
       inventory: productData.quantity || 0, // Map quantity to inventory for frontend
@@ -275,7 +278,7 @@ export const createProduct = async (req, res) => {
 
     // Handle category associations
     if (categoryIds && Array.isArray(categoryIds) && categoryIds.length > 0) {
-      const categoryRecords = categoryIds.map(categoryId => ({
+      const categoryRecords = categoryIds.map((categoryId) => ({
         bookId: product.id,
         categoryId: parseInt(categoryId),
       }));
@@ -409,7 +412,7 @@ export const updateProduct = async (req, res) => {
 
       // Add new category associations
       if (req.body.categoryIds && req.body.categoryIds.length > 0) {
-        const categoryRecords = req.body.categoryIds.map(categoryId => ({
+        const categoryRecords = req.body.categoryIds.map((categoryId) => ({
           bookId: parseInt(id),
           categoryId: parseInt(categoryId),
         }));
@@ -554,6 +557,117 @@ export const updateProductStatus = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Failed to update product status',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Update product quantity
+ * PATCH /api/vendor/products/:id/quantity
+ */
+export const updateProductQuantity = async (req, res) => {
+  try {
+    const userId = req.user?.userId || req.user?.id;
+    const { id } = req.params;
+    const { quantity } = req.body;
+
+    if (quantity === undefined || quantity === null || quantity < 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid quantity value',
+      });
+    }
+
+    const vendor = await Vendor.findOne({ where: { userId } });
+    if (!vendor) {
+      return res.status(404).json({
+        success: false,
+        message: 'Vendor profile not found',
+      });
+    }
+
+    const product = await Book.findOne({
+      where: { id, vendorId: vendor.id },
+    });
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found',
+      });
+    }
+
+    const updates = { quantity };
+    if (quantity === 0 && product.status === 'active') {
+      updates.status = 'sold';
+    } else if (quantity > 0 && product.status === 'sold') {
+      updates.status = 'active';
+    }
+
+    await product.update(updates);
+
+    return res.json({
+      success: true,
+      message: 'Product quantity updated successfully',
+      data: product,
+    });
+  } catch (error) {
+    console.error('Error updating product quantity:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to update product quantity',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Relist a sold/archived product
+ * POST /api/vendor/products/:id/relist
+ */
+export const relistProduct = async (req, res) => {
+  try {
+    const userId = req.user?.userId || req.user?.id;
+    const { id } = req.params;
+    const { quantity } = req.body;
+
+    const vendor = await Vendor.findOne({ where: { userId } });
+    if (!vendor) {
+      return res.status(404).json({
+        success: false,
+        message: 'Vendor profile not found',
+      });
+    }
+
+    const product = await Book.findOne({
+      where: { id, vendorId: vendor.id },
+    });
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found',
+      });
+    }
+
+    await product.update({
+      status: 'active',
+      quantity: quantity || 1,
+    });
+
+    indexBook(id).catch((err) => console.error('Failed to index book:', err));
+
+    return res.json({
+      success: true,
+      message: 'Product relisted successfully',
+      data: product,
+    });
+  } catch (error) {
+    console.error('Error relisting product:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to relist product',
       error: error.message,
     });
   }

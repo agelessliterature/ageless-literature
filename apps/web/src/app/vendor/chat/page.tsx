@@ -9,6 +9,7 @@ import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
 import toast from 'react-hot-toast';
 import { getApiUrl } from '@/lib/api';
 import { useChatSocket } from '@/hooks/useChatSocket';
+import PageLoading from '@/components/ui/PageLoading';
 
 export default function VendorChatPage() {
   const { data: session, status } = useSession();
@@ -21,8 +22,7 @@ export default function VendorChatPage() {
 
   // Handle new messages from socket
   const handleNewMessage = useCallback(
-    (message: any) => {
-      console.log('Received new message via socket:', message);
+    (_message: any) => {
       queryClient.invalidateQueries({ queryKey: ['vendor-messages', selectedConversation?.id] });
       queryClient.invalidateQueries({ queryKey: ['vendor-conversations'] });
     },
@@ -101,11 +101,7 @@ export default function VendorChatPage() {
   }, [messagesData]);
 
   if (status === 'loading') {
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center">Loading...</div>
-      </div>
-    );
+    return <PageLoading message="Loading chat..." fullPage={false} />;
   }
 
   if (status === 'unauthenticated') {

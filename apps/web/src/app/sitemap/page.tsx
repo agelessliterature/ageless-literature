@@ -14,7 +14,7 @@ export default function SitemapPage() {
           <h2 className="text-2xl font-semibold mb-4">Shop</h2>
           <ul className="space-y-2">
             <li>
-              <Link href="/books" className="text-secondary hover:underline">
+              <Link href="/shop" className="text-secondary hover:underline">
                 Browse Books
               </Link>
             </li>

@@ -79,7 +79,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch dashboard data
+    // Fetch dashboard data (using new aggregated endpoint)
     const fetchDashboardData = async () => {
       try {
         const API_URL = getApiUrl();
@@ -91,89 +91,52 @@ export default function AdminDashboard() {
           headers['Authorization'] = `Bearer ${session.accessToken}`;
         }
 
-        // Fetch user stats
-        const userStatsRes = await fetch(`${API_URL}/api/admin/users/stats`, {
+        // Single API call to get all dashboard data
+        const dashboardRes = await fetch(`${API_URL}/api/admin/dashboard`, {
           headers,
           credentials: 'include',
         });
-        const userStats = await userStatsRes.json();
 
-        // Fetch vendor stats
-        const vendorStatsRes = await fetch(`${API_URL}/api/admin/vendors/stats`, {
-          headers,
-          credentials: 'include',
-        });
-        const vendorStats = await vendorStatsRes.json();
+        if (!dashboardRes.ok) {
+          throw new Error(`Dashboard API failed: ${dashboardRes.status}`);
+        }
 
-        // Fetch payout stats for total sales
-        const payoutStatsRes = await fetch(`${API_URL}/api/admin/payouts/stats`, {
-          headers,
-          credentials: 'include',
-        });
-        const payoutStats = await payoutStatsRes.json();
+        const dashboardData = await dashboardRes.json();
 
-        // Fetch recent orders
-        const ordersRes = await fetch(
-          `${API_URL}/api/admin/orders?limit=5&sort=createdAt&order=desc`,
-          {
-            headers,
-            credentials: 'include',
-          },
-        );
-        const ordersData = await ordersRes.json();
+        if (!dashboardData.success) {
+          throw new Error('Dashboard API returned error');
+        }
 
-        // Fetch pending vendor count
-        const pendingVendorsRes = await fetch(`${API_URL}/api/admin/vendors?status=pending`, {
-          headers,
-          credentials: 'include',
-        });
-        const pendingVendorsData = await pendingVendorsRes.json();
+        const data = dashboardData.data;
 
-        // Fetch pending orders count
-        const pendingOrdersRes = await fetch(`${API_URL}/api/admin/orders?status=pending`, {
-          headers,
-          credentials: 'include',
-        });
-        const pendingOrdersData = await pendingOrdersRes.json();
-
-        // Fetch auction stats
-        const auctionStatsRes = await fetch(`${API_URL}/api/auctions?limit=1`, {
-          headers,
-          credentials: 'include',
-        });
-        const auctionStatsData = await auctionStatsRes.json();
-
-        // Set stats (using approved vendors, not 'active' which doesn't exist)
+        // Set stats from aggregated response
         setStats({
-          totalUsers: userStats.data?.total || 0,
-          activeVendors: vendorStats.data?.approved || 0,
-          totalSales: payoutStats.data?.totalPaid || 0,
-          activeMembers: userStats.data?.withMembership || 0,
-          totalAuctions: auctionStatsData.data?.total || 0,
+          totalUsers: data.stats.totalUsers,
+          activeVendors: data.stats.activeVendors,
+          totalSales: data.stats.totalSales,
+          activeMembers: data.stats.activeUsers, // Using active users as proxy for members
+          totalAuctions: data.stats.totalAuctions,
         });
 
-        // Set quick actions
+        // Set quick actions from aggregated response
         setQuickActions({
-          pendingVendors: pendingVendorsData.data?.total || 0,
-          pendingOrders: pendingOrdersData.data?.total || 0,
+          pendingVendors: data.quickActions.pendingVendors,
+          pendingOrders: data.quickActions.pendingOrders,
         });
 
-        // Format and set recent orders
-        if (ordersData.success && ordersData.data) {
-          const orders = Array.isArray(ordersData.data)
-            ? ordersData.data
-            : ordersData.data.orders || [];
-          const formattedOrders = orders.slice(0, 5).map((order: any) => ({
+        // Format and set recent orders from aggregated response
+        if (data.recentOrders?.length > 0) {
+          const formattedOrders = data.recentOrders.map((order: any) => ({
             id: order.id,
-            orderNumber: order.orderNumber || `ORD-${order.id}`,
-            customer: order.User?.name || 'Unknown',
+            orderNumber: order.orderNumber,
+            customer: order.customer,
             total: parseFloat(order.totalAmount || 0),
-            status: order.status || 'pending',
+            status: order.status,
             date: formatRelativeTime(order.createdAt),
           }));
           setRecentOrders(formattedOrders);
 
-          // Generate recent actions from real data
+          // Generate recent actions from aggregated data
           const actions: RecentAction[] = [];
 
           // Add recent orders as actions
@@ -187,22 +150,22 @@ export default function AdminDashboard() {
             });
           });
 
-          // Add pending vendors notification
-          if (quickActions.pendingVendors > 0) {
+          // Add pending vendors notification from aggregated data
+          if (data.quickActions.pendingVendors > 0) {
             actions.push({
               id: actions.length + 1,
-              action: `${quickActions.pendingVendors} vendor application${quickActions.pendingVendors > 1 ? 's' : ''} awaiting review`,
+              action: `${data.quickActions.pendingVendors} vendor application${data.quickActions.pendingVendors > 1 ? 's' : ''} awaiting review`,
               user: 'System',
               timestamp: 'Pending',
               type: 'warning',
             });
           }
 
-          // Add user stats
-          if (userStats.data?.total > 0) {
+          // Add user stats from aggregated data
+          if (data.stats.totalUsers > 0) {
             actions.push({
               id: actions.length + 1,
-              action: `Platform has ${userStats.data.total} registered users`,
+              action: `Platform has ${data.stats.totalUsers} registered users`,
               user: 'System',
               timestamp: 'Current',
               type: 'info',

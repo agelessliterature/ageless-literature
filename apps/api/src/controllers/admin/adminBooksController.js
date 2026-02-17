@@ -39,32 +39,30 @@ export const listAll = async (req, res) => {
     }
     if (category) {
       // Filter by category slug or id
-      const categoryWhere = isNaN(category)
-        ? { slug: category }
-        : { id: parseInt(category) };
+      const categoryWhere = isNaN(category) ? { slug: category } : { id: parseInt(category) };
       const cat = await Category.findOne({ where: categoryWhere });
       if (cat) {
         // Use a subquery approach
         const bookIds = await db.sequelize.query(
           `SELECT bc.book_id FROM book_categories bc WHERE bc.category_id = :catId`,
-          { replacements: { catId: cat.id }, type: db.sequelize.QueryTypes.SELECT }
+          { replacements: { catId: cat.id }, type: db.sequelize.QueryTypes.SELECT },
         );
-        where.id = { [Op.in]: bookIds.map(b => b.book_id) };
+        where.id = { [Op.in]: bookIds.map((b) => b.book_id) };
       }
     }
 
     // Map sortBy values to Sequelize model attribute names
     const sortByMap = {
-      'menu_order': 'menuOrder',
-      'menuOrder': 'menuOrder',
-      'title': 'title',
-      'price': 'price',
-      'created_at': 'createdAt',
-      'createdAt': 'createdAt',
-      'updated_at': 'updatedAt',
-      'updatedAt': 'updatedAt',
-      'author': 'author',
-      'id': 'id',
+      menu_order: 'menuOrder',
+      menuOrder: 'menuOrder',
+      title: 'title',
+      price: 'price',
+      created_at: 'createdAt',
+      createdAt: 'createdAt',
+      updated_at: 'updatedAt',
+      updatedAt: 'updatedAt',
+      author: 'author',
+      id: 'id',
     };
     const safeSortBy = sortByMap[sortBy] || 'menuOrder';
     const safeSortOrder = sortOrder.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
@@ -75,13 +73,22 @@ export const listAll = async (req, res) => {
       include: [
         { model: Vendor, as: 'vendor', attributes: ['id', 'shopName', 'shopUrl'] },
         {
-          model: BookMedia, as: 'media',
+          model: BookMedia,
+          as: 'media',
           attributes: ['id', 'imageUrl', 'thumbnailUrl', 'isPrimary', 'displayOrder'],
           separate: true,
           limit: 1,
-          order: [['isPrimary', 'DESC'], ['displayOrder', 'ASC']],
+          order: [
+            ['isPrimary', 'DESC'],
+            ['displayOrder', 'ASC'],
+          ],
         },
-        { model: Category, as: 'categories', through: { attributes: [] }, attributes: ['id', 'name', 'slug'] },
+        {
+          model: Category,
+          as: 'categories',
+          through: { attributes: [] },
+          attributes: ['id', 'name', 'slug'],
+        },
       ],
       order: [[safeSortBy, safeSortOrder]],
       limit: parseInt(limit),
@@ -167,11 +174,13 @@ export const updateMenuOrder = async (req, res) => {
     }
 
     // Build a single CASE WHEN query for efficiency
-    const cases = items.map(i => `WHEN ${parseInt(i.id)} THEN ${parseInt(i.menuOrder)}`).join(' ');
-    const ids = items.map(i => parseInt(i.id)).join(',');
+    const cases = items
+      .map((i) => `WHEN ${parseInt(i.id)} THEN ${parseInt(i.menuOrder)}`)
+      .join(' ');
+    const ids = items.map((i) => parseInt(i.id)).join(',');
 
     await db.sequelize.query(
-      `UPDATE books SET menu_order = CASE id ${cases} END WHERE id IN (${ids})`
+      `UPDATE books SET menu_order = CASE id ${cases} END WHERE id IN (${ids})`,
     );
 
     res.json({
@@ -196,13 +205,21 @@ export const syncMenuOrderFromProd = async (req, res) => {
     const path = await import('path');
     const { fileURLToPath } = await import('url');
 
-    // Run the sync script with --from-file if a recent export exists, 
+    // Run the sync script with --from-file if a recent export exists,
     // otherwise do a fresh pull from PROD
-    const scriptDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..', '..', '..', 'scripts');
+    const scriptDir = path.join(
+      path.dirname(fileURLToPath(import.meta.url)),
+      '..',
+      '..',
+      '..',
+      '..',
+      '..',
+      'scripts',
+    );
     const scriptPath = path.join(scriptDir, 'sync-menu-order.cjs');
 
-    // Check for recent report file to use as cache
-    const reportsDir = path.join(scriptDir, '..', 'reports', 'menu-order-sync');
+    // Check for recent report file to use as cache (currently unused)
+    // const reportsDir = path.join(scriptDir, '..', 'reports', 'menu-order-sync');
     let args = '';
 
     try {
@@ -213,8 +230,6 @@ export const syncMenuOrderFromProd = async (req, res) => {
       });
 
       // Parse the report from the output
-      const lines = output.split('\n');
-      const summaryStart = lines.findIndex(l => l.includes('MENU ORDER SYNC REPORT'));
 
       res.json({
         success: true,

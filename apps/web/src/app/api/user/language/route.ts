@@ -36,8 +36,30 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    // For now, return success without actually updating backend
-    // This simulates the update until backend API is fully implemented
+    // Call backend API to persist language preference
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+    const backendResponse = await fetch(`${apiUrl}/api/users/${token.id}/language`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token.accessToken}`,
+      },
+      body: JSON.stringify({ defaultLanguage: newLanguage }),
+    });
+
+    if (!backendResponse.ok) {
+      const errorData = await backendResponse.json().catch(() => ({}));
+      return NextResponse.json(
+        {
+          success: false,
+          message: errorData.message || 'Failed to update language on backend',
+        },
+        { status: backendResponse.status },
+      );
+    }
+
+    // Successfully updated on backend
+    await backendResponse.json();
 
     return NextResponse.json({
       success: true,

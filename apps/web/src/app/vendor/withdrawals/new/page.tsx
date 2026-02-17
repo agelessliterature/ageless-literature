@@ -8,6 +8,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
 import toast from 'react-hot-toast';
 import { getApiUrl } from '@/lib/api';
+import PageLoading from '@/components/ui/PageLoading';
+import { formatMoney } from '@/lib/format';
 
 export default function NewWithdrawalPage() {
   const { data: session } = useSession();
@@ -65,11 +67,7 @@ export default function NewWithdrawalPage() {
   }
 
   if (isLoading) {
-    return (
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center">Loading...</div>
-      </div>
-    );
+    return <PageLoading message="Loading withdrawal form..." fullPage={false} />;
   }
 
   const vendor = dashboardData?.vendor;
@@ -120,9 +118,12 @@ export default function NewWithdrawalPage() {
       {/* Balance Card */}
       <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 p-6 mb-8">
         <p className="text-sm text-gray-600 mb-1">Available Balance</p>
-        <p className="text-4xl font-bold text-green-600">${availableBalance.toFixed(2)}</p>
+        <p className="text-4xl font-bold text-green-600">
+          {formatMoney(availableBalance, { fromCents: false })}
+        </p>
         <p className="text-xs text-gray-500 mt-2">
-          Minimum withdrawal: $10.00 | Maximum withdrawal: ${availableBalance.toFixed(2)}
+          Minimum withdrawal: $10.00 | Maximum withdrawal:{' '}
+          {formatMoney(availableBalance, { fromCents: false })}
         </p>
       </div>
 
@@ -164,7 +165,7 @@ export default function NewWithdrawalPage() {
             />
           </div>
           <p className="text-xs text-gray-500 mt-1">
-            Enter amount between $10.00 and ${availableBalance.toFixed(2)}
+            Enter amount between $10.00 and {formatMoney(availableBalance, { fromCents: false })}
           </p>
         </div>
 

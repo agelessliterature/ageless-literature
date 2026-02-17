@@ -20,6 +20,8 @@ import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
 import { initSocket } from '@/lib/socket';
 import { useQueryClient } from '@tanstack/react-query';
+import PageLoading from '@/components/ui/PageLoading';
+import EmptyState from '@/components/ui/EmptyState';
 
 export default function NotificationsPage() {
   const { status } = useSession();
@@ -73,10 +75,7 @@ export default function NotificationsPage() {
   if (status === 'loading' || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p>Loading notifications...</p>
-        </div>
+        <PageLoading message="Loading notifications..." fullPage={false} />
       </div>
     );
   }
@@ -142,17 +141,17 @@ export default function NotificationsPage() {
 
       {/* Notifications List */}
       {notifications.length === 0 ? (
-        <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-          <FontAwesomeIcon icon={['fal', 'bell-slash']} className="text-6xl text-gray-300 mb-4" />
-          <h3 className="text-xl font-semibold text-gray-700 mb-2">No notifications yet</h3>
-          <p className="text-gray-500">
-            {filter === 'unread'
+        <EmptyState
+          icon={['fal', 'bell-slash']}
+          title="No notifications yet"
+          description={
+            filter === 'unread'
               ? "You're all caught up! No unread notifications."
               : filter === 'read'
                 ? 'No read notifications to show.'
-                : "When you receive notifications, they'll appear here."}
-          </p>
-        </div>
+                : "When you receive notifications, they'll appear here."
+          }
+        />
       ) : (
         <>
           <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-200">

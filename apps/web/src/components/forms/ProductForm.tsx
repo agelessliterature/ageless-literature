@@ -17,15 +17,35 @@ interface ProductFormProps {
 
 export default function ProductForm({ product, isEdit = false }: ProductFormProps) {
   const router = useRouter();
-  const [images, setImages] = useState<
-    Array<{ url: string; publicId: string; thumbnail?: string }>
-  >(product?.images || []);
+
+  // Transform product images to ImageUploader format
+  const initialImages = product?.images
+    ? Array.isArray(product.images)
+      ? product.images.map((img: any) =>
+          typeof img === 'string'
+            ? {
+                url: img,
+                publicId: img.split('/').pop() || '',
+                thumbnail: img,
+              }
+            : {
+                url: img.url || img.imageUrl || img,
+                publicId: img.publicId || img.url?.split('/').pop() || '',
+                thumbnail: img.thumbnail || img.thumbnailUrl || img.url || img.imageUrl || img,
+              },
+        )
+      : []
+    : [];
+
+  const [images, setImages] =
+    useState<Array<{ url: string; publicId: string; thumbnail?: string }>>(initialImages);
   const [categoryIds, setCategoryIds] = useState<number[]>(
     product?.categories?.map((c) => c.id) || [],
   );
   const [includeShortDescription, setIncludeShortDescription] = useState<boolean>(
     !!product?.shortDescription,
   );
+  const [includeCondition, setIncludeCondition] = useState<boolean>(!!product?.condition);
   const [formData, setFormData] = useState<Partial<ProductFormData>>({
     title: product?.title || '',
     description:
@@ -39,7 +59,7 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
       .replace(/<[^>]*>/g, '')
       .trim(),
     price: product?.price?.toString() || '',
-    condition: product?.condition || 'Good',
+    condition: product?.condition || undefined,
     quantity: product?.quantity || 1,
     artist: product?.artist || '',
     yearMade: product?.yearMade || undefined,
@@ -95,6 +115,8 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
       categoryIds,
       // Only include shortDescription if checkbox is checked
       shortDescription: includeShortDescription ? formData.shortDescription : undefined,
+      // Only include condition if checkbox is checked
+      condition: includeCondition ? formData.condition : undefined,
     };
 
     mutation.mutate(dataToSubmit);
@@ -236,20 +258,37 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Condition <span className="text-red-500">*</span>
-            </label>
-            <select
-              value={formData.condition}
-              onChange={(e) => handleChange('condition', e.target.value)}
-              className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
-            >
-              {PRODUCT_CONDITIONS.map((cond) => (
-                <option key={cond} value={cond}>
-                  {cond}
-                </option>
-              ))}
-            </select>
+            <div className="flex items-center gap-2 mb-2">
+              <input
+                type="checkbox"
+                id="includeCondition"
+                checked={includeCondition}
+                onChange={(e) => setIncludeCondition(e.target.checked)}
+                className="h-4 w-4 text-black border-gray-300 focus:ring-black"
+              />
+              <label
+                htmlFor="includeCondition"
+                className="text-sm font-medium text-gray-700 cursor-pointer"
+              >
+                Add condition?
+              </label>
+            </div>
+            {includeCondition && (
+              <>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Condition</label>
+                <select
+                  value={formData.condition}
+                  onChange={(e) => handleChange('condition', e.target.value)}
+                  className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                >
+                  {PRODUCT_CONDITIONS.map((cond) => (
+                    <option key={cond} value={cond}>
+                      {cond}
+                    </option>
+                  ))}
+                </select>
+              </>
+            )}
           </div>
         </div>
       </div>

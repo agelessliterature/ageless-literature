@@ -19,10 +19,21 @@
     },
     "featuredAuctions": {
       "title": "Enchères en Vedette",
+      "subtitle": "Enchérissez sur des pièces extraordinaires de notre collection d'enchères organisées",
       "viewAll": "Voir Toutes les Enchères",
       "bidNow": "Enchérir Maintenant",
       "ending": "Se Termine",
-      "currentBid": "Enchère Actuelle"
+      "endingSoon": "SE TERMINE BIENTÔT",
+      "currentBid": "OFFRE ACTUELLE",
+      "startingBid": "OFFRE DE DÉPART",
+      "currency": "USD",
+      "bid": "offre",
+      "bids": "offres",
+      "noAuctions": "Aucune enchère active pour le moment",
+      "checkBackSoon": "Revenez bientôt pour des articles passionnants!",
+      "previousAuction": "Enchère précédente",
+      "nextAuction": "Enchère suivante",
+      "goToAuction": "Aller à l'enchère"
     },
     "memberships": {
       "title": "Rejoignez Notre Communauté",
@@ -93,9 +104,37 @@
     },
     "stats": {
       "rareBooksListed": "Livres rares répertoriés",
-      "trustedBooksellers": "Libraires de confiance",
+      "trustedBooksellers": "Libraires et Galeries Vérifiés",
       "countriesWorldwide": "Pays dans le monde",
       "customerSupport": "Support client"
+    },
+    "curatedSection": {
+      "title": "Livres Rares Organisés",
+      "titleLine2": "pour Les Collectionneurs Sérieux.",
+      "description": "Plus de 12 000 livres rares et œuvres de collection",
+      "descriptionLine2": "chacun sélectionné pour sa signification et sa valeur durable.",
+      "cta": "Explorer la Collection"
+    },
+    "trustBadges": {
+      "provenance": "Catalogage\nCentré sur la Provenance",
+      "transparency": "Transparence de l'État",
+      "shipping": "Expédition Assurée et Sécurisée",
+      "guidance": "Conseils de Niveau Collectionneur"
+    },
+    "highSpots": {
+      "title": "TEMPS FORTS",
+      "description": "Explorez notre inventaire récemment ajouté comprenant des acquisitions de qualité muséale, des manuscrits rares, des œuvres imprimées anciennes richement colorées et des affiches historiquement significatives.",
+      "cta": "EXPLORER",
+      "sectionTitle": "Sélection vedette",
+      "sectionSubtitle": "Acquisitions Récentes de Qualité Muséale",
+      "viewAll": "VOIR TOUT"
+    },
+    "categories": {
+      "title": "CATÉGORIES",
+      "viewAll": "VOIR TOUTES LES CATÉGORIES"
+    },
+    "downloadApp": {
+      "title": "TÉLÉCHARGEZ NOTRE APPLICATION MOBILE"
     }
   },
   "account": {

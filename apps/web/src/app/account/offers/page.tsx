@@ -116,7 +116,7 @@ export default function UserOffersPage() {
 
   const getItemLink = (offer: Offer) => {
     if (offer.itemType === 'book' && offer.item?.sid) {
-      return `/books/${offer.item.sid}`;
+      return `/shop/${offer.item.sid}`;
     }
     if (offer.itemType === 'product' && offer.item?.sid) {
       return `/collectibles/${offer.item.sid}`;

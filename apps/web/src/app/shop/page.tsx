@@ -7,9 +7,15 @@ import { useQuery } from '@tanstack/react-query';
 import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
 import { BookCard } from '@/components/books/BookCard';
 import { BooksFilters } from '@/components/books/BooksFilters';
+import Pagination from '@/components/shared/Pagination';
 import api from '@/lib/api';
 import { withBasePath } from '@/lib/path-utils';
 import type { BookListItem } from '@/types';
+import { Auction } from '@/types/Auction';
+import AuctionCountdown from '@/components/auctions/AuctionCountdown';
+import PageLoading from '@/components/ui/PageLoading';
+import InlineError from '@/components/ui/InlineError';
+import EmptyState from '@/components/ui/EmptyState';
 
 interface BooksResponse {
   success: boolean;
@@ -74,6 +80,11 @@ export default function ShopPage() {
     setPage(1);
   }, [filters]);
 
+  // Scroll to top when page changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [page]);
+
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['books', filters, page],
     queryFn: async () => {
@@ -97,8 +108,32 @@ export default function ShopPage() {
     gcTime: 0,
   });
 
+  // Fetch active auctions
+  const { data: auctionsData } = useQuery<Auction[]>({
+    queryKey: ['active-auctions-shop'],
+    queryFn: async () => {
+      const response = await api.get('/auctions', {
+        params: {
+          status: 'active',
+          limit: 100,
+        },
+      });
+      return response.data.data || [];
+    },
+  });
+
   const books = data?.data ?? [];
   const pagination = data?.pagination ?? { total: 0, page: 1, limit: 24, totalPages: 1 };
+
+  // Create a map of bookId -> auction for easy lookup
+  const auctionMap = new Map<number, Auction>();
+  if (auctionsData) {
+    auctionsData.forEach((auction) => {
+      if (auction.auctionableType === 'book' && auction.auctionableId) {
+        auctionMap.set(Number(auction.auctionableId), auction);
+      }
+    });
+  }
 
   const handleFilterChange = (newFilters: Partial<FilterState>) => {
     setFilters((prev) => ({ ...prev, ...newFilters }));
@@ -114,32 +149,6 @@ export default function ShopPage() {
       sortBy: 'menu_order',
       sortOrder: 'ASC',
     });
-  };
-
-  // Pagination helper
-  const getPageNumbers = () => {
-    const { page: currentPage, totalPages } = pagination;
-    const pages: (number | string)[] = [];
-
-    if (totalPages <= 7) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      pages.push(1);
-      if (currentPage > 3) pages.push('...');
-      for (
-        let i = Math.max(2, currentPage - 1);
-        i <= Math.min(totalPages - 1, currentPage + 1);
-        i++
-      ) {
-        pages.push(i);
-      }
-      if (currentPage < totalPages - 2) pages.push('...');
-      pages.push(totalPages);
-    }
-
-    return pages;
   };
 
   return (
@@ -218,142 +227,136 @@ export default function ShopPage() {
       {/* Main Content */}
       <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Loading State */}
-        {isLoading && (
-          <div className="flex items-center justify-center py-20">
-            <div className="text-center">
-              <FontAwesomeIcon
-                icon={['fal', 'spinner-third']}
-                spin
-                className="text-5xl text-primary mb-4"
-              />
-              <p className="text-gray-600">Loading books...</p>
-            </div>
-          </div>
-        )}
+        {isLoading && <PageLoading message="Loading books..." fullPage={false} />}
 
         {/* Error State */}
         {isError && (
           <div className="flex items-center justify-center py-20">
-            <div className="text-center max-w-md">
-              <FontAwesomeIcon
-                icon={['fal', 'exclamation-circle']}
-                className="text-6xl text-red-600 mb-4"
-              />
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Something went wrong</h2>
-              <p className="text-gray-600 mb-6">
-                {error instanceof Error ? error.message : 'Failed to load books'}
-              </p>
-              <button
-                onClick={() => window.location.reload()}
-                className="px-6 py-2 bg-primary text-white hover:bg-primary-dark transition-colors"
-              >
-                Try Again
-              </button>
-            </div>
+            <InlineError
+              message={error instanceof Error ? error.message : 'Failed to load books'}
+              onRetry={() => window.location.reload()}
+            />
           </div>
         )}
 
-        {/* Empty State */}
+        {/* No Books State */}
         {!isLoading && !isError && books.length === 0 && (
-          <div className="flex items-center justify-center py-20">
-            <div className="text-center max-w-md">
-              <FontAwesomeIcon icon={['fal', 'book']} className="text-8xl text-gray-300 mb-6" />
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">No books found</h2>
-              <p className="text-gray-600 mb-6">
-                Try adjusting your filters or search terms to find what you're looking for.
-              </p>
-              <button
-                onClick={clearFilters}
-                className="px-6 py-2 bg-primary text-white hover:bg-primary-dark transition-colors"
-              >
-                Clear Filters
-              </button>
-            </div>
-          </div>
+          <EmptyState
+            icon={['fal', 'book']}
+            title="No books found"
+            description="Try adjusting your filters or search terms to find what you're looking for."
+            actionLabel="Clear Filters"
+            onAction={clearFilters}
+          />
         )}
 
         {/* Books Grid */}
         {!isLoading && !isError && books.length > 0 && (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {books.map((book) => (
-                <BookCard key={book.id} book={book} />
-              ))}
+              {books.map((book) => {
+                const auction = auctionMap.get(book.id);
+
+                // Render auction card if this book has an active auction
+                if (auction) {
+                  const itemImage =
+                    book.primaryImage ||
+                    (book as any).images?.[0]?.url ||
+                    (book as any).media?.[0]?.imageUrl ||
+                    '/placeholder.jpg';
+                  const endDate = (auction as any).endDate || (auction as any).endsAt;
+                  const isEndingSoon =
+                    endDate && new Date(endDate).getTime() - Date.now() < 24 * 60 * 60 * 1000;
+
+                  return (
+                    <Link
+                      key={book.id}
+                      href={withBasePath(
+                        `/products/${book.slug || book.id}?auctionId=${auction.id}`,
+                      )}
+                      className="group block bg-black shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 overflow-hidden"
+                      style={{ borderRadius: '1.5rem' }}
+                    >
+                      {/* Status Badge - Red "ENDING SOON" */}
+                      <div className="relative">
+                        {isEndingSoon && (
+                          <div
+                            className="absolute top-4 right-4 z-10 bg-red-600 text-white px-3 py-1 text-xs font-bold shadow-lg"
+                            style={{ borderRadius: 0 }}
+                          >
+                            ENDING SOON
+                          </div>
+                        )}
+
+                        {/* Image */}
+                        <div className="aspect-[3/4] bg-gray-100 overflow-hidden">
+                          <img
+                            src={itemImage}
+                            alt={book.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Content */}
+                      <div className="p-6">
+                        <h3 className="text-sm font-semibold text-white mb-1 group-hover:text-secondary transition-colors line-clamp-2 h-14">
+                          {book.title}
+                        </h3>
+
+                        {/* Bid Price */}
+                        <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-700">
+                          <span className="text-sm text-gray-300 font-semibold">
+                            {auction.bidCount ? 'CURRENT BID' : 'STARTING BID'}
+                          </span>
+                          <span className="text-2xl font-bold text-white">
+                            {Math.floor(
+                              Number(auction.bidCount ? auction.currentBid : auction.startingPrice),
+                            )}{' '}
+                            USD
+                          </span>
+                        </div>
+
+                        {/* Bid Count and Timer */}
+                        <div className="flex justify-between items-center text-sm text-gray-300 mb-4">
+                          <span className="flex items-center gap-1">
+                            <FontAwesomeIcon icon={['fal', 'hammer'] as [string, string]} />
+                            {auction.bidCount || 0} {auction.bidCount === 1 ? 'bid' : 'bids'}
+                          </span>
+                          <span className="font-semibold flex items-center gap-1">
+                            <FontAwesomeIcon icon={['fal', 'clock'] as [string, string]} />
+                            <AuctionCountdown endsAt={endDate} />
+                          </span>
+                        </div>
+
+                        {/* Bid Button */}
+                        <div
+                          className="flex items-center justify-center gap-2 bg-secondary hover:bg-secondary/90 text-white hover:text-black px-6 py-2 text-sm font-semibold transition-all duration-300 w-full border-2 border-black hover:border-secondary cursor-pointer"
+                          style={{ borderRadius: '1.5rem' }}
+                          role="button"
+                          tabIndex={0}
+                        >
+                          BID NOW
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                }
+
+                // Render regular book card
+                return <BookCard key={book.id} book={book} />;
+              })}
             </div>
 
             {/* Pagination */}
-            {pagination.totalPages > 1 && (
-              <div className="bg-white px-4 py-3 border-t border-gray-200 sm:px-6 mt-8 mb-8">
-                {/* Mobile Pagination */}
-                <div className="flex justify-between">
-                  <button
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    disabled={page === 1}
-                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Previous
-                  </button>
-                  <button
-                    onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
-                    disabled={page === pagination.totalPages}
-                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Next
-                  </button>
-                </div>
-
-                {/* Desktop Pagination */}
-                <div className="hidden sm:flex sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm text-gray-700">
-                      Showing{' '}
-                      <span className="font-medium">{(page - 1) * pagination.limit + 1}</span> to{' '}
-                      <span className="font-medium">
-                        {Math.min(page * pagination.limit, pagination.total)}
-                      </span>{' '}
-                      of <span className="font-medium">{pagination.total}</span> results
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setPage((p) => Math.max(1, p - 1))}
-                      disabled={page === 1}
-                      className="relative inline-flex items-center px-3 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <FontAwesomeIcon icon={['fal', 'chevron-left']} />
-                    </button>
-
-                    {getPageNumbers().map((pageNum, idx) =>
-                      pageNum === '...' ? (
-                        <span key={`ellipsis-${idx}`} className="px-4 py-2 text-gray-700">
-                          ...
-                        </span>
-                      ) : (
-                        <button
-                          key={pageNum}
-                          onClick={() => setPage(pageNum as number)}
-                          className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                            pageNum === page
-                              ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
-                              : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                          }`}
-                        >
-                          {pageNum}
-                        </button>
-                      ),
-                    )}
-
-                    <button
-                      onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
-                      disabled={page === pagination.totalPages}
-                      className="relative inline-flex items-center px-3 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <FontAwesomeIcon icon={['fal', 'chevron-right']} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
+            <Pagination
+              currentPage={pagination.page}
+              totalPages={pagination.totalPages}
+              totalItems={pagination.total}
+              itemsPerPage={pagination.limit}
+              onPageChange={setPage}
+              className="mt-8 mb-8"
+            />
           </>
         )}
       </div>

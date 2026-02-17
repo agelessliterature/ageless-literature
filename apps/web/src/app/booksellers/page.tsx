@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
 import { CloudinaryImage } from '@/components/ui/CloudinaryImage';
+import PageLoading from '@/components/ui/PageLoading';
+import EmptyState from '@/components/ui/EmptyState';
+import InlineError from '@/components/ui/InlineError';
 import { withBasePath } from '@/lib/path-utils';
 import { getApiUrl } from '@/lib/api';
 
@@ -159,104 +162,132 @@ export default function BookSellersPage() {
           </p>
         </div>
 
-        {/* Search and Sort Controls */}
-        <div className="mb-8 flex flex-col sm:flex-row gap-4 items-center max-w-4xl mx-auto">
-          {/* Search Bar */}
-          <div className="relative flex-1 w-full">
-            <input
-              type="text"
-              placeholder="Search booksellers..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-6 py-3 text-lg border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary focus:border-secondary"
-            />
-          </div>
-
-          {/* Sort Dropdown */}
-          <div className="w-full sm:w-auto">
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent bg-white"
-            >
-              <option value="featured">Featured</option>
-              <option value="name-asc">Name (A-Z)</option>
-              <option value="name-desc">Name (Z-A)</option>
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
-            </select>
+        {/* Apply to be a Bookseller CTA */}
+        <div className="max-w-7xl mx-auto mb-8">
+          <div
+            className="bg-gradient-to-br from-primary/5 to-secondary/10 border-2 border-secondary/30 p-6 sm:p-8"
+            style={{ borderRadius: '1.5rem' }}
+          >
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-center sm:text-left">
+                <h2 className="text-xl sm:text-2xl font-bold text-primary mb-2">
+                  Questions about Becoming a Vendor?
+                </h2>
+                <p className="text-gray-700">
+                  Get all your questions answered in our comprehensive FAQ section.
+                </p>
+              </div>
+              <Link
+                href="/faq"
+                className="bg-primary hover:bg-primary/90 text-white px-8 py-3 font-semibold transition-all duration-300 hover:scale-105 whitespace-nowrap shadow-md hover:shadow-lg"
+              >
+                View FAQ
+              </Link>
+            </div>
           </div>
         </div>
 
-        {loading ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500">Loading booksellers...</p>
-          </div>
-        ) : error ? (
-          <div className="text-center py-12 bg-red-50 border border-red-200 rounded-lg max-w-2xl mx-auto">
-            <FontAwesomeIcon
-              icon={['fal', 'exclamation-circle']}
-              className="text-4xl text-red-500 mb-4"
-            />
-            <p className="text-red-600 mb-4">{error}</p>
-            <button
-              onClick={() => fetchAllVendors()}
-              className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 transition-colors"
-            >
-              Try Again
-            </button>
-          </div>
-        ) : allVendors.length === 0 ? (
-          <div className="text-center py-12 bg-white shadow-md max-w-2xl mx-auto">
-            <p className="text-gray-600">
-              No booksellers available at the moment. Check back soon!
-            </p>
-          </div>
-        ) : (
-          <>
-            {/* Grid Layout - Larger cards with max 3 columns */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 max-w-7xl mx-auto">
-              {allVendors.map((vendor) => (
-                <VendorCard key={vendor.id} vendor={vendor} />
-              ))}
-            </div>
-
-            {/* Pagination */}
-            {pagination.totalPages > 1 && (
-              <div className="flex justify-center items-center gap-4">
-                <button
-                  onClick={() => handlePageChange(pagination.currentPage - 1)}
-                  disabled={!pagination.hasPrevPage}
-                  className={`px-4 py-2 ${
-                    pagination.hasPrevPage
-                      ? 'bg-black text-white hover:bg-gray-900'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
-                >
-                  <FontAwesomeIcon icon={['fal', 'chevron-left']} className="mr-2" />
-                  Previous
-                </button>
-
-                <span className="text-gray-700">
-                  Page {pagination.currentPage} of {pagination.totalPages}
-                </span>
-
-                <button
-                  onClick={() => handlePageChange(pagination.currentPage + 1)}
-                  disabled={!pagination.hasNextPage}
-                  className={`px-4 py-2 ${
-                    pagination.hasNextPage
-                      ? 'bg-black text-white hover:bg-gray-900'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
-                >
-                  Next
-                  <FontAwesomeIcon icon={['fal', 'chevron-right']} className="ml-2" />
-                </button>
+        {/* Search and Sort Controls */}
+        <div className="bg-white border-b border-gray-200 lg:sticky lg:top-0 z-30">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex flex-col md:flex-row gap-4">
+              {/* Search */}
+              <div className="flex-1">
+                <div className="relative">
+                  <FontAwesomeIcon
+                    icon={['fal', 'search']}
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-base"
+                  />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search booksellers..."
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary"
+                  />
+                </div>
               </div>
-            )}
-          </>
-        )}
+
+              {/* Sort Dropdown */}
+              <div className="w-full sm:w-auto">
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="w-full px-6 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                >
+                  <option value="featured">Featured</option>
+                  <option value="name-asc">Name (A-Z)</option>
+                  <option value="name-desc">Name (Z-A)</option>
+                  <option value="newest">Newest First</option>
+                  <option value="oldest">Oldest First</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {loading ? (
+            <PageLoading message="Loading booksellers..." fullPage={false} />
+          ) : error ? (
+            <InlineError message={error} onRetry={() => fetchAllVendors()} />
+          ) : allVendors.length === 0 ? (
+            <EmptyState
+              icon={['fal', 'store']}
+              title="No booksellers found"
+              description={
+                searchQuery
+                  ? 'No booksellers match your search. Try adjusting your filters.'
+                  : 'No booksellers available at the moment. Check back soon!'
+              }
+            />
+          ) : (
+            <>
+              {/* Grid Layout - Larger cards with max 3 columns */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 max-w-7xl mx-auto">
+                {allVendors.map((vendor) => (
+                  <VendorCard key={vendor.id} vendor={vendor} />
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {pagination.totalPages > 1 && (
+                <div className="flex justify-center items-center gap-4">
+                  <button
+                    onClick={() => handlePageChange(pagination.currentPage - 1)}
+                    disabled={!pagination.hasPrevPage}
+                    className={`px-4 py-2 ${
+                      pagination.hasPrevPage
+                        ? 'bg-black text-white hover:bg-gray-900'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    <FontAwesomeIcon icon={['fal', 'chevron-left']} className="mr-2" />
+                    Previous
+                  </button>
+
+                  <span className="text-gray-700">
+                    Page {pagination.currentPage} of {pagination.totalPages}
+                  </span>
+
+                  <button
+                    onClick={() => handlePageChange(pagination.currentPage + 1)}
+                    disabled={!pagination.hasNextPage}
+                    className={`px-4 py-2 ${
+                      pagination.hasNextPage
+                        ? 'bg-black text-white hover:bg-gray-900'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    Next
+                    <FontAwesomeIcon icon={['fal', 'chevron-right']} className="ml-2" />
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

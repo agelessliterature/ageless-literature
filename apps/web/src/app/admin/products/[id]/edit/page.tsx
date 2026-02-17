@@ -126,7 +126,6 @@ export default function EditProductPage() {
       }
 
       const url = `${API_URL}/api/auctions/active?productId=${productId}&productType=${productType}`;
-      console.log('Fetching active auction:', url);
 
       const res = await fetch(url, {
         headers,
@@ -134,13 +133,10 @@ export default function EditProductPage() {
       });
 
       const data = await res.json();
-      console.log('Active auction response:', data);
 
       if (data.success && data.data) {
-        console.log('Found active auction:', data.data);
         setActiveAuction(data.data);
       } else {
-        console.log('No active auction found');
         setActiveAuction(null);
       }
     } catch (err) {

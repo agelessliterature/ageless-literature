@@ -18,10 +18,21 @@
     },
     "featuredAuctions": {
       "title": "Featured Auctions",
+      "subtitle": "Bid on extraordinary pieces from our curated auction collection",
       "viewAll": "View All Auctions",
       "bidNow": "Bid Now",
       "ending": "Ending",
-      "currentBid": "Current Bid"
+      "endingSoon": "ENDING SOON",
+      "currentBid": "CURRENT BID",
+      "startingBid": "STARTING BID",
+      "currency": "USD",
+      "bid": "bid",
+      "bids": "bids",
+      "noAuctions": "No active auctions at the moment",
+      "checkBackSoon": "Check back soon for exciting items!",
+      "previousAuction": "Previous auction",
+      "nextAuction": "Next auction",
+      "goToAuction": "Go to auction"
     },
     "memberships": {
       "title": "Join Our Community",
@@ -95,9 +106,37 @@
     },
     "stats": {
       "rareBooksListed": "Rare Books Listed",
-      "trustedBooksellers": "Trusted Booksellers",
+      "trustedBooksellers": "Vetted Booksellers & Galleries",
       "countriesWorldwide": "Countries Worldwide",
       "customerSupport": "Customer Support"
+    },
+    "curatedSection": {
+      "title": "Curated Rare Books",
+      "titleLine2": "for Serious Collectors.",
+      "description": "12,000+ rare books and collectible works",
+      "descriptionLine2": "each selected for significance and lasting value.",
+      "cta": "Explore the Collection"
+    },
+    "trustBadges": {
+      "provenance": "Provenance-First\nCataloging",
+      "transparency": "Condition Transparency",
+      "shipping": "Insured & Secure Shipping",
+      "guidance": "Collector-Level Guidance"
+    },
+    "highSpots": {
+      "title": "HIGHLIGHTS",
+      "description": "Explore our recently added inventory featuring museum-quality acquisitions, rare manuscripts, richly colored early printed works, and historically significant broadsides.",
+      "cta": "EXPLORE NOW",
+      "sectionTitle": "Featured Highlights",
+      "sectionSubtitle": "Recent Museum-Quality Acquisitions",
+      "viewAll": "VIEW ALL"
+    },
+    "categories": {
+      "title": "CATEGORIES",
+      "viewAll": "VIEW ALL CATEGORIES"
+    },
+    "downloadApp": {
+      "title": "DOWNLOAD OUR MOBILE APP"
     },
     "collectorCta": {
       "label": "DISCOVER RARE WORKS",

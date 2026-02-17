@@ -7,44 +7,35 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
 import { getApiUrl } from '@/lib/api';
+import PageLoading from '@/components/ui/PageLoading';
+import EmptyState from '@/components/ui/EmptyState';
+import ResponsiveDataView from '@/components/ui/ResponsiveDataView';
+import MobileCard from '@/components/ui/MobileCard';
+import MobileCardList from '@/components/ui/MobileCardList';
+import { formatMoney } from '@/lib/format';
 
 export default function VendorReportsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [period, setPeriod] = useState('30');
 
-  const { data: summaryData, isLoading: summaryLoading } = useQuery({
-    queryKey: ['vendor-reports-summary'],
+  // Use aggregated endpoint to fetch both summary and products data in one call
+  const { data: reportsData, isLoading: reportsLoading } = useQuery({
+    queryKey: ['vendor-reports-overview', period],
     queryFn: async () => {
-      const res = await fetch(getApiUrl('api/vendor/reports/summary'), {
+      const res = await fetch(getApiUrl(`api/vendor/reports/overview?period=${period}`), {
         headers: { Authorization: `Bearer ${session?.accessToken}` },
       });
-      if (!res.ok) throw new Error('Failed to fetch summary');
+      if (!res.ok) throw new Error('Failed to fetch reports overview');
       const result = await res.json();
       return result.data;
     },
     enabled: !!session,
-  });
-
-  const { data: productsData, isLoading: productsLoading } = useQuery({
-    queryKey: ['vendor-reports-products'],
-    queryFn: async () => {
-      const res = await fetch(getApiUrl('api/vendor/reports/products'), {
-        headers: { Authorization: `Bearer ${session?.accessToken}` },
-      });
-      if (!res.ok) throw new Error('Failed to fetch products');
-      const result = await res.json();
-      return result.data;
-    },
-    enabled: !!session,
+    staleTime: 1000 * 60 * 2, // Cache for 2 minutes since reports change frequently
   });
 
   if (status === 'loading') {
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center">Loading...</div>
-      </div>
-    );
+    return <PageLoading message="Loading reports..." fullPage={false} />;
   }
 
   if (status === 'unauthenticated') {
@@ -52,8 +43,10 @@ export default function VendorReportsPage() {
     return null;
   }
 
-  const summary = summaryData || {};
-  const topProducts = productsData?.topProducts || [];
+  // Extract data from the aggregated response
+  const summary = reportsData?.summary || {};
+  const topProducts = reportsData?.topProducts || [];
+  const isLoading = reportsLoading;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
@@ -84,9 +77,9 @@ export default function VendorReportsPage() {
       </div>
 
       {/* Summary Cards */}
-      {summaryLoading ? (
+      {isLoading ? (
         <div className="bg-white border border-gray-200 p-12 text-center mb-8">
-          <p className="text-gray-500">Loading summary...</p>
+          <p className="text-gray-500">Loading reports...</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
@@ -96,7 +89,7 @@ export default function VendorReportsPage() {
               className="text-2xl sm:text-3xl text-green-600 mb-2"
             />
             <p className="text-xl sm:text-3xl font-bold text-gray-900">
-              ${parseFloat(summary.lifetimeVendorEarnings || 0).toFixed(2)}
+              {formatMoney(summary.lifetimeVendorEarnings, { fromCents: false })}
             </p>
             <p className="text-sm text-gray-600">Total Earnings</p>
           </div>
@@ -104,7 +97,7 @@ export default function VendorReportsPage() {
           <div className="bg-white p-6 border-l-4 border-blue-500 shadow-sm">
             <FontAwesomeIcon icon={['fal', 'chart-line']} className="text-3xl text-blue-600 mb-2" />
             <p className="text-3xl font-bold text-gray-900">
-              ${parseFloat(summary.lifetimeGrossSales || 0).toFixed(2)}
+              {formatMoney(summary.lifetimeGrossSales, { fromCents: false })}
             </p>
             <p className="text-sm text-gray-600">Gross Sales</p>
           </div>
@@ -137,13 +130,13 @@ export default function VendorReportsPage() {
             <div className="flex justify-between items-center p-4 bg-gray-50">
               <span className="text-gray-700">Platform Commission (8%)</span>
               <span className="font-bold text-red-600">
-                -${parseFloat(summary.commissions.platformCommission || 0).toFixed(2)}
+                -{formatMoney(summary.commissions.platformCommission, { fromCents: false })}
               </span>
             </div>
             <div className="flex justify-between items-center p-4 bg-green-50">
               <span className="text-gray-700">Your Net Earnings (92%)</span>
               <span className="font-bold text-green-600">
-                ${parseFloat(summary.lifetimeVendorEarnings || 0).toFixed(2)}
+                {formatMoney(summary.lifetimeVendorEarnings, { fromCents: false })}
               </span>
             </div>
           </div>
@@ -151,65 +144,90 @@ export default function VendorReportsPage() {
       )}
 
       {/* Top Products */}
-      {productsLoading ? (
-        <div className="bg-white border border-gray-200 p-12 text-center">
-          <p className="text-gray-500">Loading products...</p>
-        </div>
+      {isLoading ? (
+        <PageLoading message="Loading products..." fullPage={false} />
       ) : (
         <div className="bg-white border border-gray-200">
           <div className="p-6 border-b">
             <h3 className="text-lg font-semibold text-primary">Top Performing Products</h3>
           </div>
           {topProducts.length === 0 ? (
-            <div className="p-12 text-center text-gray-500">
-              <p>No product data available yet</p>
-            </div>
+            <EmptyState
+              icon={['fal', 'chart-bar']}
+              title="No product data yet"
+              description="Product performance data will appear here once you start selling"
+            />
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Product
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Views
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Sales
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Revenue
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Conversion
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+            <ResponsiveDataView
+              breakpoint="md"
+              mobile={
+                <MobileCardList gap="md">
                   {topProducts.map((product: any) => (
-                    <tr key={product.id}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{product.title}</div>
-                        <div className="text-sm text-gray-500">{product.author}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {product.views || 0}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">
-                        {product.salesCount || 0}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-semibold">
-                        ${parseFloat(product.revenue || 0).toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {product.conversionRate || '0.00'}%
-                      </td>
-                    </tr>
+                    <MobileCard
+                      key={product.id}
+                      title={product.title}
+                      subtitle={product.author}
+                      details={[
+                        { label: 'Views', value: String(product.views || 0) },
+                        { label: 'Sales', value: String(product.salesCount || 0) },
+                        { label: 'Conversion', value: `${product.conversionRate || '0.00'}%` },
+                      ]}
+                      primaryMetric={{
+                        label: 'Revenue',
+                        value: formatMoney(product.revenue, { fromCents: false }),
+                      }}
+                    />
                   ))}
-                </tbody>
-              </table>
-            </div>
+                </MobileCardList>
+              }
+              desktop={
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          Product
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          Views
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          Sales
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          Revenue
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          Conversion
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {topProducts.map((product: any) => (
+                        <tr key={product.id}>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900">{product.title}</div>
+                            <div className="text-sm text-gray-500">{product.author}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {product.views || 0}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">
+                            {product.salesCount || 0}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-semibold">
+                            {formatMoney(product.revenue, { fromCents: false })}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {product.conversionRate || '0.00'}%
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              }
+            />
           )}
         </div>
       )}

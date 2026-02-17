@@ -378,3 +378,166 @@ export const getRevenueBreakdown = async (req, res) => {
     });
   }
 };
+
+/**
+ * Get aggregated vendor reports data (summary + top products)
+ * GET /api/vendor/reports/overview
+ * Combines data that was previously fetched with separate calls
+ */
+export const getReportsOverview = async (req, res) => {
+  try {
+    const userId = req.user?.userId || req.user?.id;
+    const { period = '30' } = req.query;
+
+    const vendor = await Vendor.findOne({ where: { userId } });
+    if (!vendor) {
+      return res.status(404).json({
+        success: false,
+        message: 'Vendor profile not found',
+      });
+    }
+
+    const periodDate = new Date();
+    periodDate.setDate(periodDate.getDate() - parseInt(period));
+
+    // Run both summary data and top products in parallel
+    const [summaryData, topProducts] = await Promise.all([
+      // Summary calculation (similar to getSummary)
+      (async () => {
+        const periodOrders = await Order.findAll({
+          include: [
+            {
+              model: OrderItem,
+              as: 'items',
+              required: true,
+              include: [
+                {
+                  model: Book,
+                  as: 'book',
+                  where: { vendorId: vendor.id },
+                  required: true,
+                },
+              ],
+            },
+          ],
+          where: {
+            createdAt: { [Op.gte]: periodDate },
+            status: { [Op.in]: ['paid', 'processing', 'shipped', 'delivered'] },
+          },
+        });
+
+        const periodOrdersCount = periodOrders.length;
+        const periodRevenue = periodOrders.reduce((sum, order) => {
+          return (
+            sum +
+            order.items.reduce((itemSum, item) => {
+              return itemSum + parseFloat(item.price || 0) * (item.quantity || 1);
+            }, 0)
+          );
+        }, 0);
+
+        const periodCommission = periodRevenue * (vendor.commissionRate || 0.08);
+        const periodEarnings = periodRevenue - periodCommission;
+
+        const totalBooks = await Book.count({ where: { vendorId: vendor.id } });
+
+        const pendingOrders = await Order.count({
+          include: [
+            {
+              model: OrderItem,
+              as: 'items',
+              required: true,
+              include: [
+                {
+                  model: Book,
+                  as: 'book',
+                  where: { vendorId: vendor.id },
+                  required: true,
+                },
+              ],
+            },
+          ],
+          where: {
+            status: { [Op.in]: ['pending', 'processing'] },
+          },
+        });
+
+        const avgOrderValue = periodOrdersCount > 0 ? periodRevenue / periodOrdersCount : 0;
+
+        return {
+          period: parseInt(period),
+          periodRevenue: periodRevenue.toFixed(2),
+          periodEarnings: periodEarnings.toFixed(2),
+          periodCommission: periodCommission.toFixed(2),
+          periodOrdersCount,
+          avgOrderValue: avgOrderValue.toFixed(2),
+          conversionRate: '0.00',
+          balanceAvailable: parseFloat(vendor.balanceAvailable || 0).toFixed(2),
+          balancePending: parseFloat(vendor.balancePending || 0).toFixed(2),
+          lifetimeEarnings: parseFloat(vendor.lifetimeVendorEarnings || 0).toFixed(2),
+          totalBooks,
+          pendingOrders,
+        };
+      })(),
+
+      // Top products calculation (similar to getProductPerformance but limited)
+      (async () => {
+        const products = await Book.findAll({
+          where: { vendorId: vendor.id },
+          attributes: [
+            'id',
+            'title',
+            'author',
+            'price',
+            'quantity',
+            [
+              sequelize.literal(`(
+                SELECT COUNT(*)::int
+                FROM order_items oi
+                INNER JOIN orders o ON oi.order_id = o.id
+                WHERE oi.book_id = "Book".id
+                AND o.status IN ('paid', 'processing', 'shipped', 'delivered')
+              )`),
+              'salesCount',
+            ],
+            [
+              sequelize.literal(`(
+                SELECT COALESCE(SUM(oi.price * oi.quantity), 0)
+                FROM order_items oi
+                INNER JOIN orders o ON oi.order_id = o.id
+                WHERE oi.book_id = "Book".id
+                AND o.status IN ('paid', 'processing', 'shipped', 'delivered')
+              )`),
+              'totalRevenue',
+            ],
+          ],
+          limit: 10, // Top 10 products
+          order: [[sequelize.literal('"salesCount"'), 'DESC']],
+          subQuery: false,
+        });
+
+        return products.map((p) => ({
+          ...p.toJSON(),
+          salesCount: p.getDataValue('salesCount') || 0,
+          totalRevenue: parseFloat(p.getDataValue('totalRevenue') || 0).toFixed(2),
+        }));
+      })(),
+    ]);
+
+    return res.json({
+      success: true,
+      data: {
+        summary: summaryData,
+        topProducts,
+        timestamp: new Date().toISOString(),
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching reports overview:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch reports overview',
+      error: error.message,
+    });
+  }
+};

@@ -4,11 +4,14 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
+import Pagination from '@/components/shared/Pagination';
 import { CloudinaryImage } from '@/components/ui/CloudinaryImage';
 import ItemTypeSelectionModal from '@/components/modals/ItemTypeSelectionModal';
 import { getApiUrl } from '@/lib/api';
+import PageLoading from '@/components/ui/PageLoading';
+import EmptyState from '@/components/ui/EmptyState';
 
 export default function VendorCollectiblesPage() {
   const { data: session, status } = useSession();
@@ -39,7 +42,8 @@ export default function VendorCollectiblesPage() {
     enabled: !!session,
   });
 
-  if (status === 'loading') return <div className="p-8 text-center">Loading...</div>;
+  if (status === 'loading')
+    return <PageLoading message="Loading collectibles..." fullPage={false} />;
   if (status === 'unauthenticated') {
     router.push('/auth/login');
     return null;
@@ -47,6 +51,10 @@ export default function VendorCollectiblesPage() {
 
   const collectibles = data?.data || [];
   const pagination = data?.pagination || {};
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [page]);
 
   const handleDelete = async (id: string) => {
     if (!confirm('Archive this collectible?')) return;
@@ -134,14 +142,15 @@ export default function VendorCollectiblesPage() {
 
       {/* Collectibles Grid */}
       {isLoading ? (
-        <div className="text-center p-12">Loading...</div>
+        <PageLoading message="Loading collectibles..." fullPage={false} />
       ) : collectibles.length === 0 ? (
-        <div className="bg-white border p-12 text-center">
-          <p className="text-gray-500 mb-4">No collectibles yet</p>
-          <Link href="/vendor/collectibles/new" className="text-primary hover:underline">
-            Add your first collectible
-          </Link>
-        </div>
+        <EmptyState
+          icon={['fal', 'box']}
+          title="No collectibles yet"
+          description="Add your first collectible to start selling"
+          actionLabel="Add Collectible"
+          actionHref="/vendor/collectibles/new"
+        />
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -184,90 +193,14 @@ export default function VendorCollectiblesPage() {
             ))}
           </div>
 
-          {/* Pagination */}
-          {pagination.totalPages > 1 && (
-            <div className="bg-white px-4 py-3 border-t border-gray-200 sm:px-6 mt-6">
-              <div className="flex items-center justify-between">
-                <div className="flex-1 flex justify-between">
-                  <button
-                    onClick={() => setPage(page - 1)}
-                    disabled={page === 1}
-                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Previous
-                  </button>
-                  <button
-                    onClick={() => setPage(page + 1)}
-                    disabled={page === pagination.totalPages}
-                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Next
-                  </button>
-                </div>
-                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm text-gray-700">
-                      Showing <span className="font-medium">{(page - 1) * 20 + 1}</span> to{' '}
-                      <span className="font-medium">{Math.min(page * 20, pagination.total)}</span>{' '}
-                      of <span className="font-medium">{pagination.total}</span> results
-                    </p>
-                  </div>
-                  <div>
-                    <nav className="relative z-0 inline-flex shadow-sm -space-x-px">
-                      <button
-                        onClick={() => setPage(page - 1)}
-                        disabled={page === 1}
-                        className="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <FontAwesomeIcon icon={['fal', 'chevron-left']} />
-                      </button>
-
-                      {/* Page numbers */}
-                      {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
-                        .filter((pageNum) => {
-                          return (
-                            pageNum === 1 ||
-                            pageNum === pagination.totalPages ||
-                            Math.abs(pageNum - page) <= 1
-                          );
-                        })
-                        .map((pageNum, index, arr) => {
-                          const showEllipsisBefore = index > 0 && pageNum - arr[index - 1] > 1;
-
-                          return (
-                            <div key={pageNum} className="inline-flex">
-                              {showEllipsisBefore && (
-                                <span className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
-                                  ...
-                                </span>
-                              )}
-                              <button
-                                onClick={() => setPage(pageNum)}
-                                className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                                  pageNum === page
-                                    ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
-                                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                                }`}
-                              >
-                                {pageNum}
-                              </button>
-                            </div>
-                          );
-                        })}
-
-                      <button
-                        onClick={() => setPage(page + 1)}
-                        disabled={page === pagination.totalPages}
-                        className="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <FontAwesomeIcon icon={['fal', 'chevron-right']} />
-                      </button>
-                    </nav>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+          <Pagination
+            currentPage={page}
+            totalPages={pagination.totalPages || 1}
+            totalItems={pagination.total || 0}
+            itemsPerPage={20}
+            onPageChange={setPage}
+            className="mt-6"
+          />
         </>
       )}
 

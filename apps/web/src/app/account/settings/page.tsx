@@ -14,6 +14,7 @@ import api from '@/lib/api';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import PhoneInput from '@/components/forms/PhoneInput';
+import PageLoading from '@/components/ui/PageLoading';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
 
@@ -119,7 +120,7 @@ export default function SettingsPage() {
           setBillingAddress(billingRes.data.data);
         }
       } catch (err) {
-        console.log('No billing address found');
+        // No billing address saved yet
       }
 
       try {
@@ -128,7 +129,7 @@ export default function SettingsPage() {
           setShippingAddress(shippingRes.data.data);
         }
       } catch (err) {
-        console.log('No shipping address found');
+        // No shipping address saved yet
       }
 
       // Load payment methods
@@ -258,14 +259,7 @@ export default function SettingsPage() {
   };
 
   if (status === 'loading') {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <FontAwesomeIcon
-          icon={['fal', 'spinner-third']}
-          className="text-3xl animate-spin text-primary"
-        />
-      </div>
-    );
+    return <PageLoading message="Loading settings..." fullPage={true} />;
   }
 
   if (!session) return null;

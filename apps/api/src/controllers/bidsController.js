@@ -22,7 +22,7 @@ export const placeBid = async (req, res) => {
 
     // Get current user
     const currentUser = await User.findByPk(userId);
-    
+
     // Update user's phone number and SMS preferences if provided
     if (smsOptIn && phoneNumber) {
       const metadata = currentUser.metadata || {};
@@ -30,7 +30,7 @@ export const placeBid = async (req, res) => {
       metadata.smsOptInTimestamp = new Date().toISOString();
       await currentUser.update({
         phoneNumber,
-        metadata
+        metadata,
       });
       console.log('[Bid] Updated user SMS preferences:', { userId, phoneNumber });
     }
@@ -88,14 +88,14 @@ export const placeBid = async (req, res) => {
         id: { [Op.ne]: bid.id },
         status: { [Op.in]: ['active', 'winning'] },
       },
-      include: [{ model: User, as: 'user' }]
+      include: [{ model: User, as: 'user' }],
     });
 
     // Send SMS notifications to outbid users
     for (const outbidBid of outbidUsers) {
       const outbidUser = outbidBid.user;
       const metadata = outbidUser.metadata || {};
-      
+
       if (metadata.smsOptIn && outbidUser.phoneNumber) {
         try {
           await sendSms(
@@ -104,8 +104,8 @@ export const placeBid = async (req, res) => {
             {
               type: 'auction_outbid',
               entityId: auctionId,
-              correlationId: `auction_${auctionId}_bid_${bid.id}`
-            }
+              correlationId: `auction_${auctionId}_bid_${bid.id}`,
+            },
           );
           console.log(`[Bid] SMS sent to outbid user ${outbidUser.id}`);
         } catch (smsError) {
@@ -126,9 +126,9 @@ export const placeBid = async (req, res) => {
     );
 
     // Update auction current bid and bid count
-    await auction.update({ 
+    await auction.update({
       currentBid: amount,
-      bidCount: (auction.bidCount || 0) + 1
+      bidCount: (auction.bidCount || 0) + 1,
     });
 
     const createdBid = await AuctionBid.findByPk(bid.id, {

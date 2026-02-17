@@ -52,6 +52,13 @@ export default (sequelize, DataTypes) => {
         defaultValue: 'pending',
         comment: 'pending, available, or paid',
       },
+      paidOut: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+        field: 'paid_out',
+        comment: 'Whether this earning has been paid out to vendor',
+      },
       paidAt: {
         type: DataTypes.DATE,
         allowNull: true,

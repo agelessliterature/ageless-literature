@@ -2,21 +2,23 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy root and API package files
-COPY package*.json ./
-COPY apps/api/package*.json ./apps/api/
+# Install build tools needed for native modules (bcrypt)
+RUN apk add --no-cache python3 make g++
 
-# Install dependencies (skip husky prepare script in Docker)
-RUN npm install --workspace=apps/api --production=false --ignore-scripts && \
-    cd apps/api && npm rebuild
+# Copy only the API package.json (no workspace mode)
+COPY apps/api/package.json ./
 
-# Copy API source code
-COPY apps/api ./apps/api
+# Install dependencies directly (no workspace, no lockfile)
+RUN npm install --no-audit --ignore-scripts=false && \
+    npm cache clean --force
 
-# Set production environment
+# Copy API source files and Sequelize CLI config
+COPY apps/api/.sequelizerc ./
+COPY apps/api/src ./src
+
+# Set environment
 ENV NODE_ENV=production
 
 EXPOSE 3001
 
-# Start the API server directly (no npm scripts to avoid predev hooks)
-CMD ["node", "--experimental-specifier-resolution=node", "apps/api/src/server.js"]
+CMD ["node", "--experimental-specifier-resolution=node", "src/server.js"]

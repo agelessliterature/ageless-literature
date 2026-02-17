@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import Link from 'next/link';
-import { Play, Pause, ChevronDown, ChevronUp } from 'lucide-react';
+import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
 
 // Cloudinary base URL
 const CLOUDINARY_BASE = 'https://res.cloudinary.com/dvohtcqvi';
@@ -71,7 +71,7 @@ function VideoPlayer({ thumbnail, videoUrl, pageNum }: VideoPlayerProps) {
         await videoRef.current.play();
         setIsPlaying(true);
       } catch (err) {
-        console.log('Play prevented:', err);
+        // Autoplay may be blocked by browser
       }
       setIsLoading(false);
     } else if (videoRef.current.paused) {
@@ -141,7 +141,11 @@ function VideoPlayer({ thumbnail, videoUrl, pageNum }: VideoPlayerProps) {
                      text-white text-xl z-10"
           aria-label={isPlaying ? 'Pause video' : 'Play video'}
         >
-          {isPlaying && !videoRef.current?.paused ? <Pause size={24} /> : <Play size={24} />}
+          {isPlaying && !videoRef.current?.paused ? (
+            <FontAwesomeIcon icon={['fal', 'pause']} className="text-2xl" />
+          ) : (
+            <FontAwesomeIcon icon={['fal', 'play']} className="text-2xl" />
+          )}
         </button>
       )}
     </div>
@@ -275,7 +279,10 @@ export default function AboutPage() {
               className="inline-flex items-center justify-center gap-3 bg-black hover:bg-secondary text-white hover:text-black font-bold transition-all duration-300 border-2 border-black hover:border-secondary hover:scale-105 w-full sm:w-auto px-8 py-4 sm:px-12 sm:py-5 text-base sm:text-lg shadow-lg hover:shadow-xl"
               style={{ borderRadius: '1.5rem' }}
             >
-              {showAll ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
+              <FontAwesomeIcon
+                icon={['fal', showAll ? 'chevron-up' : 'chevron-down']}
+                className="text-2xl"
+              />
               <span className="hidden sm:inline">
                 {showAll ? 'Show Less' : 'Learn More - View Additional Content'}
               </span>

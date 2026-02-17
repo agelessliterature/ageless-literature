@@ -10,80 +10,89 @@ import * as vendorSettingsController from '../controllers/vendorSettingsControll
 import * as vendorWithdrawalController from '../controllers/vendorWithdrawalController.js';
 import * as customOffersController from '../controllers/customOffersController.js';
 import { verifyToken } from '../controllers/authController.js';
+import { vendorAuth } from '../middleware/vendorAuth.js';
 
 const router = express.Router();
-const authMiddleware = verifyToken;
 
-router.get('/status', authMiddleware, vendorController.getVendorStatus);
-router.post('/apply', authMiddleware, vendorController.applyAsVendor);
-router.get('/profile', authMiddleware, vendorController.getVendorProfile);
-router.patch('/profile', authMiddleware, vendorController.updateVendorProfile);
-router.get('/earnings', authMiddleware, vendorController.getVendorEarnings);
-router.get('/payouts', authMiddleware, vendorController.getVendorPayouts);
-router.get('/inventory', authMiddleware, vendorController.getVendorInventory);
-router.get('/dashboard', authMiddleware, vendorController.getVendorDashboard);
-router.get('/payout-settings', authMiddleware, vendorController.getPayoutSettings);
-router.patch('/payout-method', authMiddleware, vendorController.updatePayoutMethod);
-router.patch('/paypal-email', authMiddleware, vendorController.updatePayPalEmail);
-router.post('/withdraw', authMiddleware, vendorWithdrawalController.requestWithdrawal);
-router.get('/withdrawals', authMiddleware, vendorWithdrawalController.getWithdrawals);
-router.get('/withdrawals/:id', authMiddleware, vendorWithdrawalController.getWithdrawalById);
-router.post('/withdrawals/:id/cancel', authMiddleware, vendorWithdrawalController.cancelWithdrawal);
+// Public/pre-vendor routes (authenticated users, but don't require vendor status)
+// These routes are for checking vendor status and applying to become a vendor
+router.get('/status', verifyToken, vendorController.getVendorStatus);
+router.post('/apply', verifyToken, vendorController.applyAsVendor);
 
-router.get('/products', authMiddleware, vendorProductsController.getVendorProducts);
-router.get('/products/:id', authMiddleware, vendorProductsController.getVendorProduct);
-router.post('/products', authMiddleware, vendorProductsController.createProduct);
-router.put('/products/:id', authMiddleware, vendorProductsController.updateProduct);
-router.delete('/products/:id', authMiddleware, vendorProductsController.deleteProduct);
-router.patch('/products/:id/status', authMiddleware, vendorProductsController.updateProductStatus);
-router.patch(
-  '/products/:id/quantity',
-  authMiddleware,
-  vendorProductsController.updateProductQuantity,
-);
-router.post('/products/:id/relist', authMiddleware, vendorProductsController.relistProduct);
+// All routes below require approved/active vendor status
+// Profile & Dashboard
+router.get('/profile', vendorAuth, vendorController.getVendorProfile);
+router.patch('/profile', vendorAuth, vendorController.updateVendorProfile);
+router.get('/earnings', vendorAuth, vendorController.getVendorEarnings);
+router.get('/payouts', vendorAuth, vendorController.getVendorPayouts);
+router.get('/inventory', vendorAuth, vendorController.getVendorInventory);
+router.get('/dashboard', vendorAuth, vendorController.getVendorDashboard);
+router.get('/payout-settings', vendorAuth, vendorController.getPayoutSettings);
+router.patch('/payout-method', vendorAuth, vendorController.updatePayoutMethod);
+router.patch('/paypal-email', vendorAuth, vendorController.updatePayPalEmail);
+router.post('/withdraw', vendorAuth, vendorWithdrawalController.requestWithdrawal);
+router.get('/withdrawals', vendorAuth, vendorWithdrawalController.getWithdrawals);
+router.get('/withdrawals/:id', vendorAuth, vendorWithdrawalController.getWithdrawalById);
+router.post('/withdrawals/:id/cancel', vendorAuth, vendorWithdrawalController.cancelWithdrawal);
 
-router.get('/collectibles', authMiddleware, vendorCollectiblesController.getVendorCollectibles);
-router.get('/collectibles/stats', authMiddleware, vendorCollectiblesController.getCollectibleStats);
-router.get('/collectibles/:id', authMiddleware, vendorCollectiblesController.getVendorCollectible);
-router.post('/collectibles', authMiddleware, vendorCollectiblesController.createCollectible);
-router.put('/collectibles/:id', authMiddleware, vendorCollectiblesController.updateCollectible);
-router.delete('/collectibles/:id', authMiddleware, vendorCollectiblesController.deleteCollectible);
+// Products Management
+router.get('/products', vendorAuth, vendorProductsController.getVendorProducts);
+router.get('/products/:id', vendorAuth, vendorProductsController.getVendorProduct);
+router.post('/products', vendorAuth, vendorProductsController.createProduct);
+router.put('/products/:id', vendorAuth, vendorProductsController.updateProduct);
+router.delete('/products/:id', vendorAuth, vendorProductsController.deleteProduct);
+router.patch('/products/:id/status', vendorAuth, vendorProductsController.updateProductStatus);
+router.patch('/products/:id/quantity', vendorAuth, vendorProductsController.updateProductQuantity);
+router.post('/products/:id/relist', vendorAuth, vendorProductsController.relistProduct);
+
+// Collectibles Management
+router.get('/collectibles', vendorAuth, vendorCollectiblesController.getVendorCollectibles);
+router.get('/collectibles/stats', vendorAuth, vendorCollectiblesController.getCollectibleStats);
+router.get('/collectibles/:id', vendorAuth, vendorCollectiblesController.getVendorCollectible);
+router.post('/collectibles', vendorAuth, vendorCollectiblesController.createCollectible);
+router.put('/collectibles/:id', vendorAuth, vendorCollectiblesController.updateCollectible);
+router.delete('/collectibles/:id', vendorAuth, vendorCollectiblesController.deleteCollectible);
 router.patch(
   '/collectibles/:id/status',
-  authMiddleware,
+  vendorAuth,
   vendorCollectiblesController.updateCollectibleStatus,
 );
 
-router.get('/orders', authMiddleware, vendorOrdersController.getVendorOrders);
-router.get('/orders/:id', authMiddleware, vendorOrdersController.getVendorOrderDetail);
-router.put('/orders/:id/status', authMiddleware, vendorOrdersController.updateOrderStatus);
-router.put('/orders/:id/tracking', authMiddleware, vendorOrdersController.updateTrackingInfo);
-router.post('/orders/:id/refund-request', authMiddleware, vendorOrdersController.requestRefund);
+// Orders Management
+router.get('/orders', vendorAuth, vendorOrdersController.getVendorOrders);
+router.get('/orders/:id', vendorAuth, vendorOrdersController.getVendorOrderDetail);
+router.put('/orders/:id/status', vendorAuth, vendorOrdersController.updateOrderStatus);
+router.put('/orders/:id/tracking', vendorAuth, vendorOrdersController.updateTrackingInfo);
+router.post('/orders/:id/refund-request', vendorAuth, vendorOrdersController.requestRefund);
 
-router.get('/reports/summary', authMiddleware, vendorReportsController.getSummary);
-router.get('/reports/charts', authMiddleware, vendorReportsController.getChartData);
-router.get('/reports/products', authMiddleware, vendorReportsController.getProductPerformance);
-router.get('/reports/revenue', authMiddleware, vendorReportsController.getRevenueBreakdown);
+// Reports & Analytics
+router.get('/reports/summary', vendorAuth, vendorReportsController.getSummary);
+router.get('/reports/overview', vendorAuth, vendorReportsController.getReportsOverview); // Aggregated endpoint
+router.get('/reports/charts', vendorAuth, vendorReportsController.getChartData);
+router.get('/reports/products', vendorAuth, vendorReportsController.getProductPerformance);
+router.get('/reports/revenue', vendorAuth, vendorReportsController.getRevenueBreakdown);
 
-router.get('/chat/conversations', authMiddleware, vendorChatController.getConversations);
-router.get('/chat/messages/:conversationId', authMiddleware, vendorChatController.getMessages);
-router.post('/chat/messages', authMiddleware, vendorChatController.sendMessage);
-router.patch('/chat/conversations/:id/read', authMiddleware, vendorChatController.markAsRead);
+// Chat/Messaging
+router.get('/chat/conversations', vendorAuth, vendorChatController.getConversations);
+router.get('/chat/messages/:conversationId', vendorAuth, vendorChatController.getMessages);
+router.post('/chat/messages', vendorAuth, vendorChatController.sendMessage);
+router.patch('/chat/conversations/:id/read', vendorAuth, vendorChatController.markAsRead);
 
-router.get('/requests', authMiddleware, vendorRequestsController.getRequests);
-router.get('/requests/:id', authMiddleware, vendorRequestsController.getRequestDetail);
-router.post('/requests/:id/respond', authMiddleware, vendorRequestsController.respondToRequest);
+// Customer Requests
+router.get('/requests', vendorAuth, vendorRequestsController.getRequests);
+router.get('/requests/:id', vendorAuth, vendorRequestsController.getRequestDetail);
+router.post('/requests/:id/respond', vendorAuth, vendorRequestsController.respondToRequest);
 
-router.get('/settings', authMiddleware, vendorSettingsController.getSettings);
-router.put('/settings', authMiddleware, vendorSettingsController.updateSettings);
-router.put('/settings/payout', authMiddleware, vendorSettingsController.updatePayoutSettings);
+// Settings
+router.get('/settings', vendorAuth, vendorSettingsController.getSettings);
+router.put('/settings', vendorAuth, vendorSettingsController.updateSettings);
+router.put('/settings/payout', vendorAuth, vendorSettingsController.updatePayoutSettings);
 
-// Custom offers routes
-router.get('/offers', authMiddleware, customOffersController.getVendorOffers);
-router.get('/offers/search-users', authMiddleware, customOffersController.searchUsers);
-router.post('/offers', authMiddleware, customOffersController.createOffer);
-router.post('/offers/:id/respond', authMiddleware, customOffersController.vendorRespondToOffer);
-router.delete('/offers/:id', authMiddleware, customOffersController.cancelOffer);
+// Custom Offers
+router.get('/offers', vendorAuth, customOffersController.getVendorOffers);
+router.get('/offers/search-users', vendorAuth, customOffersController.searchUsers);
+router.post('/offers', vendorAuth, customOffersController.createOffer);
+router.post('/offers/:id/respond', vendorAuth, customOffersController.vendorRespondToOffer);
+router.delete('/offers/:id', vendorAuth, customOffersController.cancelOffer);
 
 export default router;

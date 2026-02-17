@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
+import { formatMoney } from '@/lib/format';
 
 interface CreatePayoutPlaceholderModalProps {
   isOpen: boolean;
@@ -185,7 +186,7 @@ export default function CreatePayoutPlaceholderModal({
                               </div>
                               <div className="text-right">
                                 <div className="text-sm font-medium text-gray-900">
-                                  ${parseFloat(String(vendor.balanceAvailable || '0')).toFixed(2)}
+                                  {formatMoney(vendor.balanceAvailable)}
                                 </div>
                                 <div className="text-xs text-gray-500">Available</div>
                               </div>
@@ -221,7 +222,7 @@ export default function CreatePayoutPlaceholderModal({
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-600">Available Balance:</span>
                       <span className="font-bold text-green-600">
-                        ${parseFloat(String(selectedVendor.balanceAvailable || '0')).toFixed(2)}
+                        {formatMoney(selectedVendor.balanceAvailable)}
                       </span>
                     </div>
                   </div>

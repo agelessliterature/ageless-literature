@@ -10,6 +10,8 @@ import { CloudinaryImage } from '@/components/ui/CloudinaryImage';
 import toast from 'react-hot-toast';
 import TrackingNumberModal from '@/components/modals/TrackingNumberModal';
 import { getApiUrl } from '@/lib/api';
+import EmptyState from '@/components/ui/EmptyState';
+import { formatMoney } from '@/lib/format';
 
 export default function AdminOrdersPage() {
   const { data: session, status } = useSession();
@@ -148,10 +150,11 @@ export default function AdminOrdersPage() {
           <p className="text-gray-500">Loading orders...</p>
         </div>
       ) : orders.length === 0 ? (
-        <div className="bg-white border border-gray-200 p-12 text-center">
-          <p className="text-gray-500 mb-4">No orders found</p>
-          <p className="text-sm text-gray-400">Orders containing your products will appear here.</p>
-        </div>
+        <EmptyState
+          icon={['fal', 'clipboard-list']}
+          title="No orders found"
+          description="Orders containing your products will appear here."
+        />
       ) : (
         <>
           <div className="space-y-4">
@@ -183,7 +186,7 @@ export default function AdminOrdersPage() {
                       {order.status}
                     </span>
                     <p className="text-sm font-bold text-gray-900 mt-2">
-                      Your Earnings: ${parseFloat(order.vendorEarnings || 0).toFixed(2)}
+                      Your Earnings: {formatMoney(order.vendorEarnings, { fromCents: false })}
                     </p>
                   </div>
                 </div>
@@ -216,7 +219,7 @@ export default function AdminOrdersPage() {
                           </div>
                         </div>
                         <p className="text-sm font-semibold text-gray-900">
-                          ${parseFloat((item.price * item.quantity).toString()).toFixed(2)}
+                          {formatMoney(item.price * item.quantity, { fromCents: false })}
                         </p>
                       </div>
                     ))}

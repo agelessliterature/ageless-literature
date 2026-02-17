@@ -2,12 +2,23 @@ import axios from 'axios';
 import { getSession } from 'next-auth/react';
 
 // Ensure baseURL includes /api path
-// Server-side: use runtime API_URL (Docker internal), fallback to NEXT_PUBLIC_API_URL, then localhost
-// Client-side: use NEXT_PUBLIC_API_URL (baked at build time), fallback to localhost
+// Server-side: use runtime API_URL (Docker internal), fallback to NEXT_PUBLIC_API_URL
+// Client-side: use relative paths (proxied via Next.js rewrites) unless NEXT_PUBLIC_API_URL is explicitly set
 const isServer = typeof window === 'undefined';
-const baseURL = isServer
-  ? process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
-  : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+function getBaseURL(): string {
+  if (isServer) {
+    // Server-side: runtime env vars (not inlined by SWC)
+    // API_URL and INTERNAL_API_URL are set in docker-compose, not available in browser
+    if (process.env.INTERNAL_API_URL) return process.env.INTERNAL_API_URL.replace(/\/api\/?$/, '');
+    if (process.env.API_URL) return process.env.API_URL.replace(/\/api\/?$/, '');
+    return 'http://localhost:3001';
+  }
+  // Client-side: empty string = relative paths through Next.js rewrites
+  return '';
+}
+
+const baseURL = getBaseURL();
 const apiBaseURL = baseURL.endsWith('/api') ? baseURL : `${baseURL}/api`;
 
 // Helper function for client-side routes - returns full API URL
@@ -19,9 +30,9 @@ export function getApiUrl(path: string): string {
   return `${apiBaseURL}/${pathWithoutApi}`;
 }
 
-// Helper to get URL for static assets (with basePath prefix for production)
+// Helper to get URL for static assets (with basePath prefix if configured)
 export function getAssetUrl(path: string): string {
-  const basePath = process.env.NODE_ENV === 'production' ? '/v2' : '';
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
   return `${basePath}${cleanPath}`;
 }

@@ -7,6 +7,7 @@ import { Book } from '@/types/Book';
 import { Product } from '@/types/Product';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
+import { formatMoney } from '@/lib/format';
 
 interface AuctionModalProps {
   isOpen: boolean;
@@ -112,7 +113,7 @@ export default function AuctionModal({ isOpen, onClose, item, itemType }: Auctio
               {'artist' in item && item.artist && (
                 <p className="text-sm text-gray-600">by {item.artist}</p>
               )}
-              <p className="text-sm text-gray-500 mt-1">Current Price: ${item.price?.toFixed(2)}</p>
+              <p className="text-sm text-gray-500 mt-1">Current Price: {formatMoney(item.price)}</p>
             </div>
           </div>
         </div>

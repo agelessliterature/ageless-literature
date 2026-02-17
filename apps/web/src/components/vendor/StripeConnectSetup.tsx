@@ -105,12 +105,9 @@ export default function StripeConnectSetup({ onSuccess, session }: StripeConnect
     },
     onSuccess: (data) => {
       // Redirect to Stripe onboarding
-      console.log('Onboarding response:', data);
       if (data?.data?.url) {
-        console.log('Redirecting to:', data.data.url);
         window.location.href = data.data.url;
       } else if (data?.url) {
-        console.log('Redirecting to:', data.url);
         window.location.href = data.url;
       } else {
         console.error('No URL in response:', data);
@@ -142,10 +139,8 @@ export default function StripeConnectSetup({ onSuccess, session }: StripeConnect
     },
     onSuccess: (data) => {
       // Open dashboard in new tab
-      console.log('Dashboard login response:', data);
       const url = data?.data?.url || data?.url;
       if (url) {
-        console.log('Opening dashboard:', url);
         window.open(url, '_blank');
       } else {
         console.error('No URL in dashboard response:', data);

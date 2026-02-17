@@ -32,9 +32,7 @@ export const useChatSocket = ({
   useEffect(() => {
     if (!session?.accessToken) return;
 
-    const socketUrl =
-      process.env.NEXT_PUBLIC_SOCKET_URL ||
-      (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001').replace('/api', '');
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || '';
 
     // Connect to /chat namespace
     const socket = io(`${socketUrl}/chat`, {

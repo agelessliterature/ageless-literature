@@ -112,7 +112,7 @@ async function processStripeConnectPayout(vendor, amount, adminUserId) {
   await VendorEarning.update(
     {
       paidOut: true,
-      paidOutAt: new Date(),
+      paidAt: new Date(),
       payoutId: payout.id,
     },
     {
@@ -214,7 +214,7 @@ async function processPayPalPayout(vendor, amount, adminUserId) {
   await VendorEarning.update(
     {
       paidOut: true,
-      paidOutAt: new Date(),
+      paidAt: new Date(),
       payoutId: payout.id,
     },
     {

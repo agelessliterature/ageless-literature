@@ -12,6 +12,7 @@ import ItemTypeSelectionModal from '@/components/modals/ItemTypeSelectionModal';
 import { withBasePath } from '@/lib/path-utils';
 import { getApiUrl } from '@/lib/api';
 import { useVendorStatus } from '@/hooks/useVendorStatus';
+import { formatMoney } from '@/lib/format';
 
 export default function VendorDashboardPage() {
   const { data: session, status } = useSession();
@@ -224,7 +225,7 @@ export default function VendorDashboardPage() {
             />
           </div>
           <p className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
-            ${parseFloat(vendor?.balanceAvailable || 0).toFixed(2)}
+            {formatMoney(vendor?.balanceAvailable, { fromCents: false })}
           </p>
           <p className="text-xs sm:text-sm text-gray-600">Available Balance</p>
           <button
@@ -243,7 +244,7 @@ export default function VendorDashboardPage() {
             />
           </div>
           <p className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
-            ${parseFloat(vendor?.balancePending || 0).toFixed(2)}
+            {formatMoney(vendor?.balancePending, { fromCents: false })}
           </p>
           <p className="text-xs sm:text-sm text-gray-600">Pending Balance</p>
           <p className="text-xs text-gray-500 mt-1 hidden sm:block">From recent orders</p>
@@ -257,7 +258,7 @@ export default function VendorDashboardPage() {
             />
           </div>
           <p className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
-            ${parseFloat(vendor?.lifetimeVendorEarnings || 0).toFixed(2)}
+            {formatMoney(vendor?.lifetimeVendorEarnings, { fromCents: false })}
           </p>
           <p className="text-xs sm:text-sm text-gray-600">Lifetime Earnings</p>
           <p className="text-xs text-gray-500 mt-1 hidden sm:block">Your share (92%)</p>
@@ -390,7 +391,7 @@ export default function VendorDashboardPage() {
                       {earning.orderItem?.book?.title || 'N/A'}
                     </p>
                     <p className="font-bold text-green-600 text-sm flex-shrink-0">
-                      ${parseFloat(earning.vendorEarnings).toFixed(2)}
+                      {formatMoney(earning.vendorEarnings, { fromCents: false })}
                     </p>
                   </div>
                   <p className="text-xs text-gray-500">
@@ -426,7 +427,7 @@ export default function VendorDashboardPage() {
                       {payout.method}
                     </p>
                     <p className="font-bold text-gray-900 text-sm">
-                      ${parseFloat(payout.amount).toFixed(2)}
+                      {formatMoney(payout.amount, { fromCents: false })}
                     </p>
                   </div>
                   <div className="flex justify-between items-center">

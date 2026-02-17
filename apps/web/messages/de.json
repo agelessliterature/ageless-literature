@@ -19,10 +19,21 @@
     },
     "featuredAuctions": {
       "title": "Empfohlene Auktionen",
+      "subtitle": "Bieten Sie auf außergewöhnliche Stücke aus unserer kuratierten Auktionssammlung",
       "viewAll": "Alle Auktionen Anzeigen",
       "bidNow": "Jetzt Bieten",
       "ending": "Endet",
-      "currentBid": "Aktuelles Gebot"
+      "endingSoon": "ENDET BALD",
+      "currentBid": "AKTUELLES GEBOT",
+      "startingBid": "STARTGEBOT",
+      "currency": "USD",
+      "bid": "Gebot",
+      "bids": "Gebote",
+      "noAuctions": "Derzeit keine aktiven Auktionen",
+      "checkBackSoon": "Schauen Sie bald wieder vorbei für spannende Artikel!",
+      "previousAuction": "Vorherige Auktion",
+      "nextAuction": "Nächste Auktion",
+      "goToAuction": "Zur Auktion gehen"
     },
     "memberships": {
       "title": "Werden Sie Teil Unserer Gemeinschaft",
@@ -93,9 +104,37 @@
     },
     "stats": {
       "rareBooksListed": "Seltene Bücher gelistet",
-      "trustedBooksellers": "Vertrauenswürdige Buchhändler",
+      "trustedBooksellers": "Geprüfte Buchhändler & Galerien",
       "countriesWorldwide": "Länder weltweit",
       "customerSupport": "Kundenbetreuung"
+    },
+    "curatedSection": {
+      "title": "Kuratierte Seltene Bücher",
+      "titleLine2": "für Ernsthafte Sammler.",
+      "description": "Über 12.000 seltene Bücher und Sammelwerke",
+      "descriptionLine2": "jedes ausgewählt für Bedeutung und dauerhaften Wert.",
+      "cta": "Sammlung Erkunden"
+    },
+    "trustBadges": {
+      "provenance": "Provenienz-Zentrierte\nKatalogisierung",
+      "transparency": "Zustandstransparenz",
+      "shipping": "Versicherter & Sicherer Versand",
+      "guidance": "Sammler-Level Beratung"
+    },
+    "highSpots": {
+      "title": "HIGHLIGHTS",
+      "description": "Entdecken Sie unser kürzlich hinzugefügtes Inventar mit Werken von Museumsqualität, seltenen Manuskripten, farbenprächtig kolorierten frühen Druckwerken und historisch bedeutsamen Broadsides.",
+      "cta": "JETZT ENTDECKEN",
+      "sectionTitle": "Ausgewählte Highlights",
+      "sectionSubtitle": "Kürzlich erworbene Werke von Museumsqualität",
+      "viewAll": "ALLE ANZEIGEN"
+    },
+    "categories": {
+      "title": "KATEGORIEN",
+      "viewAll": "ALLE KATEGORIEN ANZEIGEN"
+    },
+    "downloadApp": {
+      "title": "LADEN SIE UNSERE MOBILE APP HERUNTER"
     }
   },
   "account": {

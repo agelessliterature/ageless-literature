@@ -162,7 +162,7 @@ export default function VendorPage() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <h1 className="text-3xl font-bold mb-4">Vendor Not Found</h1>
-          <Link href="/books" className="text-primary hover:underline">
+          <Link href="/shop" className="text-primary hover:underline">
             Browse All Books
           </Link>
         </div>

@@ -18,29 +18,22 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      console.log('[AdminLogin] Attempting sign in with email:', email);
       const result = await signIn('credentials', {
         email,
         password,
         redirect: false,
       });
 
-      console.log('[AdminLogin] Sign in result:', result);
-
       if (result?.error) {
         console.error('[AdminLogin] Sign in error:', result.error);
         setError('Invalid credentials or insufficient permissions');
       } else if (result?.ok) {
-        console.log('[AdminLogin] Sign in successful, checking session...');
         // Check if user has admin role
         const response = await fetch(`${getAuthBasePath()}/session`);
         const session = await response.json();
 
-        console.log('[AdminLogin] Session data:', session);
-
         // Check for both uppercase and lowercase 'admin' role
         if (session?.user?.role?.toLowerCase() === 'admin') {
-          console.log('[AdminLogin] Admin role confirmed, redirecting...');
           router.push(withBasePath('/admin/dashboard'));
         } else {
           console.error('[AdminLogin] User does not have admin role:', session?.user?.role);

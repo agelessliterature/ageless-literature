@@ -1,0 +1,52 @@
+# =============================================================================
+# LOCAL DEVELOPMENT OVERRIDE
+# =============================================================================
+# This file adds a local PostgreSQL container for development.
+# Usage: docker compose -f docker-compose.yml -f docker-compose.local.yml --env-file .env.local up -d
+# =============================================================================
+
+services:
+  # PostgreSQL Database (LOCAL ONLY)
+  postgres:
+    image: postgres:16-alpine
+    container_name: ageless-lit-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-ageless_literature}
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # API - Add postgres dependency for local development
+  api:
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/api/node_modules
+      - /app/apps/web/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: npm run dev --workspace=apps/api
+
+  # Web - Use dev command for hot reload
+  web:
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/api/node_modules
+      - /app/apps/web/node_modules
+    command: npm run dev --workspace=apps/web
+
+volumes:
+  postgres_data:

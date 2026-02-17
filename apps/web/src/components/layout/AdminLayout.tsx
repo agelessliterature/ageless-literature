@@ -26,6 +26,7 @@ const navItems: NavItem[] = [
   { href: '/admin/users', label: 'Users', icon: ['fal', 'users'] },
   { href: '/admin/vendors', label: 'Vendors', icon: ['fal', 'store'] },
   { href: '/admin/memberships', label: 'Memberships', icon: ['fal', 'crown'] },
+  { href: '/admin/orders', label: 'Orders', icon: ['fal', 'shopping-cart'] },
   { href: '/admin/products', label: 'Products', icon: ['fal', 'box'] },
   { href: '/admin/books/sort', label: 'Sort Books', icon: ['fal', 'sort'] },
   { href: '/admin/auctions', label: 'Auctions', icon: ['fal', 'gavel'] },
@@ -57,8 +58,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     // Listen for new notifications
     socket.on('notification:new', (notification) => {
-      console.log('ADMIN NOTIFICATION: New notification received:', notification);
-
       // Show toast popup
       const uiData = mapNotificationToUI(notification);
       showNotificationToast(uiData, (href) => {
@@ -130,6 +129,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   alt="Ageless Literature"
                   width={120}
                   height={30}
+                  priority
                   className="h-8 w-auto"
                 />
                 <span className="ml-3 text-sm text-gray-500 font-medium border-l border-gray-300 pl-3">

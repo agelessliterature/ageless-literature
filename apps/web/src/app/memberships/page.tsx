@@ -5,6 +5,9 @@ import { useTranslations } from '@/lib/clientTranslations';
 import { useMessages } from 'next-intl';
 import PlanCard from '@/components/memberships/PlanCard';
 import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
+import PageLoading from '@/components/ui/PageLoading';
+import EmptyState from '@/components/ui/EmptyState';
+import InlineError from '@/components/ui/InlineError';
 import { getApiUrl } from '@/lib/api';
 
 interface MembershipPlan {
@@ -145,28 +148,15 @@ export default function MembershipPage() {
       <section className="py-12 sm:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {plansLoading || subscriptionLoading ? (
-            <div className="flex flex-col items-center justify-center py-20">
-              <FontAwesomeIcon
-                icon={['fal', 'spinner-third']}
-                spin
-                className="text-6xl text-primary mb-4"
-              />
-              <p className="text-gray-600">Loading membership plans...</p>
-            </div>
+            <PageLoading message="Loading membership plans..." fullPage={false} />
           ) : plansError ? (
-            <div className="flex flex-col items-center justify-center gap-4 py-20">
-              <FontAwesomeIcon
-                icon={['fal', 'exclamation-circle']}
-                className="text-6xl text-red-600"
-              />
-              <p className="text-lg text-red-600 font-medium">Failed to load membership plans</p>
-              <p className="text-gray-600">Please try again later.</p>
-            </div>
+            <InlineError message="Failed to load membership plans. Please try again later." />
           ) : plans.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20">
-              <FontAwesomeIcon icon={['fal', 'inbox']} className="text-6xl text-gray-400 mb-4" />
-              <p className="text-lg text-gray-600">No membership plans available at this time.</p>
-            </div>
+            <EmptyState
+              icon={['fal', 'inbox']}
+              title="No plans available"
+              description="No membership plans available at this time."
+            />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {plans.map((plan, index) => {

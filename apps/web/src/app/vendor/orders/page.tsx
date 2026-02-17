@@ -4,12 +4,16 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
+import Pagination from '@/components/shared/Pagination';
 import { CloudinaryImage } from '@/components/ui/CloudinaryImage';
 import toast from 'react-hot-toast';
 import TrackingNumberModal from '@/components/modals/TrackingNumberModal';
 import { getApiUrl } from '@/lib/api';
+import PageLoading from '@/components/ui/PageLoading';
+import EmptyState from '@/components/ui/EmptyState';
+import { formatMoney } from '@/lib/format';
 
 export default function VendorOrdersPage() {
   const { data: session, status } = useSession();
@@ -68,7 +72,7 @@ export default function VendorOrdersPage() {
   if (status === 'loading') {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center">Loading...</div>
+        <PageLoading message="Loading vendor dashboard..." fullPage={false} />
       </div>
     );
   }
@@ -80,6 +84,10 @@ export default function VendorOrdersPage() {
 
   const orders = ordersData?.orders || [];
   const pagination = ordersData?.pagination || {};
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [page]);
 
   const handleMarkAsShipped = (order: any) => {
     setSelectedOrder(order);
@@ -144,14 +152,13 @@ export default function VendorOrdersPage() {
 
       {/* Orders List */}
       {isLoading ? (
-        <div className="bg-white border border-gray-200 p-12 text-center">
-          <p className="text-gray-500">Loading orders...</p>
-        </div>
+        <PageLoading message="Loading orders..." fullPage={false} />
       ) : orders.length === 0 ? (
-        <div className="bg-white border border-gray-200 p-12 text-center">
-          <p className="text-gray-500 mb-4">No orders found</p>
-          <p className="text-sm text-gray-400">Orders containing your products will appear here.</p>
-        </div>
+        <EmptyState
+          icon={['fal', 'box']}
+          title="No orders found"
+          description="Orders containing your products will appear here."
+        />
       ) : (
         <>
           <div className="space-y-4">
@@ -183,7 +190,7 @@ export default function VendorOrdersPage() {
                       {order.status}
                     </span>
                     <p className="text-sm font-bold text-gray-900 mt-2">
-                      Your Earnings: ${parseFloat(order.vendorEarnings || 0).toFixed(2)}
+                      Your Earnings: {formatMoney(order.vendorEarnings, { fromCents: false })}
                     </p>
                   </div>
                 </div>
@@ -216,7 +223,7 @@ export default function VendorOrdersPage() {
                           </div>
                         </div>
                         <p className="text-sm font-semibold text-gray-900">
-                          ${parseFloat((item.price * item.quantity).toString()).toFixed(2)}
+                          {formatMoney(item.price * item.quantity, { fromCents: false })}
                         </p>
                       </div>
                     ))}
@@ -256,90 +263,14 @@ export default function VendorOrdersPage() {
             ))}
           </div>
 
-          {/* Pagination */}
-          {pagination.totalPages > 1 && (
-            <div className="bg-white px-4 py-3 border-t border-gray-200 sm:px-6 mt-6">
-              <div className="flex items-center justify-between">
-                <div className="flex-1 flex justify-between">
-                  <button
-                    onClick={() => setPage(page - 1)}
-                    disabled={page === 1}
-                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Previous
-                  </button>
-                  <button
-                    onClick={() => setPage(page + 1)}
-                    disabled={page === pagination.totalPages}
-                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Next
-                  </button>
-                </div>
-                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm text-gray-700">
-                      Showing <span className="font-medium">{(page - 1) * 20 + 1}</span> to{' '}
-                      <span className="font-medium">{Math.min(page * 20, pagination.total)}</span>{' '}
-                      of <span className="font-medium">{pagination.total}</span> results
-                    </p>
-                  </div>
-                  <div>
-                    <nav className="relative z-0 inline-flex shadow-sm -space-x-px">
-                      <button
-                        onClick={() => setPage(page - 1)}
-                        disabled={page === 1}
-                        className="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <FontAwesomeIcon icon={['fal', 'chevron-left']} />
-                      </button>
-
-                      {/* Page numbers */}
-                      {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
-                        .filter((pageNum) => {
-                          return (
-                            pageNum === 1 ||
-                            pageNum === pagination.totalPages ||
-                            Math.abs(pageNum - page) <= 1
-                          );
-                        })
-                        .map((pageNum, index, arr) => {
-                          const showEllipsisBefore = index > 0 && pageNum - arr[index - 1] > 1;
-
-                          return (
-                            <div key={pageNum} className="inline-flex">
-                              {showEllipsisBefore && (
-                                <span className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
-                                  ...
-                                </span>
-                              )}
-                              <button
-                                onClick={() => setPage(pageNum)}
-                                className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                                  pageNum === page
-                                    ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
-                                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                                }`}
-                              >
-                                {pageNum}
-                              </button>
-                            </div>
-                          );
-                        })}
-
-                      <button
-                        onClick={() => setPage(page + 1)}
-                        disabled={page === pagination.totalPages}
-                        className="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <FontAwesomeIcon icon={['fal', 'chevron-right']} />
-                      </button>
-                    </nav>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+          <Pagination
+            currentPage={page}
+            totalPages={pagination.totalPages || 1}
+            totalItems={pagination.total || 0}
+            itemsPerPage={20}
+            onPageChange={setPage}
+            className="mt-6"
+          />
         </>
       )}
 

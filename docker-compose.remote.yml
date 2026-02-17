@@ -1,0 +1,22 @@
+# =============================================================================
+# REMOTE DEV SERVER OVERRIDE (Lightsail Instance)
+# =============================================================================
+# This file is for the remote dev server using managed Lightsail PostgreSQL.
+# NO local postgres container - connects to managed database with SSL.
+# Usage: docker compose -f docker-compose.yml -f docker-compose.remote.yml --env-file .env.remote up -d
+# =============================================================================
+
+services:
+  # API - Production mode, no postgres dependency, SSL enabled
+  api:
+    environment:
+      NODE_ENV: production
+      DB_SSL: "true"
+    # No volumes needed - code is built into container
+    # No postgres dependency - using managed database
+
+  # Web - Production mode
+  web:
+    environment:
+      NODE_ENV: production
+    # No volumes needed - code is built into container

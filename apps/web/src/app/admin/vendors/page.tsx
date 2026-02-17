@@ -6,6 +6,9 @@ import { useRouter } from 'next/navigation';
 import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
 import { getApiUrl } from '@/lib/api-url';
 import { CloudinaryImage } from '@/components/ui/CloudinaryImage';
+import ResponsiveDataView from '@/components/ui/ResponsiveDataView';
+import MobileCard from '@/components/ui/MobileCard';
+import MobileCardList from '@/components/ui/MobileCardList';
 import ApproveVendorModal from '@/components/modals/ApproveVendorModal';
 import RejectVendorModal from '@/components/modals/RejectVendorModal';
 import SuspendVendorModal from '@/components/modals/SuspendVendorModal';
@@ -764,58 +767,56 @@ export default function VendorsAdminPage() {
 
       {/* Vendors Table */}
       <div className="bg-white border border-gray-200 shadow-sm min-w-0">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-max">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                  Shop
-                </th>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                  Vendor
-                </th>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                  Commission
-                </th>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                  Balance
-                </th>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                  Lifetime Sales
-                </th>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                  Joined
-                </th>
-                <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider w-32 sm:w-48">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {loading ? (
-                <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
-                    Loading vendors...
-                  </td>
-                </tr>
-              ) : vendors.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
-                    No vendors found
-                  </td>
-                </tr>
-              ) : (
-                vendors.map((vendor) => (
-                  <tr
-                    key={vendor.id}
-                    className="hover:bg-gray-50 transition-colors cursor-pointer"
-                    onClick={() => router.push(`/admin/vendors/${vendor.id}`)}
-                  >
-                    <td className="px-6 py-4">
-                      <div className="flex items-center">
+        <ResponsiveDataView
+          breakpoint="lg"
+          mobile={
+            loading ? (
+              <div className="px-6 py-12 text-center text-gray-500">Loading vendors...</div>
+            ) : vendors.length === 0 ? (
+              <div className="px-6 py-12 text-center text-gray-500">No vendors found</div>
+            ) : (
+              <MobileCardList gap="md" className="p-4">
+                {vendors.map((vendor) => {
+                  const vendorActions = [];
+                  vendorActions.push({
+                    label: 'View',
+                    icon: <FontAwesomeIcon icon={['fal', 'eye']} className="text-xs" />,
+                    href: `/admin/vendors/${vendor.id}`,
+                    variant: 'primary' as const,
+                  });
+                  vendorActions.push({
+                    label: 'Edit',
+                    icon: <FontAwesomeIcon icon={['fal', 'edit']} className="text-xs" />,
+                    href: `/admin/vendors/${vendor.id}/edit`,
+                    variant: 'secondary' as const,
+                  });
+                  if (vendor.status === 'pending') {
+                    vendorActions.push({
+                      label: 'Approve',
+                      icon: <FontAwesomeIcon icon={['fal', 'check']} className="text-xs" />,
+                      onClick: () => openApproveModal(vendor),
+                      variant: 'primary' as const,
+                    });
+                    vendorActions.push({
+                      label: 'Reject',
+                      icon: <FontAwesomeIcon icon={['fal', 'ban']} className="text-xs" />,
+                      onClick: () => openRejectModal(vendor),
+                      variant: 'danger' as const,
+                    });
+                  }
+                  if (vendor.status === 'approved' || vendor.status === 'active') {
+                    vendorActions.push({
+                      label: 'Suspend',
+                      icon: <FontAwesomeIcon icon={['fal', 'pause']} className="text-xs" />,
+                      onClick: () => openSuspendModal(vendor),
+                      variant: 'danger' as const,
+                    });
+                  }
+                  return (
+                    <MobileCard
+                      key={vendor.id}
+                      onClick={() => router.push(`/admin/vendors/${vendor.id}`)}
+                      thumbnail={
                         <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded">
                           <CloudinaryImage
                             src={vendor.logoUrl}
@@ -827,138 +828,252 @@ export default function VendorsAdminPage() {
                             fallbackText={vendor.shopName.charAt(0).toUpperCase()}
                           />
                         </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{vendor.shopName}</div>
-                          <div className="text-sm text-gray-500">/{vendor.shopUrl}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">
-                        {vendor.user.name || `${vendor.user.firstName} ${vendor.user.lastName}`}
-                      </div>
-                      <div className="flex items-center gap-2 mt-1">
-                        {vendor.user.provider === 'google' && (
-                          <span className="inline-flex items-center text-xs text-gray-600 bg-white border border-gray-300 px-2 py-0.5 rounded">
-                            <FontAwesomeIcon icon={['fab', 'google']} className="text-sm mr-1" />
-                            Google
-                          </span>
-                        )}
-                        {vendor.user.provider === 'apple' && (
-                          <span className="inline-flex items-center text-xs text-gray-900 bg-white border border-gray-300 px-2 py-0.5 rounded">
-                            <FontAwesomeIcon icon={['fab', 'apple']} className="text-sm mr-1" />
-                            Apple
-                          </span>
-                        )}
-                        {vendor.user.provider === 'credentials' && (
-                          <span className="inline-flex items-center text-xs text-gray-600 bg-white border border-gray-300 px-2 py-0.5 rounded">
-                            <FontAwesomeIcon icon={['fal', 'key']} className="text-sm mr-1" />
-                            Email/Password
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex px-2 py-1 text-xs font-semibold border ${getStatusBadgeClass(vendor.status)}`}
-                      >
-                        {vendor.status.toUpperCase()}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      <span
-                        className={
-                          vendor.commissionRate !== 0.08 ? 'font-semibold text-orange-600' : ''
-                        }
-                      >
-                        {(vendor.commissionRate * 100).toFixed(0)}%
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                      {formatCurrency(vendor.balanceAvailable)}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      {formatCurrency(vendor.lifetimeGrossSales)}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      {new Date(vendor.createdAt).toLocaleDateString()}
-                    </td>
-                    <td
-                      className="px-3 sm:px-6 py-4 text-right text-sm font-medium whitespace-nowrap"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <button
-                        onClick={() => router.push(`/admin/vendors/${vendor.id}`)}
-                        className="text-blue-600 hover:text-blue-900 mr-1.5 sm:mr-2"
-                        title="View Details"
-                      >
-                        <FontAwesomeIcon icon={['fal', 'eye']} className="text-sm" />
-                      </button>
-                      <button
-                        onClick={() => router.push(`/admin/vendors/${vendor.id}/edit`)}
-                        className="text-yellow-600 hover:text-yellow-90 mr-1.5 sm:mr-2"
-                        title="Edit Vendor"
-                      >
-                        <FontAwesomeIcon icon={['fal', 'edit']} className="text-sm" />
-                      </button>
-                      {vendor.status === 'pending' && (
-                        <>
-                          <button
-                            onClick={() => openApproveModal(vendor)}
-                            className="text-green-600 hover:text-green-900 mr-1.5 sm:mr-2"
-                            title="Approve"
-                          >
-                            <FontAwesomeIcon icon={['fal', 'check']} className="text-sm" />
-                          </button>
-                          <button
-                            onClick={() => openRejectModal(vendor)}
-                            className="text-red-600 hover:text-red-900 mr-1.5 sm:mr-2"
-                            title="Reject"
-                          >
-                            <FontAwesomeIcon icon={['fal', 'ban']} className="text-sm" />
-                          </button>
-                        </>
-                      )}
-                      {(vendor.status === 'approved' || vendor.status === 'active') && (
-                        <>
-                          <button
-                            onClick={() => openFeaturedModal(vendor)}
-                            className={`mr-1.5 sm:mr-2 ${vendor.isFeatured ? 'text-yellow-500 hover:text-yellow-600' : 'text-gray-400 hover:text-yellow-500'}`}
-                            title={vendor.isFeatured ? 'Manage Featured Status' : 'Make Featured'}
-                          >
-                            <FontAwesomeIcon
-                              icon={[vendor.isFeatured ? 'fas' : 'fal', 'star']}
-                              className="text-sm"
-                            />
-                          </button>
-                          <button
-                            onClick={() => openSuspendModal(vendor)}
-                            className="text-gray-600 hover:text-gray-900 mr-1.5 sm:mr-2"
-                            title="Suspend"
-                          >
-                            <FontAwesomeIcon icon={['fal', 'pause']} className="text-sm" />
-                          </button>
-                          {vendor.balanceAvailable > 0 && (
-                            <button
-                              onClick={() => openPayoutModal(vendor)}
-                              className="text-green-600 hover:text-green-900"
-                              title="Create Payout"
+                      }
+                      title={vendor.shopName}
+                      subtitle={
+                        vendor.user.name || `${vendor.user.firstName} ${vendor.user.lastName}`
+                      }
+                      badge={
+                        <span
+                          className={`inline-flex px-2 py-0.5 text-xs font-semibold border rounded ${getStatusBadgeClass(vendor.status)}`}
+                        >
+                          {vendor.status.toUpperCase()}
+                        </span>
+                      }
+                      details={[
+                        {
+                          label: 'Commission',
+                          value: (
+                            <span
+                              className={
+                                vendor.commissionRate !== 0.08
+                                  ? 'font-semibold text-orange-600'
+                                  : ''
+                              }
                             >
-                              <FontAwesomeIcon
-                                icon={['fal', 'money-bill-wave']}
-                                className="text-sm"
-                              />
-                            </button>
-                          )}
-                        </>
-                      )}
-                    </td>
+                              {(vendor.commissionRate * 100).toFixed(0)}%
+                            </span>
+                          ),
+                        },
+                        { label: 'Balance', value: formatCurrency(vendor.balanceAvailable) },
+                        {
+                          label: 'Lifetime Sales',
+                          value: formatCurrency(vendor.lifetimeGrossSales),
+                        },
+                        { label: 'Joined', value: new Date(vendor.createdAt).toLocaleDateString() },
+                      ]}
+                      actions={vendorActions}
+                    />
+                  );
+                })}
+              </MobileCardList>
+            )
+          }
+          desktop={
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-max">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                      Shop
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                      Vendor
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                      Commission
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                      Balance
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                      Lifetime Sales
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                      Joined
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider w-48">
+                      Actions
+                    </th>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {loading ? (
+                    <tr>
+                      <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
+                        Loading vendors...
+                      </td>
+                    </tr>
+                  ) : vendors.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
+                        No vendors found
+                      </td>
+                    </tr>
+                  ) : (
+                    vendors.map((vendor) => (
+                      <tr
+                        key={vendor.id}
+                        className="hover:bg-gray-50 transition-colors cursor-pointer"
+                        onClick={() => router.push(`/admin/vendors/${vendor.id}`)}
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex items-center">
+                            <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded">
+                              <CloudinaryImage
+                                src={vendor.logoUrl}
+                                alt={vendor.shopName}
+                                width={80}
+                                height={80}
+                                className="w-full h-full"
+                                fallbackIcon={['fal', 'store']}
+                                fallbackText={vendor.shopName.charAt(0).toUpperCase()}
+                              />
+                            </div>
+                            <div className="ml-4">
+                              <div className="text-sm font-medium text-gray-900">
+                                {vendor.shopName}
+                              </div>
+                              <div className="text-sm text-gray-500">/{vendor.shopUrl}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm font-medium text-gray-900">
+                            {vendor.user.name || `${vendor.user.firstName} ${vendor.user.lastName}`}
+                          </div>
+                          <div className="flex items-center gap-2 mt-1">
+                            {vendor.user.provider === 'google' && (
+                              <span className="inline-flex items-center text-xs text-gray-600 bg-white border border-gray-300 px-2 py-0.5 rounded">
+                                <FontAwesomeIcon
+                                  icon={['fab', 'google']}
+                                  className="text-sm mr-1"
+                                />
+                                Google
+                              </span>
+                            )}
+                            {vendor.user.provider === 'apple' && (
+                              <span className="inline-flex items-center text-xs text-gray-900 bg-white border border-gray-300 px-2 py-0.5 rounded">
+                                <FontAwesomeIcon icon={['fab', 'apple']} className="text-sm mr-1" />
+                                Apple
+                              </span>
+                            )}
+                            {vendor.user.provider === 'credentials' && (
+                              <span className="inline-flex items-center text-xs text-gray-600 bg-white border border-gray-300 px-2 py-0.5 rounded">
+                                <FontAwesomeIcon icon={['fal', 'key']} className="text-sm mr-1" />
+                                Email/Password
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span
+                            className={`inline-flex px-2 py-1 text-xs font-semibold border ${getStatusBadgeClass(vendor.status)}`}
+                          >
+                            {vendor.status.toUpperCase()}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-900">
+                          <span
+                            className={
+                              vendor.commissionRate !== 0.08 ? 'font-semibold text-orange-600' : ''
+                            }
+                          >
+                            {(vendor.commissionRate * 100).toFixed(0)}%
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-900 font-medium">
+                          {formatCurrency(vendor.balanceAvailable)}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-900">
+                          {formatCurrency(vendor.lifetimeGrossSales)}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-500">
+                          {new Date(vendor.createdAt).toLocaleDateString()}
+                        </td>
+                        <td
+                          className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <button
+                            onClick={() => router.push(`/admin/vendors/${vendor.id}`)}
+                            className="text-blue-600 hover:text-blue-900 mr-2"
+                            title="View Details"
+                          >
+                            <FontAwesomeIcon icon={['fal', 'eye']} className="text-sm" />
+                          </button>
+                          <button
+                            onClick={() => router.push(`/admin/vendors/${vendor.id}/edit`)}
+                            className="text-yellow-600 hover:text-yellow-900 mr-2"
+                            title="Edit Vendor"
+                          >
+                            <FontAwesomeIcon icon={['fal', 'edit']} className="text-sm" />
+                          </button>
+                          {vendor.status === 'pending' && (
+                            <>
+                              <button
+                                onClick={() => openApproveModal(vendor)}
+                                className="text-green-600 hover:text-green-900 mr-2"
+                                title="Approve"
+                              >
+                                <FontAwesomeIcon icon={['fal', 'check']} className="text-sm" />
+                              </button>
+                              <button
+                                onClick={() => openRejectModal(vendor)}
+                                className="text-red-600 hover:text-red-900 mr-2"
+                                title="Reject"
+                              >
+                                <FontAwesomeIcon icon={['fal', 'ban']} className="text-sm" />
+                              </button>
+                            </>
+                          )}
+                          {(vendor.status === 'approved' || vendor.status === 'active') && (
+                            <>
+                              <button
+                                onClick={() => openFeaturedModal(vendor)}
+                                className={`mr-2 ${vendor.isFeatured ? 'text-yellow-500 hover:text-yellow-600' : 'text-gray-400 hover:text-yellow-500'}`}
+                                title={
+                                  vendor.isFeatured ? 'Manage Featured Status' : 'Make Featured'
+                                }
+                              >
+                                <FontAwesomeIcon
+                                  icon={[vendor.isFeatured ? 'fas' : 'fal', 'star']}
+                                  className="text-sm"
+                                />
+                              </button>
+                              <button
+                                onClick={() => openSuspendModal(vendor)}
+                                className="text-gray-600 hover:text-gray-900 mr-2"
+                                title="Suspend"
+                              >
+                                <FontAwesomeIcon icon={['fal', 'pause']} className="text-sm" />
+                              </button>
+                              {vendor.balanceAvailable > 0 && (
+                                <button
+                                  onClick={() => openPayoutModal(vendor)}
+                                  className="text-green-600 hover:text-green-900"
+                                  title="Create Payout"
+                                >
+                                  <FontAwesomeIcon
+                                    icon={['fal', 'money-bill-wave']}
+                                    className="text-sm"
+                                  />
+                                </button>
+                              )}
+                            </>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          }
+        />
 
         {/* Pagination */}
         {pagination.totalPages > 1 && (

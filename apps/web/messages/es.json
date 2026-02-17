@@ -19,10 +19,21 @@
     },
     "featuredAuctions": {
       "title": "Subastas Destacadas",
+      "subtitle": "Puja por piezas extraordinarias de nuestra colección curada de subastas",
       "viewAll": "Ver Todas las Subastas",
       "bidNow": "Ofertar Ahora",
       "ending": "Termina",
-      "currentBid": "Oferta Actual"
+      "endingSoon": "TERMINANDO PRONTO",
+      "currentBid": "OFERTA ACTUAL",
+      "startingBid": "OFERTA INICIAL",
+      "currency": "USD",
+      "bid": "oferta",
+      "bids": "ofertas",
+      "noAuctions": "No hay subastas activas en este momento",
+      "checkBackSoon": "¡Vuelve pronto para artículos emocionantes!",
+      "previousAuction": "Subasta anterior",
+      "nextAuction": "Siguiente subasta",
+      "goToAuction": "Ir a la subasta"
     },
     "memberships": {
       "title": "Únete a Nuestra Comunidad",
@@ -93,9 +104,37 @@
     },
     "stats": {
       "rareBooksListed": "Libros raros listados",
-      "trustedBooksellers": "Libreros de confianza",
+      "trustedBooksellers": "Libreros y Galerías Verificados",
       "countriesWorldwide": "Países en todo el mundo",
       "customerSupport": "Atención al cliente"
+    },
+    "curatedSection": {
+      "title": "Libros Raros Curados",
+      "titleLine2": "para Coleccionistas Serios.",
+      "description": "Más de 12,000 libros raros y obras coleccionables",
+      "descriptionLine2": "cada uno seleccionado por su significado y valor duradero.",
+      "cta": "Explorar la Colección"
+    },
+    "trustBadges": {
+      "provenance": "Catalogación\nCentrada en Procedencia",
+      "transparency": "Transparencia de Condición",
+      "shipping": "Envío Asegurado y Seguro",
+      "guidance": "Orientación a Nivel Coleccionista"
+    },
+    "highSpots": {
+      "title": "DESTACADOS",
+      "description": "Explore nuestro inventario recientemente añadido con adquisiciones de calidad museística, manuscritos raros, obras impresas antiguas ricamente coloreadas y folletos históricamente significativos.",
+      "cta": "EXPLORAR",
+      "sectionTitle": "Selección destacada",
+      "sectionSubtitle": "Adquisiciones Recientes de Calidad Museística",
+      "viewAll": "VER TODO"
+    },
+    "categories": {
+      "title": "CATEGORÍAS",
+      "viewAll": "VER TODAS LAS CATEGORÍAS"
+    },
+    "downloadApp": {
+      "title": "DESCARGA NUESTRA APLICACIÓN MÓVIL"
     }
   },
   "account": {

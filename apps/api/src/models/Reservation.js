@@ -6,15 +6,19 @@ export default (sequelize, DataTypes) => {
   const Reservation = sequelize.define(
     'Reservation',
     {
-      id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+      id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
+      },
       bookId: {
-        type: DataTypes.UUID,
+        type: DataTypes.INTEGER,
         allowNull: false,
         references: { model: 'books', key: 'id' },
         onDelete: 'CASCADE',
       },
       userId: {
-        type: DataTypes.UUID,
+        type: DataTypes.INTEGER,
         allowNull: false,
         references: { model: 'users', key: 'id' },
         onDelete: 'CASCADE',
@@ -25,7 +29,11 @@ export default (sequelize, DataTypes) => {
       },
       expiresAt: { type: DataTypes.DATE, allowNull: false },
     },
-    { tableName: 'reservations', timestamps: true },
+    {
+      tableName: 'reservations',
+      timestamps: true,
+      underscored: true,
+    },
   );
 
   Reservation.associate = (models) => {

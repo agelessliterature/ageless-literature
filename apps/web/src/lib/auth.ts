@@ -315,6 +315,6 @@ export const authOptions: NextAuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   secret: process.env.NEXTAUTH_SECRET,
-  // Set basePath for API auth (production needs /v2 prefix for Apache proxy)
-  basePath: process.env.NODE_ENV === 'production' ? '/v2/api/auth' : '/api/auth',
+  // Set basePath for API auth (controlled via env var, empty for root deployment)
+  basePath: `${process.env.NEXT_PUBLIC_BASE_PATH || ''}/api/auth`,
 };

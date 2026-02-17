@@ -21,6 +21,7 @@ export interface Book {
   isSigned: boolean;
   status: string;
   images?: BookImage[];
+  media?: BookMedia[];
   slug?: string;
   metaTitle?: string;
   metaDescription?: string;
@@ -33,6 +34,17 @@ export interface Book {
     shopUrl: string;
     logoUrl?: string;
   };
+}
+
+export interface BookMedia {
+  id: number;
+  bookId: number;
+  imageUrl: string;
+  thumbnailUrl?: string;
+  displayOrder: number;
+  isPrimary: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 }
 
 export interface Category {

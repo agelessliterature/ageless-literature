@@ -1,5 +1,6 @@
 import express from 'express';
 import { adminAuth } from '../middleware/adminAuth.js';
+import * as adminDashboardController from '../controllers/admin/adminDashboardController.js';
 import * as adminUsersController from '../controllers/admin/adminUsersController.js';
 import * as adminVendorsController from '../controllers/admin/adminVendorsController.js';
 import * as adminPayoutsController from '../controllers/admin/adminPayoutsController.js';
@@ -15,6 +16,9 @@ import * as adminProductsController from '../controllers/admin/adminProductsCont
 const router = express.Router();
 
 router.use(adminAuth);
+
+// Dashboard endpoint (aggregated data)
+router.get('/dashboard', adminDashboardController.getAdminDashboard);
 
 router.get('/users', adminUsersController.listAll);
 router.get('/users/stats', adminUsersController.getUserStats);

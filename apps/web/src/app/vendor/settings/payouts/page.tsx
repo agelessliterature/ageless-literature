@@ -7,6 +7,8 @@ import { useSession } from 'next-auth/react';
 import StripeConnectSetup from '@/components/vendor/StripeConnectSetup';
 import PayPalSetupForm from '@/components/vendor/PayPalSetupForm';
 import { getApiUrl } from '@/lib/api';
+import PageLoading from '@/components/ui/PageLoading';
+import { formatMoney } from '@/lib/format';
 
 interface PayoutSettings {
   payoutMethod: 'stripe' | 'paypal' | null;
@@ -103,11 +105,7 @@ export default function VendorPayoutSettingsPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <PageLoading message="Loading payout settings..." fullPage={true} />;
   }
 
   const canSelectStripe = !!settings?.stripeAccountId && settings?.stripeAccountStatus === 'active';
@@ -161,7 +159,7 @@ export default function VendorPayoutSettingsPage() {
           <div className="bg-white border border-gray-200 p-6">
             <p className="text-sm text-gray-600 font-medium">Available Balance</p>
             <p className="text-3xl font-bold text-green-600 mt-2">
-              ${settings?.balanceAvailable.toFixed(2) || '0.00'}
+              {formatMoney(settings?.balanceAvailable, { fromCents: false })}
             </p>
             <p className="text-xs text-gray-500 mt-1">Ready for payout</p>
           </div>
@@ -169,7 +167,7 @@ export default function VendorPayoutSettingsPage() {
           <div className="bg-white border border-gray-200 p-6">
             <p className="text-sm text-gray-600 font-medium">Pending Balance</p>
             <p className="text-3xl font-bold text-yellow-600 mt-2">
-              ${settings?.balancePending.toFixed(2) || '0.00'}
+              {formatMoney(settings?.balancePending, { fromCents: false })}
             </p>
             <p className="text-xs text-gray-500 mt-1">Processing</p>
           </div>
@@ -177,7 +175,7 @@ export default function VendorPayoutSettingsPage() {
           <div className="bg-white border border-gray-200 p-6">
             <p className="text-sm text-gray-600 font-medium">Total Paid</p>
             <p className="text-3xl font-bold text-blue-600 mt-2">
-              ${settings?.balancePaid.toFixed(2) || '0.00'}
+              {formatMoney(settings?.balancePaid, { fromCents: false })}
             </p>
             <p className="text-xs text-gray-500 mt-1">All time</p>
           </div>

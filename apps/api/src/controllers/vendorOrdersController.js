@@ -63,6 +63,7 @@ export const getVendorOrders = async (req, res) => {
       order: [['createdAt', 'DESC']],
       limit: parseInt(limit),
       offset: (parseInt(page) - 1) * parseInt(limit),
+      subQuery: false,
       distinct: true,
     });
 

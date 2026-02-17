@@ -434,7 +434,7 @@ export const completeWithdrawal = async (req, res) => {
       await db.VendorEarning.update(
         {
           paidOut: true,
-          paidOutAt: new Date(),
+          paidAt: new Date(),
         },
         {
           where: {

@@ -774,10 +774,10 @@ async function processAuctionCommission(auction, winningAmount) {
     const earningData = {
       vendorId: vendor.id,
       auctionId: auction.id,
-      amount: grossAmount,  // Total sale amount
+      amount: grossAmount, // Total sale amount
       platformFee: platformCommission,
-      netAmount: vendorEarnings,  // Vendor's share after commission
-      commissionRateBps: Math.round(commissionRate * 10000),  // Convert to basis points
+      netAmount: vendorEarnings, // Vendor's share after commission
+      commissionRateBps: Math.round(commissionRate * 10000), // Convert to basis points
       transactionType: 'auction_sale',
       status: 'completed', // Auctions are completed immediately upon sale
       completedAt: new Date(),

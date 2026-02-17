@@ -9,6 +9,9 @@ import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
 import { CloudinaryImage } from '@/components/ui/CloudinaryImage';
 import AuctionCountdown from '@/components/auctions/AuctionCountdown';
 import AuctionDetailsDrawer from '@/components/modals/AuctionDetailsDrawer';
+import ResponsiveDataView from '@/components/ui/ResponsiveDataView';
+import MobileCard from '@/components/ui/MobileCard';
+import MobileCardList from '@/components/ui/MobileCardList';
 
 export default function AdminAuctionsPage() {
   const { data: session, status } = useSession();
@@ -208,170 +211,258 @@ export default function AdminAuctionsPage() {
         </div>
       ) : (
         <>
-          <div className="bg-white border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Item
-                    </th>
-                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Vendor
-                    </th>
-                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Starting Bid
-                    </th>
-                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Current Bid
-                    </th>
-                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Bids
-                    </th>
-                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Time Remaining
-                    </th>
-                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {auctions.map((auction: any) => {
-                    const item = auction.item || auction.book || auction.product;
-                    // Find primary image or fall back to first image
-                    const primaryImage =
-                      item?.images?.find((img: any) => img.isPrimary || img.is_primary) ||
-                      item?.images?.[0];
-                    const imageUrl = primaryImage?.url || primaryImage?.imageUrl || primaryImage;
-
-                    return (
-                      <tr
-                        key={auction.id}
-                        className="hover:bg-gray-50 cursor-pointer"
-                        onClick={() => handleViewDetails(auction)}
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="flex-shrink-0 h-16 w-12 overflow-hidden">
-                              <CloudinaryImage
-                                src={imageUrl}
-                                alt={item?.title || 'Item'}
-                                width={96}
-                                height={128}
-                                className="w-128 h-128"
-                                fallbackIcon={[
-                                  'fal',
-                                  auction.auctionableType === 'book' ? 'book' : 'box',
-                                ]}
-                                fallbackText="No image"
-                              />
-                            </div>
-                            <div className="ml-4 max-w-xs">
-                              <div className="text-sm font-medium text-gray-900 max-w-[200px] truncate">
-                                {item?.title || 'Unknown'}
-                              </div>
-                              <div className="text-xs text-gray-500 truncate">
-                                {item?.author || item?.artist}
-                              </div>
-                              <div className="text-xs text-purple-600 font-semibold">
-                                {auction.auctionableType?.toUpperCase()}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            {auction.vendor?.shopName || 'N/A'}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            $
-                            {parseFloat(auction.startingBid || auction.startingPrice || 0).toFixed(
-                              2,
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-semibold text-primary">
-                            {auction.currentBid
-                              ? `$${parseFloat(auction.currentBid).toFixed(2)}`
-                              : '-'}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center text-sm text-gray-500">
-                            <FontAwesomeIcon
-                              icon={['fal', 'hand-paper']}
-                              className="text-base mr-1"
-                            />
-                            {auction.bidCount || 0}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {auction.status === 'active' || auction.status === 'upcoming' ? (
-                            <AuctionCountdown
-                              endsAt={auction.endsAt || auction.endDate}
-                              className="text-sm"
-                            />
-                          ) : (
-                            <span className="text-sm text-gray-500">Ended</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span
-                            className={`px-2 inline-flex text-xs leading-5 font-semibold ${
-                              auction.status === 'active'
-                                ? 'bg-green-100 text-green-800'
-                                : auction.status === 'upcoming'
-                                  ? 'bg-blue-100 text-blue-800'
-                                  : auction.status === 'closed' || auction.status === 'ended'
-                                    ? 'bg-gray-100 text-gray-800'
-                                    : 'bg-red-100 text-red-800'
-                            }`}
-                          >
-                            {auction.status}
+          <ResponsiveDataView
+            breakpoint="lg"
+            mobile={
+              <MobileCardList gap="md">
+                {auctions.map((auction: any) => {
+                  const item = auction.item || auction.book || auction.product;
+                  const primaryImage =
+                    item?.images?.find((img: any) => img.isPrimary || img.is_primary) ||
+                    item?.images?.[0];
+                  const imageUrl = primaryImage?.url || primaryImage?.imageUrl || primaryImage;
+                  return (
+                    <MobileCard
+                      key={auction.id}
+                      onClick={() => handleViewDetails(auction)}
+                      thumbnail={
+                        <CloudinaryImage
+                          src={imageUrl}
+                          alt={item?.title || 'Item'}
+                          width={96}
+                          height={128}
+                          className="w-full h-full"
+                          fallbackIcon={[
+                            'fal',
+                            auction.auctionableType === 'book' ? 'book' : 'box',
+                          ]}
+                          fallbackText="No image"
+                        />
+                      }
+                      title={item?.title || 'Unknown'}
+                      subtitle={
+                        <>
+                          <span className="text-xs text-gray-500">
+                            {item?.author || item?.artist}
+                          </span>{' '}
+                          <span className="text-xs text-purple-600 font-semibold">
+                            {auction.auctionableType?.toUpperCase()}
                           </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div
-                            className="flex items-center justify-end gap-2"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <button
-                              onClick={() => handleViewDetails(auction)}
-                              className="text-primary hover:text-secondary"
-                              title="View Details"
-                            >
-                              <FontAwesomeIcon icon={['fal', 'eye']} className="text-base" />
-                            </button>
-                            <button
-                              onClick={() => handleEdit(auction)}
-                              className="text-yellow-600 hover:text-yellow-900"
-                              title="Edit Auction"
-                            >
-                              <FontAwesomeIcon icon={['fal', 'edit']} className="text-base" />
-                            </button>
-                            <Link
-                              href={`/admin/vendors/${auction.vendorId}`}
-                              className="text-red-600 hover:text-red-900"
-                              title="View Vendor"
-                            >
-                              <FontAwesomeIcon icon={['fal', 'store']} className="text-base" />
-                            </Link>
-                          </div>
-                        </td>
+                        </>
+                      }
+                      badge={
+                        <span
+                          className={`px-2 py-0.5 text-xs font-semibold rounded-full ${auction.status === 'active' ? 'bg-green-100 text-green-800' : auction.status === 'upcoming' ? 'bg-blue-100 text-blue-800' : auction.status === 'closed' || auction.status === 'ended' ? 'bg-gray-100 text-gray-800' : 'bg-red-100 text-red-800'}`}
+                        >
+                          {auction.status}
+                        </span>
+                      }
+                      details={[
+                        { label: 'Vendor', value: auction.vendor?.shopName || 'N/A' },
+                        {
+                          label: 'Starting Bid',
+                          value: `$${parseFloat(auction.startingBid || auction.startingPrice || 0).toFixed(2)}`,
+                        },
+                        {
+                          label: 'Current Bid',
+                          value: auction.currentBid
+                            ? `$${parseFloat(auction.currentBid).toFixed(2)}`
+                            : '-',
+                        },
+                        { label: 'Bids', value: String(auction.bidCount || 0) },
+                      ]}
+                    >
+                      {(auction.status === 'active' || auction.status === 'upcoming') && (
+                        <div className="mt-2">
+                          <AuctionCountdown
+                            endsAt={auction.endsAt || auction.endDate}
+                            className="text-sm"
+                          />
+                        </div>
+                      )}
+                      <div className="mt-3 flex gap-2" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          onClick={() => handleViewDetails(auction)}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-gray-100 text-gray-700 rounded hover:bg-gray-200 min-h-[36px]"
+                        >
+                          <FontAwesomeIcon icon={['fal', 'eye']} className="text-sm" /> View
+                        </button>
+                        <button
+                          onClick={() => handleEdit(auction)}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 min-h-[36px]"
+                        >
+                          <FontAwesomeIcon icon={['fal', 'edit']} className="text-sm" /> Edit
+                        </button>
+                        <Link
+                          href={`/admin/vendors/${auction.vendorId}`}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-red-100 text-red-700 rounded hover:bg-red-200 min-h-[36px]"
+                        >
+                          <FontAwesomeIcon icon={['fal', 'store']} className="text-sm" /> Vendor
+                        </Link>
+                      </div>
+                    </MobileCard>
+                  );
+                })}
+              </MobileCardList>
+            }
+            desktop={
+              <div className="bg-white border border-gray-200 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Item
+                        </th>
+                        <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Vendor
+                        </th>
+                        <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Starting Bid
+                        </th>
+                        <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Current Bid
+                        </th>
+                        <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Bids
+                        </th>
+                        <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Time Remaining
+                        </th>
+                        <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {auctions.map((auction: any) => {
+                        const item = auction.item || auction.book || auction.product;
+                        const primaryImage =
+                          item?.images?.find((img: any) => img.isPrimary || img.is_primary) ||
+                          item?.images?.[0];
+                        const imageUrl =
+                          primaryImage?.url || primaryImage?.imageUrl || primaryImage;
+                        return (
+                          <tr
+                            key={auction.id}
+                            className="hover:bg-gray-50 cursor-pointer"
+                            onClick={() => handleViewDetails(auction)}
+                          >
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center">
+                                <div className="flex-shrink-0 h-16 w-12 overflow-hidden">
+                                  <CloudinaryImage
+                                    src={imageUrl}
+                                    alt={item?.title || 'Item'}
+                                    width={96}
+                                    height={128}
+                                    className="w-128 h-128"
+                                    fallbackIcon={[
+                                      'fal',
+                                      auction.auctionableType === 'book' ? 'book' : 'box',
+                                    ]}
+                                    fallbackText="No image"
+                                  />
+                                </div>
+                                <div className="ml-4 max-w-xs">
+                                  <div className="text-sm font-medium text-gray-900 max-w-[200px] truncate">
+                                    {item?.title || 'Unknown'}
+                                  </div>
+                                  <div className="text-xs text-gray-500 truncate">
+                                    {item?.author || item?.artist}
+                                  </div>
+                                  <div className="text-xs text-purple-600 font-semibold">
+                                    {auction.auctionableType?.toUpperCase()}
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">
+                                {auction.vendor?.shopName || 'N/A'}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">
+                                $
+                                {parseFloat(
+                                  auction.startingBid || auction.startingPrice || 0,
+                                ).toFixed(2)}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm font-semibold text-primary">
+                                {auction.currentBid
+                                  ? `$${parseFloat(auction.currentBid).toFixed(2)}`
+                                  : '-'}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center text-sm text-gray-500">
+                                <FontAwesomeIcon
+                                  icon={['fal', 'hand-paper']}
+                                  className="text-base mr-1"
+                                />
+                                {auction.bidCount || 0}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              {auction.status === 'active' || auction.status === 'upcoming' ? (
+                                <AuctionCountdown
+                                  endsAt={auction.endsAt || auction.endDate}
+                                  className="text-sm"
+                                />
+                              ) : (
+                                <span className="text-sm text-gray-500">Ended</span>
+                              )}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span
+                                className={`px-2 inline-flex text-xs leading-5 font-semibold ${auction.status === 'active' ? 'bg-green-100 text-green-800' : auction.status === 'upcoming' ? 'bg-blue-100 text-blue-800' : auction.status === 'closed' || auction.status === 'ended' ? 'bg-gray-100 text-gray-800' : 'bg-red-100 text-red-800'}`}
+                              >
+                                {auction.status}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                              <div
+                                className="flex items-center justify-end gap-2"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <button
+                                  onClick={() => handleViewDetails(auction)}
+                                  className="text-primary hover:text-secondary"
+                                  title="View Details"
+                                >
+                                  <FontAwesomeIcon icon={['fal', 'eye']} className="text-base" />
+                                </button>
+                                <button
+                                  onClick={() => handleEdit(auction)}
+                                  className="text-yellow-600 hover:text-yellow-900"
+                                  title="Edit Auction"
+                                >
+                                  <FontAwesomeIcon icon={['fal', 'edit']} className="text-base" />
+                                </button>
+                                <Link
+                                  href={`/admin/vendors/${auction.vendorId}`}
+                                  className="text-red-600 hover:text-red-900"
+                                  title="View Vendor"
+                                >
+                                  <FontAwesomeIcon icon={['fal', 'store']} className="text-base" />
+                                </Link>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            }
+          />
         </>
       )}
 

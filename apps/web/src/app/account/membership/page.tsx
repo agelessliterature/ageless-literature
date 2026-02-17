@@ -11,6 +11,7 @@ import { membershipBenefits, type MembershipPlanSlug } from '@/config/membership
 import CancelMembershipModal from '@/components/modals/CancelMembershipModal';
 import ChangePlanModal from '@/components/modals/ChangePlanModal';
 import { getApiUrl } from '@/lib/api';
+import PageLoading from '@/components/ui/PageLoading';
 
 interface MembershipPlan {
   id: string;
@@ -167,11 +168,7 @@ export default function AccountMembershipPage() {
 
   // Loading state
   if (status === 'loading' || subscriptionLoading || plansLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin  text-3xl border-b-2 border-primary"></div>
-      </div>
-    );
+    return <PageLoading message="Loading membership..." fullPage={false} />;
   }
 
   if (!session) return null;

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
+import { formatMoney } from '@/lib/format';
 
 interface WithdrawModalProps {
   isOpen: boolean;
@@ -23,7 +24,7 @@ export default function WithdrawModal({ isOpen, onClose, availableBalance }: Wit
         </div>
         <div className="mb-6">
           <p className="text-gray-600 mb-2">Available Balance:</p>
-          <p className="text-3xl font-bold text-green-600">${availableBalance.toFixed(2)}</p>
+          <p className="text-3xl font-bold text-green-600">{formatMoney(availableBalance)}</p>
         </div>
         <p className="text-sm text-gray-500 mb-6">
           Withdrawals are processed within 2-3 business days to your configured payout method.

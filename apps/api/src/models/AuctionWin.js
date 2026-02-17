@@ -7,25 +7,25 @@ export default (sequelize, DataTypes) => {
     'AuctionWin',
     {
       id: {
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
       },
       auctionId: {
-        type: DataTypes.UUID,
+        type: DataTypes.INTEGER,
         allowNull: false,
         unique: true,
         references: { model: 'auctions', key: 'id' },
         onDelete: 'CASCADE',
       },
       userId: {
-        type: DataTypes.UUID,
+        type: DataTypes.INTEGER,
         allowNull: false,
         references: { model: 'users', key: 'id' },
         onDelete: 'CASCADE',
       },
       orderId: {
-        type: DataTypes.UUID,
+        type: DataTypes.INTEGER,
         allowNull: true,
         references: { model: 'orders', key: 'id' },
         comment: 'Order created for this auction win',

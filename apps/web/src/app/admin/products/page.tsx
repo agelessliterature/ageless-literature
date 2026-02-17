@@ -9,6 +9,9 @@ import { getApiUrl } from '@/lib/api-url';
 import { CloudinaryImage } from '@/components/ui/CloudinaryImage';
 import ProductDetailsDrawer from '@/components/modals/ProductDetailsDrawer';
 import DeleteConfirmationModal from '@/components/modals/DeleteConfirmationModal';
+import ResponsiveDataView from '@/components/ui/ResponsiveDataView';
+import MobileCard from '@/components/ui/MobileCard';
+import MobileCardList from '@/components/ui/MobileCardList';
 
 interface Product {
   id: string;
@@ -165,16 +168,13 @@ export default function AdminProductsPage() {
       }
 
       const url = `${API_URL}/api/admin/products?${params}`;
-      console.log('[ProductsPage] Fetching from:', url);
 
       const res = await fetch(url, {
         headers,
         credentials: 'include',
       });
 
-      console.log('[ProductsPage] Response status:', res.status);
       const data = await res.json();
-      console.log('[ProductsPage] Response data:', data);
 
       if (data.success) {
         setProducts(data.data);
@@ -235,16 +235,9 @@ export default function AdminProductsPage() {
 
   const confirmDelete = async () => {
     if (!selectedProduct) {
-      console.log('[confirmDelete] No selected product');
       return;
     }
 
-    console.log(
-      '[confirmDelete] Deleting product:',
-      selectedProduct.id,
-      'Type:',
-      selectedProduct.type,
-    );
     setLoading(true);
     setError('');
 
@@ -258,7 +251,6 @@ export default function AdminProductsPage() {
       }
 
       const url = `${API_URL}/api/admin/products/${selectedProduct.id}?type=${selectedProduct.type}`;
-      console.log('[confirmDelete] DELETE request to:', url);
 
       const res = await fetch(url, {
         method: 'DELETE',
@@ -266,9 +258,7 @@ export default function AdminProductsPage() {
         credentials: 'include',
       });
 
-      console.log('[confirmDelete] Response status:', res.status);
       const data = await res.json();
-      console.log('[confirmDelete] Response data:', data);
 
       if (data.success) {
         setShowDeleteModal(false);
@@ -549,188 +539,294 @@ export default function AdminProductsPage() {
 
       {/* Products Table */}
       <div className="bg-white border border-gray-200">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Image
-                </th>
-                <th
-                  className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleSort('title')}
-                >
-                  <div className="flex items-center gap-2">
-                    Title
-                    <FontAwesomeIcon icon={getSortIcon('title')} className="text-xs" />
-                  </div>
-                </th>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Type
-                </th>
-                <th
-                  className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleSort('price')}
-                >
-                  <div className="flex items-center gap-2">
-                    Price
-                    <FontAwesomeIcon icon={getSortIcon('price')} className="text-xs" />
-                  </div>
-                </th>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Vendor
-                </th>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th
-                  className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleSort('createdAt')}
-                >
-                  <div className="flex items-center gap-2">
-                    Created
-                    <FontAwesomeIcon icon={getSortIcon('createdAt')} className="text-xs" />
-                  </div>
-                </th>
-                <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+        <ResponsiveDataView
+          breakpoint="lg"
+          mobile={
+            <div>
               {loading ? (
-                <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
-                    Loading products...
-                  </td>
-                </tr>
+                <div className="px-6 py-12 text-center text-gray-500">Loading products...</div>
               ) : products.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
-                    No products found
-                  </td>
-                </tr>
+                <div className="px-6 py-12 text-center text-gray-500">No products found</div>
               ) : (
-                products.map((product) => {
-                  // Find primary image or fall back to first image
-                  const primaryImage =
-                    product.images?.find((img: any) => img.isPrimary || img.is_primary) ||
-                    product.images?.[0];
-                  const imageUrl = primaryImage?.url || primaryImage?.imageUrl || primaryImage;
-
-                  return (
-                    <tr
-                      key={product.id}
-                      className="hover:bg-gray-50 transition-colors cursor-pointer"
-                      onClick={() => handleViewDetails(product)}
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="h-16 w-16 bg-gray-100 flex items-center justify-center overflow-hidden">
+                <MobileCardList gap="sm">
+                  {products.map((product) => {
+                    const primaryImage =
+                      product.images?.find((img: any) => img.isPrimary || img.is_primary) ||
+                      product.images?.[0];
+                    const imageUrl = primaryImage?.url || primaryImage?.imageUrl || primaryImage;
+                    return (
+                      <MobileCard
+                        key={product.id}
+                        onClick={() => handleViewDetails(product)}
+                        thumbnail={
                           <CloudinaryImage
                             src={imageUrl}
                             alt={product.title}
                             width={128}
                             height={128}
-                            className="w-128 h-128"
+                            className="w-full h-full"
                             fallbackIcon={
                               product.type === 'book' ? ['fal', 'book'] : ['fal', 'box']
                             }
                           />
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm font-medium text-gray-900">{product.title}</div>
-                        {product.author && (
-                          <div className="text-sm text-gray-500">by {product.author}</div>
-                        )}
-                        {product.sku && (
-                          <div className="text-xs text-gray-400">SKU: {product.sku}</div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="flex items-center gap-2 text-sm text-gray-700">
-                          <FontAwesomeIcon
-                            icon={product.type === 'book' ? ['fal', 'book'] : ['fal', 'box']}
-                            className="text-gray-400"
-                          />
-                          {product.type === 'book' ? 'Book' : 'Collectible'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {formatPrice(product.price)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {product.vendor ? (
-                          <div className="text-sm text-gray-900">{product.vendor.shopName}</div>
-                        ) : (
-                          <span className="text-sm text-gray-400">No vendor</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`inline-flex px-2 py-1 text-xs font-semibold ${getStatusBadgeColor(
-                            product.status,
-                          )}`}
-                        >
-                          {product.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatDate(product.createdAt)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        }
+                        title={product.title}
+                        subtitle={
+                          product.author
+                            ? `by ${product.author}`
+                            : product.sku
+                              ? `SKU: ${product.sku}`
+                              : undefined
+                        }
+                        badge={
+                          <div className="flex flex-col gap-1 items-end">
+                            <span
+                              className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full ${getStatusBadgeColor(product.status)}`}
+                            >
+                              {product.status}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              {product.type === 'book' ? 'Book' : 'Collectible'}
+                            </span>
+                          </div>
+                        }
+                        details={[
+                          { label: 'Vendor', value: product.vendor?.shopName || 'No vendor' },
+                          { label: 'Created', value: formatDate(product.createdAt) },
+                        ]}
+                        primaryMetric={{ label: 'Price', value: formatPrice(product.price) }}
+                      >
                         <div
-                          className="flex items-center justify-end gap-2"
+                          className="mt-3 flex flex-wrap gap-2"
                           onClick={(e) => e.stopPropagation()}
                         >
                           {product.status === 'draft' && (
                             <button
                               onClick={() => handleToggleStatus(product, 'published')}
-                              className="text-green-600 hover:text-green-900"
-                              title="Publish"
+                              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-green-100 text-green-700 rounded hover:bg-green-200 min-h-[36px]"
                             >
-                              <FontAwesomeIcon icon={['fal', 'check-circle']} />
+                              <FontAwesomeIcon icon={['fal', 'check-circle']} /> Publish
                             </button>
                           )}
                           {product.status === 'published' && (
                             <button
                               onClick={() => handleToggleStatus(product, 'draft')}
-                              className="text-orange-600 hover:text-orange-900"
-                              title="Unpublish (Set to Draft)"
+                              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-orange-100 text-orange-700 rounded hover:bg-orange-200 min-h-[36px]"
                             >
-                              <FontAwesomeIcon icon={['fal', 'minus-circle']} />
+                              <FontAwesomeIcon icon={['fal', 'minus-circle']} /> Unpublish
                             </button>
                           )}
                           <button
                             onClick={() => handleViewDetails(product)}
-                            className="text-blue-600 hover:text-blue-900"
-                            title="View Details"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-blue-100 text-blue-700 rounded hover:bg-blue-200 min-h-[36px]"
                           >
-                            <FontAwesomeIcon icon={['fal', 'eye']} />
+                            <FontAwesomeIcon icon={['fal', 'eye']} /> View
                           </button>
                           <button
                             onClick={() => handleEdit(product)}
-                            className="text-yellow-600 hover:text-yellow-900"
-                            title="Edit"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 min-h-[36px]"
                           >
-                            <FontAwesomeIcon icon={['fal', 'edit']} />
+                            <FontAwesomeIcon icon={['fal', 'edit']} /> Edit
                           </button>
                           <button
                             onClick={() => handleDelete(product)}
-                            className="text-red-600 hover:text-red-900"
-                            title="Delete"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-red-100 text-red-700 rounded hover:bg-red-200 min-h-[36px]"
                           >
-                            <FontAwesomeIcon icon={['fal', 'trash']} />
+                            <FontAwesomeIcon icon={['fal', 'trash']} /> Delete
                           </button>
                         </div>
+                      </MobileCard>
+                    );
+                  })}
+                </MobileCardList>
+              )}
+            </div>
+          }
+          desktop={
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Image
+                    </th>
+                    <th
+                      className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort('title')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Title
+                        <FontAwesomeIcon icon={getSortIcon('title')} className="text-xs" />
+                      </div>
+                    </th>
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Type
+                    </th>
+                    <th
+                      className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort('price')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Price
+                        <FontAwesomeIcon icon={getSortIcon('price')} className="text-xs" />
+                      </div>
+                    </th>
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Vendor
+                    </th>
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th
+                      className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort('createdAt')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Created
+                        <FontAwesomeIcon icon={getSortIcon('createdAt')} className="text-xs" />
+                      </div>
+                    </th>
+                    <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {loading ? (
+                    <tr>
+                      <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
+                        Loading products...
                       </td>
                     </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                  ) : products.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
+                        No products found
+                      </td>
+                    </tr>
+                  ) : (
+                    products.map((product) => {
+                      // Find primary image or fall back to first image
+                      const primaryImage =
+                        product.images?.find((img: any) => img.isPrimary || img.is_primary) ||
+                        product.images?.[0];
+                      const imageUrl = primaryImage?.url || primaryImage?.imageUrl || primaryImage;
+
+                      return (
+                        <tr
+                          key={product.id}
+                          className="hover:bg-gray-50 transition-colors cursor-pointer"
+                          onClick={() => handleViewDetails(product)}
+                        >
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="h-16 w-16 bg-gray-100 flex items-center justify-center overflow-hidden">
+                              <CloudinaryImage
+                                src={imageUrl}
+                                alt={product.title}
+                                width={128}
+                                height={128}
+                                className="w-128 h-128"
+                                fallbackIcon={
+                                  product.type === 'book' ? ['fal', 'book'] : ['fal', 'box']
+                                }
+                              />
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-sm font-medium text-gray-900">{product.title}</div>
+                            {product.author && (
+                              <div className="text-sm text-gray-500">by {product.author}</div>
+                            )}
+                            {product.sku && (
+                              <div className="text-xs text-gray-400">SKU: {product.sku}</div>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="flex items-center gap-2 text-sm text-gray-700">
+                              <FontAwesomeIcon
+                                icon={product.type === 'book' ? ['fal', 'book'] : ['fal', 'box']}
+                                className="text-gray-400"
+                              />
+                              {product.type === 'book' ? 'Book' : 'Collectible'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {formatPrice(product.price)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {product.vendor ? (
+                              <div className="text-sm text-gray-900">{product.vendor.shopName}</div>
+                            ) : (
+                              <span className="text-sm text-gray-400">No vendor</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span
+                              className={`inline-flex px-2 py-1 text-xs font-semibold ${getStatusBadgeColor(
+                                product.status,
+                              )}`}
+                            >
+                              {product.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {formatDate(product.createdAt)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div
+                              className="flex items-center justify-end gap-2"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {product.status === 'draft' && (
+                                <button
+                                  onClick={() => handleToggleStatus(product, 'published')}
+                                  className="text-green-600 hover:text-green-900"
+                                  title="Publish"
+                                >
+                                  <FontAwesomeIcon icon={['fal', 'check-circle']} />
+                                </button>
+                              )}
+                              {product.status === 'published' && (
+                                <button
+                                  onClick={() => handleToggleStatus(product, 'draft')}
+                                  className="text-orange-600 hover:text-orange-900"
+                                  title="Unpublish (Set to Draft)"
+                                >
+                                  <FontAwesomeIcon icon={['fal', 'minus-circle']} />
+                                </button>
+                              )}
+                              <button
+                                onClick={() => handleViewDetails(product)}
+                                className="text-blue-600 hover:text-blue-900"
+                                title="View Details"
+                              >
+                                <FontAwesomeIcon icon={['fal', 'eye']} />
+                              </button>
+                              <button
+                                onClick={() => handleEdit(product)}
+                                className="text-yellow-600 hover:text-yellow-900"
+                                title="Edit"
+                              >
+                                <FontAwesomeIcon icon={['fal', 'edit']} />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(product)}
+                                className="text-red-600 hover:text-red-900"
+                                title="Delete"
+                              >
+                                <FontAwesomeIcon icon={['fal', 'trash']} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          }
+        />
 
         {/* Pagination */}
         {!loading && products.length > 0 && (

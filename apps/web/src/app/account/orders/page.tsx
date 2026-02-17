@@ -13,6 +13,8 @@ import Link from 'next/link';
 import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
 import { getApiUrl } from '@/lib/api';
 import { withBasePath } from '@/lib/path-utils';
+import EmptyState from '@/components/ui/EmptyState';
+import { formatMoney } from '@/lib/format';
 
 export default function AccountOrdersPage() {
   const { data: session, status } = useSession();
@@ -69,17 +71,13 @@ export default function AccountOrdersPage() {
       </div>
 
       {orders.length === 0 ? (
-        <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
-          <FontAwesomeIcon icon={['fal', 'shopping-bag']} className="text-6xl text-gray-300 mb-4" />
-          <h3 className="text-xl font-semibold text-gray-700 mb-2">No Orders Yet</h3>
-          <p className="text-gray-500 mb-4">Start exploring our collection of rare books!</p>
-          <Link
-            href={withBasePath('/books')}
-            className="inline-block bg-primary text-white px-6 py-2 rounded hover:bg-opacity-90"
-          >
-            Browse Books
-          </Link>
-        </div>
+        <EmptyState
+          icon={['fal', 'shopping-bag']}
+          title="No Orders Yet"
+          description="Start exploring our collection of rare books!"
+          actionLabel="Browse Books"
+          actionHref={withBasePath('/shop')}
+        />
       ) : (
         <div className="space-y-4">
           {orders.map((order: any) => (
@@ -108,7 +106,7 @@ export default function AccountOrdersPage() {
                 </div>
               </div>
               <div className="border-t pt-4 flex justify-between items-center">
-                <p className="font-medium">${(order.totalAmount / 100).toFixed(2)}</p>
+                <p className="font-medium">{formatMoney(order.totalAmount, { fromCents: true })}</p>
                 <Link
                   href={withBasePath(`/account/orders/${order.id}`)}
                   className="text-primary hover:text-secondary"

@@ -8,6 +8,8 @@ import api from '@/lib/api';
 import { Auction } from '@/types/Auction';
 import AuctionCountdown from '@/components/auctions/AuctionCountdown';
 import { useState } from 'react';
+import PageLoading from '@/components/ui/PageLoading';
+import EmptyState from '@/components/ui/EmptyState';
 
 type SortOption = 'ending-soon' | 'newest' | 'price-low' | 'price-high' | 'most-bids';
 
@@ -91,7 +93,7 @@ export default function AuctionsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex space-x-8" aria-label="Tabs">
             <Link
-              href="/books"
+              href="/shop"
               className="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-4 px-1 text-sm font-medium"
             >
               Back to Shop
@@ -171,24 +173,7 @@ export default function AuctionsPage() {
       <section className="py-12 md:py-16">
         <div className="mx-auto px-4 sm:px-6 lg:px-8">
           {isLoading ? (
-            // Loading Grid
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {Array.from({ length: 8 }).map((_, idx) => (
-                <div
-                  key={idx}
-                  className="border border-gray-200 animate-pulse"
-                  style={{ borderRadius: 0 }}
-                >
-                  <div className="aspect-[3/4] bg-gray-200" />
-                  <div className="p-5 space-y-3">
-                    <div className="h-5 bg-gray-200 w-3/4" />
-                    <div className="h-4 bg-gray-200 w-1/2" />
-                    <div className="h-6 bg-gray-200 w-1/3" />
-                    <div className="h-10 bg-gray-200 w-full" />
-                  </div>
-                </div>
-              ))}
-            </div>
+            <PageLoading message="Loading auctions..." fullPage={false} />
           ) : sortedAuctions.length > 0 ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredAuctions.map((auction) => {
@@ -276,50 +261,21 @@ export default function AuctionsPage() {
               })}
             </div>
           ) : searchQuery ? (
-            // No Search Results
-            <div className="text-center py-20">
-              <div
-                className="w-24 h-24 mx-auto mb-6 bg-gray-100 flex items-center justify-center"
-                style={{ borderRadius: 0 }}
-              >
-                <FontAwesomeIcon icon={['fal', 'search']} className="text-4xl text-gray-400" />
-              </div>
-              <h2 className="text-2xl font-bold text-primary mb-3">No Matching Auctions</h2>
-              <p className="text-gray-600 mb-8 max-w-md mx-auto">
-                No auctions found for &quot;{searchQuery}&quot;. Try a different search term.
-              </p>
-              <button
-                onClick={() => setSearchQuery('')}
-                className="inline-flex items-center gap-2 bg-primary hover:bg-primary-dark text-white px-8 py-4 font-semibold transition-all duration-300"
-                style={{ borderRadius: 0 }}
-              >
-                Clear Search
-                <FontAwesomeIcon icon={['fal', 'times']} />
-              </button>
-            </div>
+            <EmptyState
+              icon={['fal', 'search']}
+              title="No Matching Auctions"
+              description={`No auctions found for "${searchQuery}". Try a different search term.`}
+              actionLabel="Clear Search"
+              onAction={() => setSearchQuery('')}
+            />
           ) : (
-            // Empty State
-            <div className="text-center py-20">
-              <div
-                className="w-24 h-24 mx-auto mb-6 bg-gray-100 flex items-center justify-center"
-                style={{ borderRadius: 0 }}
-              >
-                <FontAwesomeIcon icon={['fal', 'gavel']} className="text-4xl text-gray-400" />
-              </div>
-              <h2 className="text-2xl font-bold text-primary mb-3">No Active Auctions</h2>
-              <p className="text-gray-600 mb-8 max-w-md mx-auto">
-                There are no live auctions at the moment. Check back soon for exciting rare book
-                auctions!
-              </p>
-              <Link
-                href="/books"
-                className="inline-flex items-center gap-2 bg-primary hover:bg-primary-dark text-white px-8 py-4 font-semibold transition-all duration-300"
-                style={{ borderRadius: 0 }}
-              >
-                Browse Our Collection
-                <FontAwesomeIcon icon={['fal', 'arrow-right']} />
-              </Link>
-            </div>
+            <EmptyState
+              icon={['fal', 'gavel']}
+              title="No Active Auctions"
+              description="There are no live auctions at the moment. Check back soon for exciting rare book auctions!"
+              actionLabel="Browse Our Collection"
+              actionHref="/shop"
+            />
           )}
         </div>
       </section>
@@ -335,7 +291,7 @@ export default function AuctionsPage() {
             Sign up for auction alerts and be the first to know when rare items become available
           </p>
           <Link
-            href="/register"
+            href="/auth/register"
             className="inline-flex items-center gap-2 bg-[#d4af37] hover:bg-[#b8941f] text-white px-8 py-4 font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
             style={{ borderRadius: 0 }}
           >

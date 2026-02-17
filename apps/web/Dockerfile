@@ -9,6 +9,7 @@ ARG NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
 ARG NEXT_PUBLIC_FONTAWESOME_KIT
 ARG NEXTAUTH_URL
 ARG NEXTAUTH_SECRET
+ARG INTERNAL_API_URL
 
 # Set as environment variables for build
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
@@ -17,6 +18,7 @@ ENV NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=$NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
 ENV NEXT_PUBLIC_FONTAWESOME_KIT=$NEXT_PUBLIC_FONTAWESOME_KIT
 ENV NEXTAUTH_URL=$NEXTAUTH_URL
 ENV NEXTAUTH_SECRET=$NEXTAUTH_SECRET
+ENV INTERNAL_API_URL=$INTERNAL_API_URL
 
 # Copy package files (web app only, no workspace references)
 COPY apps/web/package*.json ./
@@ -32,10 +34,9 @@ RUN npm config set fetch-retries 5 && \
 COPY apps/web .
 COPY tsconfig.base.json ../tsconfig.base.json
 
-# Build the application with high memory allocation
+# Build the application with standard memory allocation
 # Next.js 15 uses webpack by default (Turbopack is opt-in with --turbo flag)
-# Using 3GB as a balance between build requirements and server capacity
-RUN NODE_OPTIONS="--no-warnings --max-old-space-size=3072" \
+RUN NODE_OPTIONS="--no-warnings --max-old-space-size=4096" \
     NEXT_TELEMETRY_DISABLED=1 \
     NODE_ENV=production \
     GENERATE_SOURCEMAP=false \

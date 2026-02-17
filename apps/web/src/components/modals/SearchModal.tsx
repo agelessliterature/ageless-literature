@@ -203,7 +203,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const handleResultClick = (result: SearchResult) => {
     const path =
       result.type === 'book'
-        ? `/books/${result.sid || result.id}`
+        ? `/shop/${result.sid || result.id}`
         : `/collectibles/${result.slug || result.id}`;
 
     router.push(path);

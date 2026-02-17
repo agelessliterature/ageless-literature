@@ -5,6 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect, useRef, Suspense, useCallback } from 'react';
 import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
+import PageLoading from '@/components/ui/PageLoading';
+import EmptyState from '@/components/ui/EmptyState';
+import InlineError from '@/components/ui/InlineError';
 import toast from 'react-hot-toast';
 import { getApiUrl } from '@/lib/api';
 import { useChatSocket } from '@/hooks/useChatSocket';
@@ -22,8 +25,7 @@ function ChatContent() {
 
   // Handle new messages from socket
   const handleNewMessage = useCallback(
-    (message: any) => {
-      console.log('Received new message via socket:', message);
+    (_message: any) => {
       // Invalidate messages query to refetch
       queryClient.invalidateQueries({ queryKey: ['customer-messages', conversationId] });
     },
@@ -111,11 +113,7 @@ function ChatContent() {
   }, [messagesData]);
 
   if (status === 'loading' || conversationLoading) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center">Loading chat...</div>
-      </div>
-    );
+    return <PageLoading message="Loading chat..." fullPage={false} />;
   }
 
   if (status === 'unauthenticated') {
@@ -126,7 +124,7 @@ function ChatContent() {
   if (!vendorId) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center text-red-600">Invalid chat request. Vendor ID required.</div>
+        <InlineError message="Invalid chat request. Vendor ID required." />
       </div>
     );
   }
@@ -183,12 +181,13 @@ function ChatContent() {
         {/* Messages Area */}
         <div className="h-[500px] overflow-y-auto p-4 border-b">
           {messagesLoading ? (
-            <div className="text-center text-gray-500">Loading messages...</div>
+            <PageLoading message="Loading messages..." fullPage={false} />
           ) : messages.length === 0 ? (
-            <div className="text-center text-gray-500 mt-8">
-              <FontAwesomeIcon icon={['fal', 'comments']} className="text-4xl mb-2" />
-              <p>No messages yet. Send a message to start the conversation!</p>
-            </div>
+            <EmptyState
+              icon={['fal', 'comments']}
+              title="No messages yet"
+              description="Send a message to start the conversation!"
+            />
           ) : (
             <div className="space-y-4">
               {messages.map((msg: any) => (
@@ -254,13 +253,7 @@ function ChatContent() {
 
 export default function CustomerChatPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center">Loading...</div>
-        </div>
-      }
-    >
+    <Suspense fallback={<PageLoading message="Loading chat..." fullPage={false} />}>
       <ChatContent />
     </Suspense>
   );

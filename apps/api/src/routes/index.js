@@ -6,6 +6,7 @@ import paypalWebhooks from './paypalWebhooks.js';
 import cloudinaryRoutes from './cloudinaryRoutes.js';
 import accountRoutes from './accountRoutes.js';
 import vendorRoutes from './vendorRoutes.js';
+import uploadRoutes from './uploadRoutes.js';
 import * as cartController from '../controllers/cartController.js';
 import * as ordersController from '../controllers/ordersController.js';
 import * as reservationsController from '../controllers/reservationsController.js';
@@ -14,6 +15,7 @@ import * as conversationsController from '../controllers/conversationsController
 import * as customerChatController from '../controllers/customerChatController.js';
 import * as membershipsController from '../controllers/membershipsController.js';
 import * as auctionsController from '../controllers/auctionsController.js';
+import * as auctionActionsController from '../controllers/auctionActionsController.js';
 import * as bidsController from '../controllers/bidsController.js';
 import * as winningsController from '../controllers/winningsController.js';
 import * as productsController from '../controllers/productsController.js';
@@ -35,6 +37,7 @@ router.use('/webhooks/paypal', paypalWebhooks);
 router.use('/cloudinary', cloudinaryRoutes);
 router.use('/account', accountRoutes);
 router.use('/vendor', vendorRoutes);
+router.use('/upload', uploadRoutes); // Phase 5.1: Direct upload endpoint for NativeImageUploader
 
 // Stripe routes
 router.post('/stripe/setup-intent', authMiddleware, stripeController.createSetupIntent);
@@ -71,8 +74,16 @@ router.post(
 );
 
 // Customer chat routes
-router.post('/customer/chat/conversations', authMiddleware, customerChatController.getOrCreateConversation);
-router.get('/customer/chat/messages/:conversationId', authMiddleware, customerChatController.getMessages);
+router.post(
+  '/customer/chat/conversations',
+  authMiddleware,
+  customerChatController.getOrCreateConversation,
+);
+router.get(
+  '/customer/chat/messages/:conversationId',
+  authMiddleware,
+  customerChatController.getMessages,
+);
 router.post('/customer/chat/messages', authMiddleware, customerChatController.sendMessage);
 
 router.get('/memberships/plans', membershipsController.getPlans);
@@ -98,15 +109,43 @@ router.patch('/auctions/:id', authMiddleware, auctionsController.updateAuction);
 router.post('/auctions/:id/close', authMiddleware, auctionsController.closeAuction);
 router.delete('/auctions/:id', authMiddleware, auctionsController.cancelAuction);
 
+// Auction actions (vendor post-auction management)
+router.post('/auctions/:id/relist', authMiddleware, auctionActionsController.relistAuction);
+router.post(
+  '/auctions/:id/convert-to-fixed',
+  authMiddleware,
+  auctionActionsController.convertToFixed,
+);
+router.post('/auctions/:id/unlist', authMiddleware, auctionActionsController.unlistAuction);
+router.patch('/auctions/:id/end-policy', authMiddleware, auctionActionsController.updateEndPolicy);
+
 router.get('/auctions/:auctionId/bids', bidsController.getAuctionBids);
 router.post('/auctions/:auctionId/bids', authMiddleware, bidsController.placeBid);
 router.get('/user/bids', authMiddleware, bidsController.getUserBids);
 router.get('/user/bids/active', authMiddleware, bidsController.getUserActiveBids);
 
 router.get('/user/winnings', authMiddleware, winningsController.getUserWinnings);
+router.get('/user/winnings/:id', authMiddleware, winningsController.getAuctionWinning);
+router.post('/user/winnings/:id/claim', authMiddleware, winningsController.claimWinning);
+router.post('/user/winnings/:id/pay', authMiddleware, winningsController.payForWinning);
 
 router.get('/vendors', vendorController.getPublicVendors);
 router.get('/vendors/:shopUrl', vendorController.getVendorByShopUrl);
+
+// Public site stats (homepage)
+router.get('/stats', async (req, res) => {
+  try {
+    const db = (await import('../models/index.js')).default;
+    const [booksCount, vendorsCount, auctionsCount] = await Promise.all([
+      db.Product.count({ where: { status: 'active' } }).catch(() => db.Product.count()),
+      db.Vendor.count({ where: { verified: true } }).catch(() => db.Vendor.count()),
+      db.Auction.count().catch(() => 0),
+    ]);
+    return res.json({ success: true, data: { booksCount, vendorsCount, auctionsCount } });
+  } catch (error) {
+    return res.json({ success: true, data: { booksCount: 0, vendorsCount: 0, auctionsCount: 0 } });
+  }
+});
 
 router.get('/books', booksController.getAllBooks);
 router.get('/books/:id', booksController.getBookById);

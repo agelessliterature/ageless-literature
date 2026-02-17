@@ -107,16 +107,62 @@ npm run test:e2e          # Browser tests
 
 Tests use your dev database with automatic cleanup - no data persists after tests.
 
-## Docker Deployment
+## Deployment
+
+### Remote Dev Server
+
+Deploy to the remote dev server (Lightsail):
 
 ```bash
-docker-compose up -d
+# Full deployment (sync + rebuild + restart all services)
+./scripts/deploy_remote.sh
+
+# Quick sync + restart specific service (faster for code changes)
+./scripts/sync_to_remote.sh api
+./scripts/sync_to_remote.sh web
 ```
 
-Build arguments required for web container:
+**First-time setup:**
+1. Run `./scripts/deploy_remote.sh` to sync new Docker config
+2. SSH to server and configure `.env.remote`:
+   ```bash
+   ssh -i ~/.ssh/dev-VM-key.pem AgelessLiteratureDev@20.118.237.147
+   cd /mnt/v2
+   cp .env.remote.example .env.remote
+   nano .env.remote  # Update with real credentials
+   ```
+3. Run `./scripts/deploy_remote.sh` again
 
+See [DOCKER_ENVIRONMENTS.md](DOCKER_ENVIRONMENTS.md) for multi-environment setup details.
+
+### Local Docker Development
+
+```bash
+# Start local environment (includes postgres container)
+./scripts/up_local.sh
+
+# Stop all containers
+./scripts/down.sh
+
+# Verify environment configuration
+### Local Docker Development
+
+```bash
+# Start local environment (includes postgres container)
+./scripts/up_local.sh
+
+# Stop all containers
+./scripts/down.sh
+```
+
+**Architecture:**
+- Local: Uses Docker PostgreSQL + Redis + MeiliSearch
+- Remote: Uses Lightsail managed PostgreSQL + Docker Redis/MeiliSearch
+- Multi-environment config with base + override compose files
+
+**Build arguments for production web container:**
 - `NEXT_PUBLIC_API_URL`
-- `NEXT_PUBLIC_SOCKET_URL`
+- `NEXT_PUBLIC_SOCKET_URL`  
 - `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`
 - `NEXTAUTH_SECRET`
 

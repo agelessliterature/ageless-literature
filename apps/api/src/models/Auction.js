@@ -99,6 +99,82 @@ export default (sequelize, DataTypes) => {
         field: 'winner_id',
         references: { model: 'users', key: 'id' },
       },
+      endedAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        field: 'ended_at',
+        comment: 'Timestamp when auction ended',
+      },
+      winnerBidId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        field: 'winner_bid_id',
+        references: { model: 'auction_bids', key: 'id' },
+        comment: 'ID of the winning bid',
+      },
+      endOutcomeReason: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
+        field: 'end_outcome_reason',
+        comment: 'Reason for auction end state (e.g., reserve_not_met, no_bids)',
+      },
+      relistCount: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+        field: 'relist_count',
+        comment: 'Number of times this auction has been relisted',
+      },
+      parentAuctionId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        field: 'parent_auction_id',
+        references: { model: 'auctions', key: 'id' },
+        comment: 'If relisted, points to original auction',
+      },
+      paymentWindowHours: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 48,
+        field: 'payment_window_hours',
+        comment: 'Hours allowed for winner to complete payment',
+      },
+      paymentDeadline: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        field: 'payment_deadline',
+        comment: 'Deadline for payment (ended_at + payment_window_hours)',
+      },
+      endPolicyOnNoSale: {
+        type: DataTypes.ENUM('NONE', 'RELIST_AUCTION', 'CONVERT_FIXED', 'UNLIST'),
+        defaultValue: 'NONE',
+        field: 'end_policy_on_no_sale',
+        comment: 'Action to take when auction ends without sale',
+      },
+      endPolicyRelistDelayHours: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+        field: 'end_policy_relist_delay_hours',
+        comment: 'Hours to wait before auto-relisting',
+      },
+      endPolicyRelistMaxCount: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+        field: 'end_policy_relist_max_count',
+        comment: 'Maximum number of auto-relists (0 = no limit)',
+      },
+      endPolicyConvertPriceSource: {
+        type: DataTypes.ENUM('MANUAL', 'RESERVE', 'HIGHEST_BID', 'STARTING_BID'),
+        defaultValue: 'MANUAL',
+        field: 'end_policy_convert_price_source',
+        comment: 'Price source when converting to fixed price',
+      },
+      endPolicyConvertPriceMarkupBps: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+        field: 'end_policy_convert_price_markup_bps',
+        comment: 'Markup in basis points (100 = 1%) for converted price',
+      },
     },
     {
       tableName: 'auctions',
@@ -110,6 +186,9 @@ export default (sequelize, DataTypes) => {
         { fields: ['status'] },
         { fields: ['end_date'] },
         { fields: ['ends_at'] },
+        { fields: ['winner_bid_id'] },
+        { fields: ['parent_auction_id'] },
+        { fields: ['payment_deadline'] },
       ],
     },
   );
@@ -138,6 +217,10 @@ export default (sequelize, DataTypes) => {
       Auction.hasMany(models.AuctionBid, {
         foreignKey: 'auctionId',
         as: 'bids',
+      });
+      Auction.belongsTo(models.AuctionBid, {
+        foreignKey: 'winnerBidId',
+        as: 'winningBid',
       });
     }
     if (models.AuctionWin) {

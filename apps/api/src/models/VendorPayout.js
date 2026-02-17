@@ -43,6 +43,12 @@ export default (sequelize, DataTypes) => {
         allowNull: true,
         comment: 'Payout status: pending, processing, completed, failed, cancelled',
       },
+      transactionId: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+        field: 'transaction_id',
+        comment: 'Generic transaction ID (maps to DB column)',
+      },
       stripeTransferId: {
         type: DataTypes.STRING(255),
         allowNull: true,
@@ -54,6 +60,22 @@ export default (sequelize, DataTypes) => {
         allowNull: true,
         field: 'paypal_batch_id',
         comment: 'PayPal batch ID if using PayPal',
+      },
+      processedBy: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        field: 'processed_by',
+        references: {
+          model: 'users',
+          key: 'id',
+        },
+        comment: 'Admin user who processed this payout',
+      },
+      payoutNotes: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        field: 'payout_notes',
+        comment: 'Admin notes about the payout',
       },
       failureReason: {
         type: DataTypes.TEXT,

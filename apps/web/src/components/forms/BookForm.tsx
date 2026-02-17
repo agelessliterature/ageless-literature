@@ -20,9 +20,26 @@ interface BookFormProps {
 export default function BookForm({ book, isEdit = false }: BookFormProps) {
   const router = useRouter();
   const API_URL = getApiUrl();
-  const [images, setImages] = useState<
-    Array<{ url: string; publicId: string; thumbnail?: string }>
-  >(book?.images || []);
+
+  // Transform book.media to ImageUploader format
+  const getInitialImages = () => {
+    if (book?.media && Array.isArray(book.media)) {
+      return book.media
+        .sort((a: any, b: any) => (a.displayOrder || 0) - (b.displayOrder || 0))
+        .map((media: any) => ({
+          url: media.imageUrl || media.url || '',
+          publicId: (media.imageUrl || media.url || '').split('/').pop() || '',
+          thumbnail: media.thumbnailUrl || media.thumbnail || media.imageUrl || media.url || '',
+        }));
+    }
+    if (book?.images && Array.isArray(book.images)) {
+      return book.images;
+    }
+    return [];
+  };
+
+  const [images, setImages] =
+    useState<Array<{ url: string; publicId: string; thumbnail?: string }>>(getInitialImages());
   const [categories, setCategories] = useState<Array<{ id: number; name: string; slug: string }>>(
     [],
   );
@@ -32,6 +49,7 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
   const [includeShortDescription, setIncludeShortDescription] = useState<boolean>(
     !!book?.shortDescription,
   );
+  const [includeCondition, setIncludeCondition] = useState<boolean>(!!book?.condition);
   const [formData, setFormData] = useState<Partial<BookFormData>>({
     title: book?.title || '',
     author: book?.author || '',
@@ -60,6 +78,13 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
   useEffect(() => {
     fetchCategories();
   }, []);
+
+  // Update images when book data loads
+  useEffect(() => {
+    if (book) {
+      setImages(getInitialImages());
+    }
+  }, [book]);
 
   const fetchCategories = async () => {
     try {
@@ -94,7 +119,7 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
   const handleSubmit = async (e: React.FormEvent, status: 'draft' | 'active') => {
     e.preventDefault();
 
-    if (!formData.title || !formData.author || !formData.description || !formData.price) {
+    if (!formData.title || !formData.description || !formData.price) {
       alert('Please fill in all required fields');
       return;
     }
@@ -124,7 +149,7 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
     <form className="space-y-6">
       {/* Top Section: Title, Author, Descriptions & Images */}
       <div className="bg-white shadow p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-3 lg:grid-cols-4 gap-6">
           {/* Left: Title, Author and Descriptions (3 columns on large screens) */}
           <div className="lg:col-span-3 space-y-4">
             <div>
@@ -142,16 +167,13 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Author <span className="text-red-500">*</span>
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Author</label>
               <input
                 type="text"
                 value={formData.author}
                 onChange={(e) => handleChange('author', e.target.value)}
                 className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
                 placeholder="e.g., Jane Austen"
-                required
               />
             </div>
 
@@ -276,20 +298,37 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Condition <span className="text-red-500">*</span>
-            </label>
-            <select
-              value={formData.condition}
-              onChange={(e) => handleChange('condition', e.target.value)}
-              className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
-            >
-              {BOOK_CONDITIONS.map((cond) => (
-                <option key={cond} value={cond}>
-                  {cond}
-                </option>
-              ))}
-            </select>
+            <div className="flex items-center gap-2 mb-2">
+              <input
+                type="checkbox"
+                id="includeCondition"
+                checked={includeCondition}
+                onChange={(e) => setIncludeCondition(e.target.checked)}
+                className="h-4 w-4 text-black border-gray-300 focus:ring-black"
+              />
+              <label
+                htmlFor="includeCondition"
+                className="text-sm font-medium text-gray-700 cursor-pointer"
+              >
+                Add condition?
+              </label>
+            </div>
+            {includeCondition && (
+              <>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Condition</label>
+                <select
+                  value={formData.condition}
+                  onChange={(e) => handleChange('condition', e.target.value)}
+                  className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                >
+                  {BOOK_CONDITIONS.map((cond) => (
+                    <option key={cond} value={cond}>
+                      {cond}
+                    </option>
+                  ))}
+                </select>
+              </>
+            )}
           </div>
         </div>
 
@@ -326,7 +365,7 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
       <div className="bg-white shadow p-6 space-y-4">
         <h2 className="text-lg font-semibold mb-4">Book Details</h2>
 
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Publisher</label>
             <input

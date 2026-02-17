@@ -16,6 +16,8 @@ import api from '@/lib/api';
 import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
 import Link from 'next/link';
 import PhoneInput from '@/components/forms/PhoneInput';
+import PageLoading from '@/components/ui/PageLoading';
+import { formatMoney } from '@/lib/format';
 
 export default function VendorSettingsPage() {
   const { data: session, status } = useSession();
@@ -58,14 +60,12 @@ export default function VendorSettingsPage() {
     queryKey: ['vendor-profile'],
     queryFn: async () => {
       const res = await api.get('/api/vendor/profile');
-      console.log('Vendor profile response:', res.data);
       return res.data.data;
     },
     enabled: !!session,
   });
 
   useEffect(() => {
-    console.log('vendorData changed:', vendorData);
     if (vendorData) {
       setFormData({
         shopName: vendorData.shopName || '',
@@ -144,11 +144,7 @@ export default function VendorSettingsPage() {
 
   // Show loading while checking authentication
   if (status === 'loading') {
-    return (
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="text-center">Loading...</div>
-      </div>
-    );
+    return <PageLoading message="Loading settings..." fullPage={false} />;
   }
 
   // Redirect to login if not authenticated
@@ -702,19 +698,19 @@ export default function VendorSettingsPage() {
                       <div className="bg-green-50 border border-green-200 p-4">
                         <p className="text-sm text-green-700 font-medium">Available Balance</p>
                         <p className="text-2xl font-bold text-green-900 mt-1">
-                          ${parseFloat(vendorData.balanceAvailable || 0).toFixed(2)}
+                          {formatMoney(vendorData.balanceAvailable, { fromCents: false })}
                         </p>
                       </div>
                       <div className="bg-yellow-50 border border-yellow-200 p-4">
                         <p className="text-sm text-yellow-700 font-medium">Pending Balance</p>
                         <p className="text-2xl font-bold text-yellow-900 mt-1">
-                          ${parseFloat(vendorData.balancePending || 0).toFixed(2)}
+                          {formatMoney(vendorData.balancePending, { fromCents: false })}
                         </p>
                       </div>
                       <div className="bg-blue-50 border border-blue-200 p-4">
                         <p className="text-sm text-blue-700 font-medium">Lifetime Earnings</p>
                         <p className="text-2xl font-bold text-blue-900 mt-1">
-                          ${parseFloat(vendorData.lifetimeVendorEarnings || 0).toFixed(2)}
+                          {formatMoney(vendorData.lifetimeVendorEarnings, { fromCents: false })}
                         </p>
                       </div>
                     </div>

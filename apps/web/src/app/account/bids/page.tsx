@@ -13,6 +13,9 @@ import Link from 'next/link';
 import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
 import { getApiUrl } from '@/lib/api';
 import { withBasePath } from '@/lib/path-utils';
+import PageLoading from '@/components/ui/PageLoading';
+import EmptyState from '@/components/ui/EmptyState';
+import { formatMoney } from '@/lib/format';
 
 export default function AccountBidsPage() {
   const { data: session, status } = useSession();
@@ -27,7 +30,7 @@ export default function AccountBidsPage() {
   const { data: bidsData, isLoading } = useQuery({
     queryKey: ['account-bids'],
     queryFn: async () => {
-      const res = await fetch(getApiUrl('api/bids/my-bids'), {
+      const res = await fetch(getApiUrl('api/user/bids'), {
         headers: { Authorization: `Bearer ${session?.accessToken}` },
       });
       if (!res.ok) throw new Error('Failed to fetch bids');
@@ -40,10 +43,7 @@ export default function AccountBidsPage() {
   if (status === 'loading' || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p>Loading bids...</p>
-        </div>
+        <PageLoading message="Loading bids..." fullPage={false} />
       </div>
     );
   }
@@ -69,17 +69,13 @@ export default function AccountBidsPage() {
       </div>
 
       {bids.length === 0 ? (
-        <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
-          <FontAwesomeIcon icon={['fal', 'gavel']} className="text-6xl text-gray-300 mb-4" />
-          <h3 className="text-xl font-semibold text-gray-700 mb-2">No Bids Yet</h3>
-          <p className="text-gray-500 mb-4">Explore our auctions and start bidding!</p>
-          <Link
-            href={withBasePath('/auctions')}
-            className="inline-block bg-primary text-white px-6 py-2 rounded hover:bg-opacity-90"
-          >
-            Browse Auctions
-          </Link>
-        </div>
+        <EmptyState
+          icon={['fal', 'gavel']}
+          title="No Bids Yet"
+          description="Explore our auctions and start bidding!"
+          actionLabel="Browse Auctions"
+          actionHref={withBasePath('/auctions')}
+        />
       ) : (
         <div className="space-y-4">
           {bids.map((bid: any) => (
@@ -110,7 +106,9 @@ export default function AccountBidsPage() {
                 </div>
               </div>
               <div className="border-t pt-4 flex justify-between items-center">
-                <p className="font-medium">Your bid: ${(bid.amount / 100).toFixed(2)}</p>
+                <p className="font-medium">
+                  Your bid: {formatMoney(bid.amount, { fromCents: true })}
+                </p>
                 <Link
                   href={withBasePath(`/auctions/${bid.auctionId}`)}
                   className="text-primary hover:text-secondary"

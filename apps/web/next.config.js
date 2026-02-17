@@ -1,4 +1,7 @@
 const withNextIntl = require('next-intl/plugin')('./i18n.ts');
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -13,11 +16,11 @@ const nextConfig = {
   },
 
   // Base path for deployment
-  // Production uses /v2 since Apache reverse proxy routes /v2/* to this app
-  basePath: process.env.NODE_ENV === 'production' ? '/v2' : '',
+  // Controlled by env var: set NEXT_PUBLIC_BASE_PATH=/v2 for legacy servers, leave empty for new servers
+  basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
 
   // Asset prefix should match basePath
-  assetPrefix: process.env.NODE_ENV === 'production' ? '/v2' : '',
+  assetPrefix: process.env.NEXT_PUBLIC_BASE_PATH || '',
 
   // SWC compiler options for modern JavaScript (swcMinify is default in Next.js 16)
   compiler: {
@@ -34,16 +37,19 @@ const nextConfig = {
     optimizeCss: false,
     // Disable dev overlay in production
     disableOptimizedLoading: false,
+    // Enable webpack memory optimizations (reduces peak memory at slight speed cost)
+    webpackMemoryOptimizations: true,
+    // Run webpack in a separate worker to isolate memory usage
+    // (must be explicitly enabled when custom webpack config is present)
+    webpackBuildWorker: true,
   },
 
   // Reduce memory usage during build
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer, dev }) => {
     // Reduce parallelism to save memory during Docker builds
     if (!isServer) {
       config.optimization = {
         ...config.optimization,
-        // Disable minimize to save memory (still tree-shakes)
-        minimize: false,
         splitChunks: {
           chunks: 'all',
           cacheGroups: {
@@ -112,7 +118,6 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
   env: {
-    API_URL: process.env.NEXT_PUBLIC_API_URL,
     NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME || 'dvohtcqvi',
   },
   poweredByHeader: false,
@@ -202,7 +207,10 @@ const nextConfig = {
 
   // API rewrites to backend
   async rewrites() {
-    const apiDest = process.env.API_URL || process.env.INTERNAL_API_URL || 'http://localhost:3001';
+    // Strip trailing /api from env var if present (to match api.ts behavior)
+    let apiDest = process.env.API_URL || process.env.INTERNAL_API_URL || 'http://localhost:3001';
+    apiDest = apiDest.replace(/\/api\/?$/, '');
+
     return [
       {
         source: '/api/admin/:path*',
@@ -215,9 +223,27 @@ const nextConfig = {
     ];
   },
 
-  // HTTPS redirect in production
+  // Redirects
   async redirects() {
     return [
+      // Redirect /books to /shop
+      {
+        source: '/books',
+        destination: '/shop',
+        permanent: true,
+      },
+      {
+        source: '/books/:path*',
+        destination: '/shop/:path*',
+        permanent: true,
+      },
+      // Redirect /register to /auth/register
+      {
+        source: '/register',
+        destination: '/auth/register',
+        permanent: true,
+      },
+      // HTTPS redirect in production
       {
         source: '/:path*',
         has: [
@@ -234,4 +260,4 @@ const nextConfig = {
   },
 };
 
-module.exports = withNextIntl(nextConfig);
+module.exports = withBundleAnalyzer(withNextIntl(nextConfig));

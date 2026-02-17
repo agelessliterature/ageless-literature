@@ -59,7 +59,7 @@ export interface ProductFormData {
   shortDescription?: string;
   price: string;
   salePrice?: string;
-  condition: string;
+  condition?: string;
   conditionNotes?: string;
   category?: string;
   categoryIds?: number[];

@@ -129,7 +129,7 @@ export function BookCard({ book }: BookCardProps) {
           {session && (
             <button
               onClick={handleToggleWishlist}
-              className="absolute top-3 right-3 bg-white p-2 shadow-md hover:bg-gray-50 transition-all z-10 hover:scale-110"
+              className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md hover:bg-gray-50 transition-all z-10 hover:scale-110"
               aria-label={isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
             >
               <FontAwesomeIcon

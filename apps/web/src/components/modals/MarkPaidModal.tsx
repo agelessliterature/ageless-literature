@@ -1,6 +1,7 @@
 'use client';
 
 import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
+import { formatMoney } from '@/lib/format';
 
 interface MarkPaidModalProps {
   isOpen: boolean;
@@ -30,7 +31,7 @@ export default function MarkPaidModal({
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Vendor: {vendorName}
             </label>
-            <p className="text-2xl font-bold text-gray-900">${parseFloat(amount).toFixed(2)}</p>
+            <p className="text-2xl font-bold text-gray-900">{formatMoney(amount)}</p>
           </div>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">Transaction ID *</label>

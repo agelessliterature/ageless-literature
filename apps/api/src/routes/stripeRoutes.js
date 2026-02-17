@@ -1,5 +1,6 @@
 import express from 'express';
 import { authenticateToken } from '../middleware/auth.js';
+import { adminAuth } from '../middleware/adminAuth.js';
 import * as stripeConnectController from '../controllers/stripeConnectController.js';
 import * as stripePaymentMethodsController from '../controllers/stripePaymentMethodsController.js';
 
@@ -12,7 +13,7 @@ router.get('/connect/status', stripeConnectController.getAccountStatus);
 router.post('/connect/login', stripeConnectController.getLoginLink);
 
 // Admin only - trigger payout
-router.post('/connect/payout', stripeConnectController.createStripePayout);
+router.post('/connect/payout', adminAuth, stripeConnectController.createStripePayout);
 
 // User payment methods routes
 router.get('/payment-methods', stripePaymentMethodsController.getPaymentMethods);

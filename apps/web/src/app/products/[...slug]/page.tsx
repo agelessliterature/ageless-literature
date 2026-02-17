@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
@@ -15,10 +15,12 @@ import AuctionDetailsPanel from '@/components/auctions/AuctionDetailsPanel';
 import PlaceBidModal from '@/components/auctions/PlaceBidModal';
 import BuyerOfferModal from '@/components/modals/BuyerOfferModal';
 import { AuctionSummary } from '@/types/Auction';
+import { formatMoney } from '@/lib/format';
 
 export default function ProductDetailPage() {
   const params = useParams();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const auctionIdParam = searchParams.get('auctionId');
   const slugArray = params.slug as string[];
   const [selectedImage, setSelectedImage] = useState(0);
@@ -27,6 +29,7 @@ export default function ProductDetailPage() {
   const [showBidModal, setShowBidModal] = useState(false);
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [showChatWidget, setShowChatWidget] = useState(false);
+  const [showOverflowMenu, setShowOverflowMenu] = useState(false);
   const queryClient = useQueryClient();
   const { data: session } = useSession();
 
@@ -118,6 +121,34 @@ export default function ProductDetailPage() {
   // Use auction from URL param first, then fallback to active auction lookup
   const activeAuction = auctionById || activeAuctionByProduct;
 
+  // Check if current user can edit this product (vendor ownership check)
+  const { data: canEdit } = useQuery({
+    queryKey: ['can-edit-product', product?.id, product?.type],
+    queryFn: async () => {
+      if (!session || !product?.id) return false;
+
+      // Admins can edit anything
+      if (session.user?.role === 'admin') return true;
+
+      // Vendors can only edit their own products
+      if (session.user?.role === 'vendor') {
+        try {
+          const endpoint =
+            product.type === 'book'
+              ? `/vendor/books/${product.id}`
+              : `/vendor/collectibles/${product.id}`;
+          const response = await api.get(endpoint);
+          return response.data.success;
+        } catch (err) {
+          return false;
+        }
+      }
+
+      return false;
+    },
+    enabled: !!session && !!product?.id,
+  });
+
   const { data: related } = useQuery({
     queryKey: ['related-products', product?.id, product?.type],
     queryFn: async () => {
@@ -184,18 +215,9 @@ export default function ProductDetailPage() {
     },
   });
 
-  const handleReserve = () => {
-    if (!session) {
-      window.location.href = '/auth/login?redirect=' + encodeURIComponent(window.location.pathname);
-    } else {
-      // Handle reservation logic
-      toast.success('Reservation feature coming soon!');
-    }
-  };
-
   const handleMessageSeller = () => {
     if (!session) {
-      window.location.href = '/auth/login?redirect=' + encodeURIComponent(window.location.pathname);
+      router.push('/auth/login?redirect=' + encodeURIComponent(window.location.pathname));
     } else {
       setShowChatWidget(true);
     }
@@ -210,7 +232,7 @@ export default function ProductDetailPage() {
           url: window.location.href,
         });
       } catch (err) {
-        console.log('Share failed:', err);
+        // Share dialog cancelled or failed
       }
     } else {
       navigator.clipboard.writeText(window.location.href);
@@ -220,7 +242,7 @@ export default function ProductDetailPage() {
 
   const handlePlaceBid = () => {
     if (!session) {
-      window.location.href = '/auth/login?redirect=' + encodeURIComponent(window.location.pathname);
+      router.push('/auth/login?redirect=' + encodeURIComponent(window.location.pathname));
     } else {
       setShowBidModal(true);
     }
@@ -261,7 +283,7 @@ export default function ProductDetailPage() {
   const hasMultipleImages = images.length > 1;
 
   return (
-    <div className="mx-auto px-4 py-4 sm:py-8">
+    <div className="mx-auto px-4 pb-4 sm:pb-8">
       {/* Image Zoom Modal */}
       <ImageZoomModal
         isOpen={isModalOpen}
@@ -359,138 +381,293 @@ export default function ProductDetailPage() {
         <AuctionDetailsPanel auction={activeAuction} className="mb-6 sm:mb-8" />
       ) : (
         <div className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6 sm:mb-8">
-          ${Number(product.price || 0).toFixed(2)}
+          {formatMoney(product.price, { fromCents: false })}
         </div>
       )}
 
       {/* Action Buttons */}
       <div className="mb-6 sm:mb-8">
-        {activeAuction ? (
-          // Auction Mode - Show Place Bid Button
-          <div className="flex flex-col sm:flex-row gap-3">
-            <button
-              onClick={handlePlaceBid}
-              className="flex-[2] bg-black hover:bg-secondary text-white hover:text-black py-4 px-6 flex items-center justify-center gap-2 hover:scale-105 transition-all text-base sm:text-lg font-semibold border-2 border-black hover:border-secondary"
+        {/* Edit Product Button - Only for vendor/admin who owns the product */}
+        {canEdit && (
+          <div className="mb-3">
+            <Link
+              href={
+                product.type === 'book'
+                  ? `/vendor/books/${product.id}/edit`
+                  : `/vendor/products/${product.id}/edit`
+              }
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white py-4 px-6 flex items-center justify-center gap-2 hover:scale-105 transition-all text-base sm:text-lg font-semibold border-2 border-orange-500 hover:border-orange-600"
               style={{ borderRadius: '1.5rem' }}
             >
               <FontAwesomeIcon
-                icon={['fal', 'gavel'] as [string, string]}
+                icon={['fal', 'edit'] as [string, string]}
                 className="text-xl sm:text-2xl"
               />
-              <span>{session ? 'Place Bid' : 'Login to Bid'}</span>
-            </button>
-
-            <button
-              onClick={handleMessageSeller}
-              className="flex-1 bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-gray-800 hover:scale-105 transition-all text-base sm:text-lg font-medium"
-              style={{ borderRadius: '1.5rem' }}
-            >
-              <FontAwesomeIcon
-                icon={['fal', 'envelope'] as [string, string]}
-                className="text-xl sm:text-2xl"
-              />
-              <span>Message</span>
-            </button>
-
-            <button
-              onClick={handleShare}
-              className="flex-1 bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-gray-800 hover:scale-105 transition-all text-base sm:text-lg font-medium"
-              style={{ borderRadius: '1.5rem' }}
-            >
-              <FontAwesomeIcon
-                icon={['fal', 'share-alt'] as [string, string]}
-                className="text-xl sm:text-2xl"
-              />
-              <span>Share</span>
-            </button>
+              <span>Edit Product</span>
+            </Link>
           </div>
-        ) : (
-          // Regular Purchase Mode - Stack on mobile, row on desktop
-          <div className="flex flex-col sm:flex-row sm:flex-wrap lg:flex-nowrap gap-3">
-            <button
-              onClick={handleMessageSeller}
-              className="bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-secondary hover:text-black hover:scale-105 transition-all duration-300 text-base sm:text-lg font-medium sm:flex-1 border-2 border-black hover:border-secondary"
-              style={{ borderRadius: '1.5rem' }}
-            >
-              <FontAwesomeIcon
-                icon={['fal', 'envelope'] as [string, string]}
-                className="text-xl sm:text-2xl"
-              />
-              <span>Message</span>
-            </button>
+        )}
 
-            <button
-              onClick={() => addToCartMutation.mutate()}
-              disabled={addToCartMutation.isPending || product.quantity < 1}
-              className="bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-secondary hover:text-black hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-base sm:text-lg font-medium sm:flex-1 border-2 border-black hover:border-secondary"
-              style={{ borderRadius: '1.5rem' }}
-            >
-              <FontAwesomeIcon
-                icon={['fal', 'shopping-cart'] as [string, string]}
-                className="text-xl sm:text-2xl"
-              />
-              <span>{product.quantity < 1 ? 'Out of Stock' : 'Add to Cart'}</span>
-            </button>
-
-            {/* Hide Reserve button for auctions */}
-            {!activeAuction && (
+        {/* Mobile: Single Primary CTA + Overflow Menu */}
+        <div className="lg:hidden">
+          {/* Primary CTA */}
+          <div className="mb-3">
+            {activeAuction ? (
               <button
-                onClick={handleReserve}
-                className="bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-secondary hover:text-black hover:scale-105 transition-all duration-300 text-base sm:text-lg font-medium sm:flex-1 border-2 border-black hover:border-secondary"
+                onClick={handlePlaceBid}
+                className="w-full bg-black hover:bg-secondary text-white hover:text-black py-4 px-6 flex items-center justify-center gap-2 hover:scale-105 transition-all text-base font-semibold border-2 border-black hover:border-secondary"
+                style={{ borderRadius: '1.5rem' }}
+              >
+                <FontAwesomeIcon icon={['fal', 'gavel'] as [string, string]} className="text-xl" />
+                <span>{session ? 'Place Bid' : 'Login to Bid'}</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => addToCartMutation.mutate()}
+                disabled={addToCartMutation.isPending || product.quantity < 1}
+                className="w-full bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-secondary hover:text-black hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-black disabled:hover:text-white disabled:hover:scale-100 text-base font-semibold border-2 border-black hover:border-secondary"
+                style={{ borderRadius: '1.5rem' }}
+              >
+                {addToCartMutation.isPending ? (
+                  <>
+                    <FontAwesomeIcon
+                      icon={['fal', 'spinner'] as [string, string]}
+                      className="text-xl animate-spin"
+                    />
+                    <span>Adding...</span>
+                  </>
+                ) : (
+                  <>
+                    <FontAwesomeIcon
+                      icon={['fal', 'shopping-cart'] as [string, string]}
+                      className="text-xl"
+                    />
+                    <span>{product.quantity < 1 ? 'Out of Stock' : 'Add to Cart'}</span>
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+
+          {/* Secondary Actions - Overflow Menu */}
+          <div className="relative">
+            <button
+              onClick={() => setShowOverflowMenu(!showOverflowMenu)}
+              className="w-full bg-gray-100 hover:bg-gray-200 text-gray-900 py-3 px-6 flex items-center justify-center gap-2 transition-all text-base font-medium border-2 border-gray-200 hover:border-gray-300"
+              style={{ borderRadius: '1.5rem' }}
+            >
+              <FontAwesomeIcon
+                icon={['fal', 'ellipsis-h'] as [string, string]}
+                className="text-xl"
+              />
+              <span>More Actions</span>
+            </button>
+
+            {/* Overflow Menu Dropdown */}
+            {showOverflowMenu && (
+              <>
+                {/* Backdrop */}
+                <div className="fixed inset-0 z-40" onClick={() => setShowOverflowMenu(false)} />
+
+                {/* Menu */}
+                <div
+                  className="absolute left-0 right-0 mt-2 bg-white shadow-2xl border border-gray-200 z-50 overflow-hidden"
+                  style={{ borderRadius: '1.5rem' }}
+                >
+                  <button
+                    onClick={() => {
+                      setShowOverflowMenu(false);
+                      handleMessageSeller();
+                    }}
+                    className="w-full px-6 py-4 flex items-center gap-3 hover:bg-gray-50 transition-all text-left border-b border-gray-100"
+                  >
+                    <FontAwesomeIcon
+                      icon={['fal', 'envelope'] as [string, string]}
+                      className="text-xl text-gray-700"
+                    />
+                    <span className="font-medium text-gray-900">Message Vendor</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setShowOverflowMenu(false);
+                      if (!session) {
+                        toast.error('Please log in to send an offer');
+                      } else {
+                        setShowOfferModal(true);
+                      }
+                    }}
+                    className="w-full px-6 py-4 flex items-center gap-3 hover:bg-gray-50 transition-all text-left border-b border-gray-100"
+                  >
+                    <FontAwesomeIcon
+                      icon={['fal', 'tags'] as [string, string]}
+                      className="text-xl text-gray-700"
+                    />
+                    <span className="font-medium text-gray-900">Make Offer</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setShowOverflowMenu(false);
+                      addToWishlistMutation.mutate();
+                    }}
+                    disabled={addToWishlistMutation.isPending}
+                    className="w-full px-6 py-4 flex items-center gap-3 hover:bg-gray-50 transition-all text-left border-b border-gray-100 disabled:opacity-50"
+                  >
+                    <FontAwesomeIcon
+                      icon={['fal', 'heart'] as [string, string]}
+                      className="text-xl text-gray-700"
+                    />
+                    <span className="font-medium text-gray-900">
+                      {addToWishlistMutation.isPending ? 'Adding...' : 'Add to Wishlist'}
+                    </span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setShowOverflowMenu(false);
+                      handleShare();
+                    }}
+                    className="w-full px-6 py-4 flex items-center gap-3 hover:bg-gray-50 transition-all text-left"
+                  >
+                    <FontAwesomeIcon
+                      icon={['fal', 'share-alt'] as [string, string]}
+                      className="text-xl text-gray-700"
+                    />
+                    <span className="font-medium text-gray-900">Share</span>
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Desktop: All Buttons Visible */}
+        <div className="hidden lg:block">
+          {activeAuction ? (
+            // Auction Mode - Show Place Bid Button
+            <div className="flex gap-3">
+              <button
+                onClick={handlePlaceBid}
+                className="flex-[2] bg-black hover:bg-secondary text-white hover:text-black py-4 px-6 flex items-center justify-center gap-2 hover:scale-105 transition-all text-base sm:text-lg font-semibold border-2 border-black hover:border-secondary"
                 style={{ borderRadius: '1.5rem' }}
               >
                 <FontAwesomeIcon
-                  icon={['fal', 'lock'] as [string, string]}
+                  icon={['fal', 'gavel'] as [string, string]}
                   className="text-xl sm:text-2xl"
                 />
-                <span>{session ? 'Reserve' : 'Login to Reserve'}</span>
+                <span>{session ? 'Place Bid' : 'Login to Bid'}</span>
               </button>
-            )}
 
-            <button
-              onClick={() => {
-                if (!session) {
-                  toast.error('Please log in to send an offer');
-                  return;
-                }
-                setShowOfferModal(true);
-              }}
-              className="bg-primary text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-secondary hover:text-black hover:scale-105 transition-all duration-300 text-base sm:text-lg font-medium sm:flex-1 border-2 border-primary hover:border-secondary"
-              style={{ borderRadius: '1.5rem' }}
-            >
-              <FontAwesomeIcon
-                icon={['fal', 'tags'] as [string, string]}
-                className="text-xl sm:text-2xl"
-              />
-              <span>{session ? 'Send Offer' : 'Login to Send Offer'}</span>
-            </button>
+              <button
+                onClick={handleMessageSeller}
+                className="flex-1 bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-gray-800 hover:scale-105 transition-all text-base sm:text-lg font-medium"
+                style={{ borderRadius: '1.5rem' }}
+              >
+                <FontAwesomeIcon
+                  icon={['fal', 'envelope'] as [string, string]}
+                  className="text-xl sm:text-2xl"
+                />
+                <span>Message</span>
+              </button>
 
-            <button
-              onClick={() => addToWishlistMutation.mutate()}
-              disabled={addToWishlistMutation.isPending}
-              className="bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-secondary hover:text-black hover:scale-105 transition-all duration-300 text-base sm:text-lg font-medium sm:flex-1 border-2 border-black hover:border-secondary"
-              style={{ borderRadius: '1.5rem' }}
-            >
-              <FontAwesomeIcon
-                icon={['fal', 'heart'] as [string, string]}
-                className="text-xl sm:text-2xl"
-              />
-              <span>Wishlist</span>
-            </button>
+              <button
+                onClick={handleShare}
+                className="flex-1 bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-gray-800 hover:scale-105 transition-all text-base sm:text-lg font-medium"
+                style={{ borderRadius: '1.5rem' }}
+              >
+                <FontAwesomeIcon
+                  icon={['fal', 'share-alt'] as [string, string]}
+                  className="text-xl sm:text-2xl"
+                />
+                <span>Share</span>
+              </button>
+            </div>
+          ) : (
+            // Regular Purchase Mode
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={handleMessageSeller}
+                className="bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-secondary hover:text-black hover:scale-105 transition-all duration-300 text-base sm:text-lg font-medium flex-1 border-2 border-black hover:border-secondary"
+                style={{ borderRadius: '1.5rem' }}
+              >
+                <FontAwesomeIcon
+                  icon={['fal', 'envelope'] as [string, string]}
+                  className="text-xl sm:text-2xl"
+                />
+                <span>Message</span>
+              </button>
 
-            <button
-              onClick={handleShare}
-              className="bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-secondary hover:text-black hover:scale-105 transition-all duration-300 text-base sm:text-lg font-medium sm:flex-1 border-2 border-black hover:border-secondary"
-              style={{ borderRadius: '1.5rem' }}
-            >
-              <FontAwesomeIcon
-                icon={['fal', 'share-alt'] as [string, string]}
-                className="text-xl sm:text-2xl"
-              />
-              <span>Share</span>
-            </button>
-          </div>
-        )}
+              <button
+                onClick={() => addToCartMutation.mutate()}
+                disabled={addToCartMutation.isPending || product.quantity < 1}
+                className="bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-secondary hover:text-black hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-base sm:text-lg font-medium flex-1 border-2 border-black hover:border-secondary"
+                style={{ borderRadius: '1.5rem' }}
+              >
+                {addToCartMutation.isPending ? (
+                  <>
+                    <FontAwesomeIcon
+                      icon={['fal', 'spinner'] as [string, string]}
+                      className="text-xl sm:text-2xl animate-spin"
+                    />
+                    <span>Adding...</span>
+                  </>
+                ) : (
+                  <>
+                    <FontAwesomeIcon
+                      icon={['fal', 'shopping-cart'] as [string, string]}
+                      className="text-xl sm:text-2xl"
+                    />
+                    <span>{product.quantity < 1 ? 'Out of Stock' : 'Add to Cart'}</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                onClick={() => {
+                  if (!session) {
+                    toast.error('Please log in to send an offer');
+                    return;
+                  }
+                  setShowOfferModal(true);
+                }}
+                className="bg-primary text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-secondary hover:text-black hover:scale-105 transition-all duration-300 text-base sm:text-lg font-medium flex-1 border-2 border-primary hover:border-secondary"
+                style={{ borderRadius: '1.5rem' }}
+              >
+                <FontAwesomeIcon
+                  icon={['fal', 'tags'] as [string, string]}
+                  className="text-xl sm:text-2xl"
+                />
+                <span>{session ? 'Send Offer' : 'Login to Send Offer'}</span>
+              </button>
+
+              <button
+                onClick={() => addToWishlistMutation.mutate()}
+                disabled={addToWishlistMutation.isPending}
+                className="bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-secondary hover:text-black hover:scale-105 transition-all duration-300 text-base sm:text-lg font-medium flex-1 border-2 border-black hover:border-secondary"
+                style={{ borderRadius: '1.5rem' }}
+              >
+                <FontAwesomeIcon
+                  icon={['fal', 'heart'] as [string, string]}
+                  className="text-xl sm:text-2xl"
+                />
+                <span>{addToWishlistMutation.isPending ? 'Adding...' : 'Wishlist'}</span>
+              </button>
+
+              <button
+                onClick={handleShare}
+                className="bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-secondary hover:text-black hover:scale-105 transition-all duration-300 text-base sm:text-lg font-medium flex-1 border-2 border-black hover:border-secondary"
+                style={{ borderRadius: '1.5rem' }}
+              >
+                <FontAwesomeIcon
+                  icon={['fal', 'share-alt'] as [string, string]}
+                  className="text-xl sm:text-2xl"
+                />
+                <span>Share</span>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Book/Product Description */}
@@ -681,7 +858,7 @@ export default function ProductDetailPage() {
                       {item.title}
                     </h3>
                     <span className="text-lg font-bold text-white">
-                      ${Number(item.price || 0).toFixed(2)}
+                      {formatMoney(item.price, { fromCents: false })}
                     </span>
                   </div>
                 </Link>
@@ -758,6 +935,79 @@ export default function ProductDetailPage() {
           </div>
         </div>
       )}
+
+      {/* Sticky Mobile Action Bar */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 shadow-2xl z-40 pb-safe">
+        <div className="px-4 py-3">
+          <div className="flex items-center gap-3">
+            {/* Price Display */}
+            <div className="flex-1">
+              {activeAuction ? (
+                <div>
+                  <div className="text-xs text-gray-600">Current Bid</div>
+                  <div className="text-xl font-bold text-gray-900">
+                    {formatMoney(activeAuction.currentBid || activeAuction.startingPrice, {
+                      fromCents: false,
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <div className="text-xs text-gray-600">Price</div>
+                  <div className="text-xl font-bold text-gray-900">
+                    {formatMoney(product.price, { fromCents: false })}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Primary CTA Button */}
+            <div className="flex-[2]">
+              {activeAuction ? (
+                <button
+                  onClick={handlePlaceBid}
+                  className="w-full bg-black hover:bg-secondary text-white hover:text-black py-3 px-4 flex items-center justify-center gap-2 transition-all text-sm font-semibold border-2 border-black hover:border-secondary"
+                  style={{ borderRadius: '1.5rem' }}
+                >
+                  <FontAwesomeIcon
+                    icon={['fal', 'gavel'] as [string, string]}
+                    className="text-lg"
+                  />
+                  <span>{session ? 'Place Bid' : 'Login to Bid'}</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => addToCartMutation.mutate()}
+                  disabled={addToCartMutation.isPending || product.quantity < 1}
+                  className="w-full bg-black text-white py-3 px-4 flex items-center justify-center gap-2 hover:bg-secondary hover:text-black transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-black disabled:hover:text-white text-sm font-semibold border-2 border-black hover:border-secondary"
+                  style={{ borderRadius: '1.5rem' }}
+                >
+                  {addToCartMutation.isPending ? (
+                    <>
+                      <FontAwesomeIcon
+                        icon={['fal', 'spinner'] as [string, string]}
+                        className="text-lg animate-spin"
+                      />
+                      <span>Adding...</span>
+                    </>
+                  ) : (
+                    <>
+                      <FontAwesomeIcon
+                        icon={['fal', 'shopping-cart'] as [string, string]}
+                        className="text-lg"
+                      />
+                      <span>{product.quantity < 1 ? 'Out of Stock' : 'Add to Cart'}</span>
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Padding for Sticky Bar - Mobile Only */}
+      <div className="lg:hidden h-20" />
     </div>
   );
 }

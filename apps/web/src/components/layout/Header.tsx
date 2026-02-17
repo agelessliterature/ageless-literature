@@ -53,8 +53,6 @@ export default function Header() {
 
     // Listen for new notifications
     socket.on('notification:new', (notification) => {
-      console.log('NOTIFICATION: New notification received:', notification);
-
       // Show toast popup
       const uiData = mapNotificationToUI(notification);
       showNotificationToast(uiData, (href) => {
@@ -66,15 +64,13 @@ export default function Header() {
     });
 
     // Listen for notification marked as read
-    socket.on('notification:read', ({ id }) => {
-      console.log('NOTIFICATION: Notification marked as read:', id);
+    socket.on('notification:read', () => {
       // Refetch unread count and notification list
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
     });
 
     // Listen for all notifications marked as read
     socket.on('notification:read_all', () => {
-      console.log('NOTIFICATION: All notifications marked as read');
       // Refetch unread count and notification list
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
     });
@@ -522,6 +518,7 @@ export default function Header() {
                 alt="Ageless Literature"
                 width={140}
                 height={42}
+                priority
                 className={`transition-all duration-500 w-auto ${
                   scrolled ? 'h-10' : 'h-12'
                 } ${getLogoClasses()}`}
@@ -537,6 +534,21 @@ export default function Header() {
               >
                 <FontAwesomeIcon icon={['fal', 'search']} className="text-xl" />
               </button>
+              {session && (
+                <Link
+                  href="/account/notifications"
+                  className={`transition-all duration-300 hover:scale-110 relative ${getTextColor()} hover:text-secondary`}
+                  aria-label="Notifications"
+                >
+                  <FontAwesomeIcon icon={['fal', 'bell']} className="text-xl" />
+                  <span className="sr-only">Notifications</span>
+                  {(unreadCount || 0) > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-secondary text-primary text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
+                      {unreadCount}
+                    </span>
+                  )}
+                </Link>
+              )}
               <Link
                 href="/cart"
                 className={`transition-all duration-300 hover:scale-110 relative ${getTextColor()} hover:text-secondary`}
@@ -565,6 +577,7 @@ export default function Header() {
                 alt="Ageless Literature"
                 width={140}
                 height={42}
+                priority
                 className="h-12 w-auto"
               />
               <button
@@ -710,12 +723,33 @@ export default function Header() {
                     )}
 
                     <Link
-                      href="/orders"
+                      href="/account/orders"
                       className="flex items-center gap-3 py-4 text-primary hover:text-secondary hover:translate-x-2 text-lg transition-all duration-300 border-t border-gray-200 mt-4 pt-4"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       <FontAwesomeIcon icon={['fal', 'box']} className="text-xl" />
                       My Orders
+                    </Link>
+                    <Link
+                      href="/account/notifications"
+                      className="flex items-center gap-3 py-4 text-primary hover:text-secondary hover:translate-x-2 text-lg transition-all duration-300"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <FontAwesomeIcon icon={['fal', 'bell']} className="text-xl" />
+                      Notifications
+                      {(unreadCount || 0) > 0 && (
+                        <span className="bg-secondary text-primary text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                          {unreadCount}
+                        </span>
+                      )}
+                    </Link>
+                    <Link
+                      href="/memberships"
+                      className="flex items-center gap-3 py-4 text-primary hover:text-secondary hover:translate-x-2 text-lg transition-all duration-300"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <FontAwesomeIcon icon={['fal', 'crown']} className="text-xl" />
+                      Memberships
                     </Link>
                     <button
                       onClick={() => {

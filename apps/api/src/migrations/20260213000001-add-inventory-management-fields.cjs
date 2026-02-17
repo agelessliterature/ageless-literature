@@ -13,17 +13,44 @@ module.exports = {
     const transaction = await queryInterface.sequelize.transaction();
     
     try {
-      // 1. Update books status enum to include 'sold' and 'archived'
-      await queryInterface.sequelize.query(`
-        ALTER TYPE "enum_books_status" ADD VALUE IF NOT EXISTS 'sold';
-      `, { transaction });
+      // 1. Check if enum exists and create/update it
+      const booksDescription = await queryInterface.describeTable('books');
       
-      await queryInterface.sequelize.query(`
-        ALTER TYPE "enum_books_status" ADD VALUE IF NOT EXISTS 'archived';
-      `, { transaction });
+      // If status column doesn't exist, create it with all values
+      if (!booksDescription.status) {
+        await queryInterface.addColumn('books', 'status', {
+          type: Sequelize.ENUM('draft', 'pending', 'published', 'sold', 'archived'),
+          allowNull: false,
+          defaultValue: 'published'
+        }, { transaction });
+        
+        await queryInterface.addIndex('books', ['status'], {
+          name: 'books_status',
+          transaction
+        });
+      } else {
+        // Status column exists, check if enum type exists before adding values
+        const [enumExists] = await queryInterface.sequelize.query(`
+          SELECT EXISTS (
+            SELECT 1 FROM pg_type WHERE typname = 'enum_books_status'
+          );
+        `, { transaction });
+        
+        if (enumExists[0].exists) {
+          // Enum exists, add new values
+          await queryInterface.sequelize.query(`
+            ALTER TYPE "enum_books_status" ADD VALUE IF NOT EXISTS 'sold';
+          `, { transaction });
+          
+          await queryInterface.sequelize.query(`
+            ALTER TYPE "enum_books_status" ADD VALUE IF NOT EXISTS 'archived';
+          `, { transaction });
+        } else {
+          console.log('Enum type does not exist, skipping enum value addition');
+        }
+      }
 
       // 2. Add trackQuantity to books table if it doesn't exist
-      const booksDescription = await queryInterface.describeTable('books');
       if (!booksDescription.track_quantity) {
         await queryInterface.addColumn('books', 'track_quantity', {
           type: Sequelize.BOOLEAN,

@@ -75,11 +75,6 @@ export default (sequelize, DataTypes) => {
         unique: true,
         comment: 'Stock keeping unit / product code',
       },
-      barcode: {
-        type: DataTypes.STRING(100),
-        allowNull: true,
-        comment: 'Product barcode',
-      },
       trackQuantity: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
@@ -176,6 +171,12 @@ export default (sequelize, DataTypes) => {
         field: 'wp_post_id',
         comment: 'Original WordPress post ID for reference',
       },
+      auctionLockedUntil: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        field: 'auction_locked_until',
+        comment: 'If set, item cannot be sold as fixed price until this time',
+      },
       createdAt: {
         type: DataTypes.DATE,
         allowNull: false,
@@ -214,6 +215,7 @@ export default (sequelize, DataTypes) => {
         { fields: ['price'] },
         { fields: ['created_at'] },
         { fields: ['published_at'] },
+        { fields: ['auction_locked_until'] },
       ],
     },
   );

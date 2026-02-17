@@ -7,6 +7,8 @@ import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
 import { toast } from 'react-hot-toast';
 import api from '@/lib/api';
 import { withBasePath } from '@/lib/path-utils';
+import PageLoading from '@/components/ui/PageLoading';
+import EmptyState from '@/components/ui/EmptyState';
 
 interface CartItem {
   id: number;
@@ -110,13 +112,8 @@ export default function CartPage() {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center py-20">
-            <FontAwesomeIcon
-              icon={['fal', 'spinner-third']}
-              spin
-              className="text-5xl text-primary"
-            />
-          </div>
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-8">Shopping Cart</h1>
+          <PageLoading message="Loading your cart..." fullPage={false} />
         </div>
       </div>
     );
@@ -132,24 +129,13 @@ export default function CartPage() {
 
         {isEmpty ? (
           <div className="bg-white rounded-lg shadow-md p-8">
-            <div className="text-center py-12">
-              <FontAwesomeIcon
-                icon={['fal', 'shopping-cart']}
-                className="text-6xl text-gray-400 mb-4"
-              />
-              <h3 className="mt-2 text-xl font-medium text-gray-900">Your cart is empty</h3>
-              <p className="mt-1 text-sm text-gray-500">
-                Start shopping to add items to your cart.
-              </p>
-              <div className="mt-6">
-                <Link
-                  href={withBasePath('/books')}
-                  className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary hover:bg-primary-dark"
-                >
-                  Browse Books
-                </Link>
-              </div>
-            </div>
+            <EmptyState
+              icon={['fal', 'shopping-cart']}
+              title="Your cart is empty"
+              description="Start shopping to add items to your cart."
+              actionLabel="Browse Books"
+              actionHref={withBasePath('/shop')}
+            />
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -268,7 +254,7 @@ export default function CartPage() {
                 </Link>
 
                 <Link
-                  href={withBasePath('/books')}
+                  href={withBasePath('/shop')}
                   className="w-full block text-center px-6 py-3 mt-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                 >
                   Continue Shopping

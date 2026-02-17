@@ -170,7 +170,7 @@ async function handlePayoutItemSucceeded(event) {
     await db.VendorEarning.update(
       {
         paidOut: true,
-        paidOutAt: new Date(),
+        paidAt: new Date(),
       },
       {
         where: {

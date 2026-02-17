@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getLocale } from 'next-intl/server';
 import { Montserrat } from 'next/font/google';
+import Script from 'next/script';
 import { Providers } from '@/components/Providers';
 import ConditionalLayout from '@/components/layout/ConditionalLayout';
 import { FontAwesomeConfig } from '@/lib/fontawesome';
@@ -31,20 +32,27 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/',
   },
-  manifest: process.env.NODE_ENV === 'production' ? '/v2/manifest.json' : '/manifest.json',
+  manifest: process.env.NEXT_PUBLIC_BASE_PATH
+    ? `${process.env.NEXT_PUBLIC_BASE_PATH}/manifest.json`
+    : '/manifest.json',
   icons: {
     icon: [
       {
-        url: process.env.NODE_ENV === 'production' ? '/v2/favicon.ico' : '/favicon.ico',
+        url: process.env.NEXT_PUBLIC_BASE_PATH
+          ? `${process.env.NEXT_PUBLIC_BASE_PATH}/favicon.ico`
+          : '/favicon.ico',
         sizes: 'any',
       },
       {
-        url: process.env.NODE_ENV === 'production' ? '/v2/icon.svg' : '/icon.svg',
+        url: process.env.NEXT_PUBLIC_BASE_PATH
+          ? `${process.env.NEXT_PUBLIC_BASE_PATH}/icon.svg`
+          : '/icon.svg',
         type: 'image/svg+xml',
       },
     ],
-    apple:
-      process.env.NODE_ENV === 'production' ? '/v2/apple-touch-icon.png' : '/apple-touch-icon.png',
+    apple: process.env.NEXT_PUBLIC_BASE_PATH
+      ? `${process.env.NEXT_PUBLIC_BASE_PATH}/apple-touch-icon.png`
+      : '/apple-touch-icon.png',
   },
   robots: {
     index: true,
@@ -89,21 +97,21 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const locale = await getLocale();
   const messages = await getMessages();
 
-  const basePath = process.env.NODE_ENV === 'production' ? '/v2' : '';
+  // Use NEXT_PUBLIC_BASE_PATH env var to match next.config.js basePath setting
+  // If not set, defaults to empty string (no base path)
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
 
   return (
     <html lang={locale} className={`${montserrat.variable} ${montserrat.className}`}>
       <head>
         {/* Google Tag Manager */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        <Script id="google-tag-manager" strategy="afterInteractive">
+          {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
 j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-TDZ2DTDX');`,
-          }}
-        />
+})(window,document,'script','dataLayer','GTM-TDZ2DTDX');`}
+        </Script>
 
         {/* Critical inline CSS to prevent render-blocking */}
         <style
@@ -125,6 +133,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             --secondary: #d4af37;
           }
           * { box-sizing: border-box; margin: 0; padding: 0; }
+          html { overflow-x: hidden; }
           body {
             margin: 0;
             min-height: 100vh;
@@ -135,6 +144,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             font-family: var(--font-montserrat), system-ui, -apple-system, sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+            width: 100%;
           }
           .flex-grow { flex-grow: 1; }
           header { position: fixed; top: 0; left: 0; right: 0; z-index: 40; }
@@ -144,8 +155,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           body:has(main[data-admin="true"]) footer {
             display: none !important;
           }
+          /* Responsive breakpoints for Tailwind classes used before CSS loads */
+          @media (min-width: 640px) { .sm\\:block { display: block; } .sm\\:hidden { display: none; } }
+          @media (min-width: 768px) { .md\\:block { display: block; } .md\\:hidden { display: none; } }
           @media (min-width: 1024px) { .lg\\:block { display: block; } .lg\\:hidden { display: none; } }
-          @media (max-width: 1023px) { .lg\\:hidden { display: block; } }
         `,
           }}
         />

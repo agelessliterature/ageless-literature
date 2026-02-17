@@ -223,7 +223,7 @@ export const markPayoutAsPaid = async (req, res) => {
     await VendorEarning.update(
       {
         paidOut: true,
-        paidOutAt: new Date(),
+        paidAt: new Date(),
         payoutId: payout.id,
       },
       {

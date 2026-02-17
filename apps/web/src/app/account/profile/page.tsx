@@ -12,6 +12,7 @@ import { useTranslations } from '@/lib/clientTranslations';
 import { ImageUploader } from '@/components/cloudinary';
 import { updateUserProfileImage } from '@/lib/cloudinary-api';
 import toast from 'react-hot-toast';
+import PageLoading from '@/components/ui/PageLoading';
 
 export default function ProfilePage() {
   const { data: session, status, update: updateSession } = useSession();
@@ -75,7 +76,7 @@ export default function ProfilePage() {
   };
 
   if (status === 'loading') {
-    return <div className="container mx-auto px-4 py-8">{tCommon('loading')}</div>;
+    return <PageLoading message={tCommon('loading')} fullPage={false} />;
   }
 
   if (!session) return null;

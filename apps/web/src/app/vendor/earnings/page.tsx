@@ -7,6 +7,12 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
 import { getApiUrl } from '@/lib/api';
+import PageLoading from '@/components/ui/PageLoading';
+import EmptyState from '@/components/ui/EmptyState';
+import ResponsiveDataView from '@/components/ui/ResponsiveDataView';
+import MobileCard from '@/components/ui/MobileCard';
+import MobileCardList from '@/components/ui/MobileCardList';
+import { formatMoney } from '@/lib/format';
 
 export default function VendorEarningsPage() {
   const { data: session } = useSession();
@@ -41,7 +47,7 @@ export default function VendorEarningsPage() {
   if (isLoading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center">Loading earnings...</div>
+        <PageLoading message="Loading earnings..." fullPage={false} />
       </div>
     );
   }
@@ -71,7 +77,7 @@ export default function VendorEarningsPage() {
           <div className="bg-white border-l-4 border-green-500 p-4 sm:p-6 shadow-sm">
             <p className="text-xs sm:text-sm text-gray-600">Total Earnings</p>
             <p className="text-xl sm:text-2xl font-bold text-gray-900">
-              ${parseFloat(summary.totalEarnings || 0).toFixed(2)}
+              {formatMoney(summary.totalEarnings, { fromCents: false })}
             </p>
           </div>
           <div className="bg-white border-l-4 border-blue-500 p-6 shadow-sm">
@@ -85,7 +91,7 @@ export default function VendorEarningsPage() {
           <div className="bg-white border-l-4 border-purple-500 p-6 shadow-sm">
             <p className="text-sm text-gray-600">Gross Sales</p>
             <p className="text-2xl font-bold text-gray-900">
-              ${parseFloat(summary.grossSales || 0).toFixed(2)}
+              {formatMoney(summary.grossSales, { fromCents: false })}
             </p>
           </div>
         </div>
@@ -112,94 +118,159 @@ export default function VendorEarningsPage() {
 
       {/* Earnings Table */}
       {earnings && earnings.length > 0 ? (
-        <div className="bg-white border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Book
-                  </th>
-                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Order
-                  </th>
-                  <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Gross
-                  </th>
-                  <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Commission (8%)
-                  </th>
-                  <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Your Earnings
-                  </th>
-                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {earnings.map((earning: any) => (
-                  <tr key={earning.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {new Date(earning.createdAt).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                      })}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      <div className="max-w-xs">
-                        <p className="font-medium truncate">
-                          {earning.orderItem?.book?.title || 'N/A'}
-                        </p>
-                        <p className="text-xs text-gray-500 truncate">
-                          {earning.orderItem?.book?.author || ''}
-                        </p>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-mono">
-                      {earning.order?.orderNumber || 'Auction'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-right">
-                      ${parseFloat(earning.grossAmount).toFixed(2)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 text-right">
-                      -${parseFloat(earning.platformCommission).toFixed(2)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-600 text-right">
-                      ${parseFloat(earning.vendorEarnings).toFixed(2)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+        <ResponsiveDataView
+          breakpoint="md"
+          mobile={
+            <MobileCardList gap="md">
+              {earnings.map((earning: any) => {
+                const statusColors: Record<string, string> = {
+                  completed: 'bg-green-100 text-green-800',
+                  pending: 'bg-yellow-100 text-yellow-800',
+                  failed: 'bg-red-100 text-red-800',
+                };
+                return (
+                  <MobileCard
+                    key={earning.id}
+                    title={earning.orderItem?.book?.title || 'N/A'}
+                    subtitle={earning.orderItem?.book?.author || ''}
+                    badge={
                       <span
-                        className={`px-2 py-1 text-xs ${
-                          earning.status === 'completed'
-                            ? 'bg-green-100 text-green-800'
-                            : earning.status === 'pending'
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : 'bg-red-100 text-red-800'
-                        }`}
+                        className={`px-2 py-0.5 text-xs font-semibold rounded-full ${statusColors[earning.status] || 'bg-gray-100 text-gray-800'}`}
                       >
                         {earning.status}
                       </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                    }
+                    details={[
+                      {
+                        label: 'Date',
+                        value: new Date(earning.createdAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                        }),
+                      },
+                      {
+                        label: 'Order',
+                        value: (
+                          <span className="font-mono text-xs">
+                            {earning.order?.orderNumber || 'Auction'}
+                          </span>
+                        ),
+                      },
+                      { label: 'Gross', value: formatMoney(earning.amount, { fromCents: false }) },
+                      {
+                        label: 'Commission',
+                        value: (
+                          <span className="text-red-600">
+                            -{formatMoney(earning.platformFee, { fromCents: false })}
+                          </span>
+                        ),
+                      },
+                    ]}
+                    primaryMetric={{
+                      label: 'Your Earnings',
+                      value: (
+                        <span className="text-green-600 font-bold">
+                          {formatMoney(earning.netAmount, { fromCents: false })}
+                        </span>
+                      ),
+                    }}
+                  />
+                );
+              })}
+            </MobileCardList>
+          }
+          desktop={
+            <div className="bg-white border border-gray-200 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Date
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Book
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Order
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Gross
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {(() => {
+                          const rate = earnings[0]?.commissionRateBps;
+                          return rate
+                            ? `Commission (${(rate / 100).toFixed(rate % 100 === 0 ? 0 : 1)}%)`
+                            : 'Commission';
+                        })()}
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Your Earnings
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {earnings.map((earning: any) => (
+                      <tr key={earning.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {new Date(earning.createdAt).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                          })}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-900">
+                          <div className="max-w-xs">
+                            <p className="font-medium truncate">
+                              {earning.orderItem?.book?.title || 'N/A'}
+                            </p>
+                            <p className="text-xs text-gray-500 truncate">
+                              {earning.orderItem?.book?.author || ''}
+                            </p>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-mono">
+                          {earning.order?.orderNumber || 'Auction'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-right">
+                          {formatMoney(earning.amount, { fromCents: false })}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 text-right">
+                          -{formatMoney(earning.platformFee, { fromCents: false })}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-600 text-right">
+                          {formatMoney(earning.netAmount, { fromCents: false })}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span
+                            className={`px-2 py-1 text-xs ${earning.status === 'completed' ? 'bg-green-100 text-green-800' : earning.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}
+                          >
+                            {earning.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
+        />
       ) : (
-        <div className="bg-white border border-gray-200 p-12 text-center">
-          <p className="text-gray-500">No earnings found</p>
-          <p className="text-sm text-gray-400 mt-2">
-            {statusFilter !== 'all'
+        <EmptyState
+          icon={['fal', 'money-bill-wave']}
+          title="No earnings found"
+          description={
+            statusFilter !== 'all'
               ? `No ${statusFilter} earnings to display`
-              : 'Start selling to see your earnings here'}
-          </p>
-        </div>
+              : 'Start selling to see your earnings here'
+          }
+        />
       )}
 
       {/* Pagination */}

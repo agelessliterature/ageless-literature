@@ -237,14 +237,33 @@ export const getVendorEarnings = async (req, res) => {
       offset: (parseInt(page) - 1) * parseInt(limit),
     });
 
+    // Compute summary from all earnings for this vendor (not just current page)
+    const summaryWhere = { vendorId: vendor.id };
+    const [totalEarningsResult, grossSalesResult, completedCount, pendingCount] = await Promise.all(
+      [
+        VendorEarning.sum('net_amount', { where: summaryWhere }) || 0,
+        VendorEarning.sum('amount', { where: summaryWhere }) || 0,
+        VendorEarning.count({ where: { ...summaryWhere, status: 'completed' } }),
+        VendorEarning.count({ where: { ...summaryWhere, status: 'pending' } }),
+      ],
+    );
+
     return res.json({
       success: true,
-      data: rows,
-      pagination: {
-        total: count,
-        page: parseInt(page),
-        limit: parseInt(limit),
-        totalPages: Math.ceil(count / parseInt(limit)),
+      data: {
+        earnings: rows,
+        summary: {
+          totalEarnings: totalEarningsResult || 0,
+          grossSales: grossSalesResult || 0,
+          completedCount,
+          pendingCount,
+        },
+        pagination: {
+          total: count,
+          currentPage: parseInt(page),
+          limit: parseInt(limit),
+          totalPages: Math.ceil(count / parseInt(limit)),
+        },
       },
     });
   } catch (error) {

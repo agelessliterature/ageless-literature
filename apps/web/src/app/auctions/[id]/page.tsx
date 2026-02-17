@@ -38,7 +38,7 @@ export default function AuctionDetailPage() {
             try {
               const endpoint =
                 type === 'book'
-                  ? `/books/${auction.auctionableId}`
+                  ? `/shop/${auction.auctionableId}`
                   : `/products/${auction.auctionableId}`;
               const itemRes = await api.get(endpoint);
               const slug = itemRes.data?.data?.slug;

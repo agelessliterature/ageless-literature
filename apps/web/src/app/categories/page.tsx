@@ -5,6 +5,8 @@ import { useQuery } from '@tanstack/react-query';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
+import PageLoading from '@/components/ui/PageLoading';
+import EmptyState from '@/components/ui/EmptyState';
 import api from '@/lib/api';
 
 interface Category {
@@ -83,11 +85,7 @@ export default function CategoriesPage() {
   const categories = filteredCategories;
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <FontAwesomeIcon icon={['fal', 'spinner-third']} spin className="text-5xl text-primary" />
-      </div>
-    );
+    return <PageLoading message="Loading categories..." fullPage={true} />;
   }
 
   return (
@@ -159,7 +157,7 @@ export default function CategoriesPage() {
         {categories.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             {categories.map((category) => (
-              <Link key={category.id} href={`/books?category=${category.slug}`} className="group">
+              <Link key={category.id} href={`/shop?category=${category.slug}`} className="group">
                 <div className="bg-white shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden h-full flex flex-col">
                   {/* Category Image */}
                   <div className="relative h-48 sm:h-56 lg:h-64 bg-gradient-to-br from-primary/10 to-secondary/10 overflow-hidden">
@@ -211,28 +209,15 @@ export default function CategoriesPage() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-20">
-            <div className="inline-flex items-center justify-center w-24 h-24 bg-gray-100 rounded-full mb-6">
-              <FontAwesomeIcon icon={['fal', 'books']} className="text-5xl text-gray-400" />
-            </div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              {searchQuery ? 'No Categories Found' : 'No Categories Yet'}
-            </h2>
-            <p className="text-xl text-gray-600 max-w-md mx-auto">
-              {searchQuery
+          <EmptyState
+            icon={['fal', 'books']}
+            title={searchQuery ? 'No Categories Found' : 'No Categories Yet'}
+            description={
+              searchQuery
                 ? 'Try adjusting your search terms or browse all collections.'
-                : 'Categories are being curated. Check back soon to explore our collections.'}
-            </p>
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="mt-6 inline-flex items-center gap-2 bg-primary text-white px-6 py-3 hover:bg-primary-dark transition-colors font-semibold"
-              >
-                <FontAwesomeIcon icon={['fal', 'times']} />
-                Clear Search
-              </button>
-            )}
-          </div>
+                : 'Categories are being curated. Check back soon to explore our collections.'
+            }
+          />
         )}
       </div>
 

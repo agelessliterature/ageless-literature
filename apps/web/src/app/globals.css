@@ -38,6 +38,8 @@ body {
   color: rgb(var(--foreground-rgb));
   background: rgb(var(--background-start-rgb));
   font-family: var(--font-family-base);
+  overflow-x: hidden;
+  width: 100%;
 }
 
 /* Headers with Engraver's MT Font */
