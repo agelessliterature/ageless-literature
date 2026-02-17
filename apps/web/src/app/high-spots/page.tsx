@@ -17,6 +17,10 @@ const sections = [
     commitment to national sovereignty during turbulent times. Today, his legacy endures as one of the most celebrated
     admirals of the Dutch Golden Age.`,
     image: '/high-spots/Admiral-Michiel-Adriaensz.png',
+    button: {
+      text: 'View Product',
+      href: '/products/portrait-of-lieutenant-admiral-michiel-adriaensz-de-ruyter-by-ferdinand-bol/uga1xk-zkzpyw',
+    },
   },
   {
     title: 'Gutenberg Bible: A Leaf From The Book of Jeremiah',
@@ -31,6 +35,10 @@ const sections = [
     enduring legacy of Gutenberg's invention and its profound impact on literacy, education, and 
     culture worldwide.`,
     image: '/high-spots/gutenberg-bible.jpg',
+    button: {
+      text: 'View Product',
+      href: '/products/gutenberg-bible-a-leaf-from-the-book-of-jeremiah/dqr0rl-e6d2zk',
+    },
   },
   {
     title: 'Third Dutch Edition of the Magnus Opus by Maria Sibylla Merian',
@@ -43,34 +51,112 @@ const sections = [
     highlights Merian's artistic prowess but also serves as a testament to her enduring legacy 
     as a trailblazer in both art and science.`,
     image: '/high-spots/third-dutch-edition.jpg',
+    button: {
+      text: 'View Product',
+      href: '/products/third-dutch-edition-of-the-magnus-opus-by-maria-sibylla-merian-with-72-magnificent-plates-remarkably-clean-beautifully-coloured-/66z95x-ofvdnl',
+    },
   },
   {
-    title: 'Admiral Michiel Adriaensz',
-    text: `A prominent figure in Dutch naval history, Admiral Michiel
-    Adriaensz was a key leader during the 17th century. Known for
-    his strategic prowess and leadership, he played a crucial
-    role in the Dutch Golden Age, particularly in the
-    Anglo-Dutch Wars. A defining strategist of maritime Europe, his naval victories
-    shaped the balance of power during the height of the Dutch Republic. Through tactical brilliance and disciplined fleets, he
-    transformed naval warfare into a refined art of precision and
-    endurance. His leadership embodied resilience, innovation, and a relentless
-    commitment to national sovereignty during turbulent times. Today, his legacy endures as one of the most celebrated
-    admirals of the Dutch Golden Age.`,
-    image: '/high-spots/Admiral-Michiel-Adriaensz.png',
+    title:
+      'Monumental & Seminal Critical Edition of the Greek New Testament (1550), Richly Coloured',
+    text: `The monumental and seminal critical edition of the Greek New Testament, published in 1550, 
+    is a landmark achievement in biblical scholarship. This edition, richly coloured and meticulously 
+    crafted, represents a significant advancement in the study of the New Testament. It was one of the 
+    first critical editions to incorporate a comprehensive analysis of various manuscripts, providing 
+    scholars with a more accurate and nuanced understanding of the biblical text. The use of colour in 
+    this edition not only enhances its visual appeal but also serves to highlight important textual 
+    variants and annotations, making it an invaluable resource for theologians, historians, and 
+    scholars of religious studies. This edition stands as a testament to the dedication and scholarly 
+    rigor that has shaped our understanding of the New Testament for centuries.`,
+    image: '/high-spots/monumental-&-seminal.png',
+    button: {
+      text: 'View Product',
+      href: '/products/monumental-seminal-critical-edition-of-the-greek-new-testament-1550-richly-coloured/qv0sqs-wthli3',
+    },
   },
   {
-    title: 'Admiral Michiel Adriaensz',
-    text: `A prominent figure in Dutch naval history, Admiral Michiel
-    Adriaensz was a key leader during the 17th century. Known for
-    his strategic prowess and leadership, he played a crucial
-    role in the Dutch Golden Age, particularly in the
-    Anglo-Dutch Wars. A defining strategist of maritime Europe, his naval victories
-    shaped the balance of power during the height of the Dutch Republic. Through tactical brilliance and disciplined fleets, he
-    transformed naval warfare into a refined art of precision and
-    endurance. His leadership embodied resilience, innovation, and a relentless
-    commitment to national sovereignty during turbulent times. Today, his legacy endures as one of the most celebrated
-    admirals of the Dutch Golden Age.`,
-    image: '/high-spots/Admiral-Michiel-Adriaensz.png',
+    title: "1550 Chaucer's Works - Definitive Edition",
+    text: `The 1550 definitive edition of Chaucer's works is a milestone in the preservation and 
+    dissemination of medieval English literature. This edition, meticulously compiled and printed, 
+    represents a crucial step in the standardization of Chaucer's writings. It includes his most 
+    significant works such as "The Canterbury Tales," "Troilus and Criseyde," and "The Book of the Duchess." 
+    The careful attention to textual accuracy and the use of high-quality printing techniques make 
+    this edition a treasure for scholars and enthusiasts alike. It stands as a testament to the enduring 
+    legacy of Chaucer's literary genius and his profound influence on English literature.`,
+    image: '/high-spots/1550-chaucers-works.jpeg',
+    button: {
+      text: 'View Product',
+      href: '/products/1550-chaucer-s-works-definitive-edition/vj8xcd-2vr2a0',
+    },
+  },
+  {
+    title:
+      'General Orders of the War Department, 1862–1863, Including the Preliminary and Final Emancipation Proclamations',
+    text: `The General Orders of the War Department from 1862–1863 are a pivotal collection of military 
+    directives that played a crucial role in the American Civil War. These orders, which included the 
+    Preliminary and Final Emancipation Proclamations, outlined key policies and strategies for Union forces. 
+    They were instrumental in shaping wartime decisions and ultimately contributed to the end of slavery in 
+    the United States. The documents are significant not only for their historical context but also for their 
+    detailed instructions and administrative guidance.`,
+    image: '/high-spots/general-orders-of-the-war-department.jpg',
+    button: {
+      text: 'View Product',
+      href: '/products/general-orders-of-the-war-department-1862-1863-including-the-preliminary-and-final-emancipation-proclamations/4k7k4r-gosxjw',
+    },
+  },
+  {
+    title:
+      'Miniature Illuminated Manuscript on Vellum with 12 Full-Page and 4 Miniatures by the Parisian Atelier of Maître François',
+    text: `This exquisite miniature illuminated manuscript, created in the Parisian atelier of Maître 
+    François, is a remarkable example of medieval artistic craftsmanship. The manuscript features 12 
+    full-page illustrations and 4 smaller miniatures, all rendered with exceptional detail and vibrant 
+    colours. The high-quality vellum provides a durable foundation for the intricate artwork, which 
+    showcases the sophisticated techniques employed by medieval scribes and illuminators.`,
+    image: '/high-spots/miniature-illuminated-manuscript.jpeg',
+    button: {
+      text: 'View Product',
+      href: '/products/miniature-illuminated-manuscript-on-vellum-with-12-full-page-and-4-miniatures-by-the-parisian-atelier-of-ma-tre-fran-ois-/b324qh-7inaq6',
+    },
+  },
+  {
+    title: 'Roman Missal Printed by Thielmann Kerver’s 1521 Finely Bound Folio',
+    text: `The Roman Missal printed by Thielmann Kerver in 1521 is a significant artifact in the history of 
+    religious literature. This finely bound folio edition of the Missal, which contains the liturgical 
+    texts used in the Catholic Mass, is a testament to the craftsmanship and dedication of early 
+    16th-century printers. The Missal is not only a religious text but also a work of art, with its 
+    intricate typography and elegant design. It reflects the cultural and spiritual values of its time, 
+    making it a valuable piece for both historians and collectors.`,
+    image: '/high-spots/roman-missal-printed.jpeg',
+    button: {
+      text: 'View Product',
+      href: '/products/roman-missal-printed-by-thielmann-kerver-s-1521-finely-bound-folio/xw79a1-i5xf4q',
+    },
+  },
+  {
+    title: '1818 Declaration of Independence Broadside Engraved by Benjamin Owen Tyler',
+    text: `The 1818 Declaration of Independence broadside, engraved by Benjamin Owen Tyler, is a significant
+    historical document that commemorates the United States' independence from British rule. This broadside, 
+    which features Tyler's intricate engraving work, serves as a powerful symbol of American patriotism and 
+    the enduring ideals of liberty and self-governance. The document is not only a testament to the skill of 
+    early American engravers but also a valuable artifact that captures a pivotal moment in the nation's history.`,
+    image: '/high-spots/1818-declaration-of-independence.jpeg',
+    button: {
+      text: 'View Product',
+      href: '/products/1818-declaration-of-independence-broadside-engraved-by-benjamin-owen-tyler/1qwnpg-y72mcz',
+    },
+  },
+  {
+    title:
+      'The Peoples of Russia, or Description of the Customs and Costumes of the Various Nations of the Russian Empire. 2 Volume Folio Set.',
+    text: `"The Peoples of Russia" is a comprehensive and visually stunning two-volume folio set that offers 
+    an in-depth exploration of the diverse cultures, customs, and costumes of the various nations within the
+     Russian Empire. This work provides a rich tapestry of illustrations and detailed descriptions, 
+     showcasing the unique traditions and lifestyles`,
+    image: '/high-spots/the-peoples-of-russia.jpg',
+    button: {
+      text: 'View Product',
+      href: '/products/the-peoples-of-russia-or-description-of-the-customs-and-costumes-of-the-various-nations-of-the-russian-empire-2-volume-folio-set-/zjvkcu-i9c7hm',
+    },
   },
 ];
 
@@ -114,32 +200,63 @@ export default function HighSpotsPage() {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
       {/* Hero */}
-      <div style={{ textAlign: 'center', padding: '1rem 1rem' }}>
+      <div
+        style={{
+          position: 'relative',
+          height: '700px',
+          width: '100%',
+          backgroundImage: `
+            linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
+            url('/high-spots/dark-academia-books.webp')
+          `,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          color: '#ffffff',
+        }}
+      >
+        {/* Top Title */}
         <h1
           style={{
+            position: 'absolute',
+            top: '3rem',
+            left: '50%',
+            transform: 'translateX(-50%)',
             fontSize: '3rem',
             fontWeight: 'bold',
-            color: '#1f2937',
-            marginBottom: '1.5rem',
           }}
         >
           High Spots
         </h1>
-        <p
+
+        {/* Centered Description */}
+        <div
           style={{
-            fontSize: '1.25rem',
-            color: '#4b5563',
-            maxWidth: '48rem',
-            margin: '0 auto',
-            lineHeight: '1.6',
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center',
+            padding: '0 1rem',
           }}
         >
-          Your insight into the most captivating and significant moments in literature, art, and
-          culture.
-        </p>
+          <p
+            style={{
+              fontSize: '1.25rem',
+              maxWidth: '48rem',
+              lineHeight: '1.6',
+              color: '#e5e7eb',
+            }}
+          >
+            Your insight into the most captivating and significant moments in literature, art, and
+            culture. Discover the stories behind the masterpieces, the historical contexts that
+            shaped them, and the enduring impact they have on our world today. Each month, we delve
+            into a new "High Spot," offering you a deeper understanding and appreciation of the
+            treasures that have defined human creativity and expression throughout history.
+          </p>
+        </div>
       </div>
 
-      <section style={{ paddingBottom: '6rem' }}>
+      <section style={{ paddingBottom: '6rem', paddingLeft: '1rem', paddingRight: '1rem' }}>
         <div style={{ maxWidth: '100%', padding: '0 1rem' }}>
           {sections.map((section, index) => {
             const isReversed = index % 2 !== 0;
@@ -214,6 +331,15 @@ export default function HighSpotsPage() {
                       >
                         {section.text}
                       </p>
+
+                      {section.button && (
+                        <a
+                          href={section.button.href}
+                          className="inline-block mt-4  bg-black text-white px-8 py-3 text-sm font-semibold hover:bg-[#d4af37] hover:text-black hover:-translate-y-1 transition-all duration-300"
+                        >
+                          {section.button.text}
+                        </a>
+                      )}
                     </div>
                   </AnimatedBlock>
                 </div>
