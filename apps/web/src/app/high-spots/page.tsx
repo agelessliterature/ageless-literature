@@ -169,10 +169,10 @@ const sections = [
 interface AnimatedBlockProps {
   children: ReactNode;
   direction: 'left' | 'right';
-  style?: React.CSSProperties;
+  className?: string;
 }
 
-function AnimatedBlock({ children, direction, style }: AnimatedBlockProps) {
+function AnimatedBlock({ children, direction, className }: AnimatedBlockProps) {
   const ref = useRef<HTMLDivElement | null>(null);
   const isInView = useInView(ref, {
     amount: 0.35,
@@ -184,7 +184,7 @@ function AnimatedBlock({ children, direction, style }: AnimatedBlockProps) {
   return (
     <motion.div
       ref={ref}
-      style={style}
+      className={className}
       initial={{ opacity: 0, x: offset }}
       animate={{
         opacity: isInView ? 1 : 0.4,
@@ -207,125 +207,27 @@ function AnimatedBlock({ children, direction, style }: AnimatedBlockProps) {
 ------------------------------ */
 export default function HighSpotsPage() {
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
-      {/* ---------- RESPONSIVE STYLES ---------- */}
-      <style>{`
-        .highspots-grid {
-          display: grid;
-          grid-template-columns: 1.2fr 1.2fr;
-          gap: 3rem;
-          align-items: center;
-        }
-
-        .highspot-image {
-          width: 100%;
-          aspect-ratio: 14 / 16;
-          object-fit: contain;
-        }
-
-        .hero-title {
-          font-size: 3.5rem;
-          letter-spacing: 0.05em;
-        }
-
-        @media (max-width: 1024px) {
-          .hero-title {
-            font-size: 2.5rem;
-          }
-        }
-
-        @media (max-width: 768px) {
-          .hero {
-            height: 500px;
-          }
-
-          .hero-title {
-            font-size: 2rem;
-            top: 2rem;
-          }
-
-          .hero-description {
-            font-size: 1.1rem;
-          }
-
-          .highspots-grid {
-            grid-template-columns: 1fr;
-            gap: 2rem;
-          }
-
-          /* Remove alternating order on mobile */
-          .highspots-grid > div {
-            order: unset !important;
-          }
-
-          .highspot-image {
-            aspect-ratio: 4 / 5;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .hero {
-            height: 420px;
-          }
-
-          .hero-title {
-            font-size: 1.75rem;
-          }
-
-          .hero-description {
-            font-size: 1rem;
-          }
-        }
-      `}</style>
-
-      {/* ---------- HERO ---------- */}
+    <div className="min-h-screen bg-[#f8fafc]">
+      {/* ---------------- HERO ---------------- */}
       <div
-        className="hero"
+        className="relative h-[700px] w-full bg-cover bg-center"
         style={{
-          position: 'relative',
-          height: '700px',
-          width: '100%',
           backgroundImage: `
-            linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
+            linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)),
             url('/high-spots/dark-academia-books.webp')
           `,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          color: '#ffffff',
         }}
       >
         <h1
-          className="hero-title"
-          style={{
-            position: 'absolute',
-            top: '3rem',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            fontWeight: 'bold',
-          }}
+          className="absolute top-8 sm:top-12 md:top-16 left-1/2 -translate-x-1/2 
+               text-[2.25rem] sm:text-[2.75rem] md:text-[3.5rem] 
+               font-bold tracking-[0.05em] text-white text-center px-4"
         >
           High Spots
         </h1>
 
-        <div
-          style={{
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            textAlign: 'center',
-            padding: '0 1rem',
-          }}
-        >
-          <p
-            className="hero-description"
-            style={{
-              maxWidth: '48rem',
-              lineHeight: '1.6',
-              color: '#e5e7eb',
-              fontSize: '1.25rem',
-            }}
-          >
+        <div className="h-full flex items-center justify-center text-center px-4">
+          <p className="max-w-[48rem] text-[1.25rem] leading-[1.6] text-gray-200">
             Your insight into the most captivating and significant moments in literature, art, and
             culture. Discover the stories behind the masterpieces, the historical contexts that
             shaped them, and the enduring impact they have on our world today. Each month, we delve
@@ -335,92 +237,47 @@ export default function HighSpotsPage() {
         </div>
       </div>
 
-      {/* ---------- CONTENT ---------- */}
-      <section style={{ paddingBottom: '6rem', paddingLeft: '1rem', paddingRight: '1rem' }}>
-        <div style={{ maxWidth: '100%', padding: '0 1rem' }}>
+      {/* ---------------- CONTENT ---------------- */}
+      <section className="pb-24 px-[4vw] pt-24">
+        <div className="w-full">
           {sections.map((section, index) => {
             const isReversed = index % 2 !== 0;
 
             return (
-              <div key={index} style={{ padding: '4rem 0' }}>
-                <div className="highspots-grid">
+              <div key={index} className="py-16">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                   {/* Image */}
                   <AnimatedBlock
                     direction={isReversed ? 'right' : 'left'}
-                    style={{ order: isReversed ? 2 : 1 }}
+                    className={isReversed ? 'lg:order-2' : 'lg:order-1'}
                   >
-                    <div
-                      style={{
-                        borderRadius: '1rem',
-                        overflow: 'hidden',
-                        boxShadow: '0 10px 15px rgba(0,0,0,0.1)',
-                      }}
-                    >
-                      <img src={section.image} alt={section.title} className="highspot-image" />
+                    <div className="rounded-2xl overflow-hidden shadow-lg">
+                      <img
+                        src={section.image}
+                        alt={section.title}
+                        className="w-full aspect-[14/16] object-contain"
+                      />
                     </div>
                   </AnimatedBlock>
 
                   {/* Content */}
                   <AnimatedBlock
                     direction={isReversed ? 'left' : 'right'}
-                    style={{ order: isReversed ? 1 : 2 }}
+                    className={isReversed ? 'lg:order-1' : 'lg:order-2'}
                   >
                     <div>
-                      <h2
-                        style={{
-                          fontSize: '2rem',
-                          fontWeight: 'bold',
-                          color: '#1f2937',
-                        }}
-                      >
-                        {section.title}
-                      </h2>
+                      <h2 className="text-[1.875rem] font-bold text-[#1f2937]">{section.title}</h2>
 
-                      <div
-                        style={{
-                          height: '4px',
-                          width: '64px',
-                          background: 'linear-gradient(to right, #d97706, #eab308)',
-                          borderRadius: '9999px',
-                          marginTop: '0.75rem',
-                        }}
-                      />
+                      <div className="h-[4px] w-16 bg-gradient-to-r from-[#b45309] to-[#eab308] rounded-full mt-3" />
 
-                      <p
-                        style={{
-                          fontSize: '1.125rem',
-                          color: '#4b5563',
-                          lineHeight: '1.75',
-                          marginTop: '1.5rem',
-                        }}
-                      >
+                      <p className="mt-6 text-[1.125rem] text-[#4b5563] leading-[1.6]">
                         {section.text}
                       </p>
 
                       {section.button && (
                         <a
                           href={section.button.href}
-                          style={{
-                            display: 'inline-block',
-                            marginTop: '1.5rem',
-                            backgroundColor: '#000',
-                            color: '#fff',
-                            padding: '0.75rem 2rem',
-                            fontSize: '0.9rem',
-                            fontWeight: 600,
-                            textDecoration: 'none',
-                            transition: 'all 0.3s ease',
-                          }}
-                          onMouseOver={(e) => {
-                            e.currentTarget.style.backgroundColor = '#d4af37';
-                            e.currentTarget.style.color = '#000';
-                            e.currentTarget.style.transform = 'translateY(-4px)';
-                          }}
-                          onMouseOut={(e) => {
-                            e.currentTarget.style.backgroundColor = '#000';
-                            e.currentTarget.style.color = '#fff';
-                            e.currentTarget.style.transform = 'translateY(0)';
-                          }}
+                          className="inline-block mt-6 bg-black text-white px-8 py-3 text-sm font-semibold transition-all duration-300 hover:bg-[#d4af37] hover:text-black hover:-translate-y-1"
                         >
                           {section.button.text}
                         </a>
