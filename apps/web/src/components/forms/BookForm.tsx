@@ -9,8 +9,8 @@ import api from '@/lib/api';
 import { getApiUrl } from '@/lib/api-url';
 import RichTextEditor from '@/components/forms/RichTextEditor';
 
-const BOOK_CONDITIONS = ['New', 'Like New', 'Very Good', 'Good', 'Fair', 'Poor'];
-const BOOK_BINDINGS = ['Hardcover', 'Softcover', 'Leather', 'Cloth', 'Paper'];
+const BOOK_CONDITIONS = ['Fine', 'Near Fine', 'Very Good', 'Good', 'Fair', 'Poor'];
+const BOOK_BINDINGS = ['Hardcover', 'Softcover', 'Leather', 'Cloth'];
 
 interface BookFormProps {
   book?: Book;
@@ -64,6 +64,7 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
       .replace(/<[^>]*>/g, '')
       .trim(),
     price: book?.price?.toString() || '',
+    salePrice: book?.salePrice?.toString() || '',
     condition: book?.condition || 'Good',
     quantity: book?.quantity || 1,
     isbn: book?.isbn || '',
@@ -332,7 +333,7 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Price (USD) <span className="text-red-500">*</span>
@@ -346,6 +347,27 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
               className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
               required
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Sale Price (USD)</label>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={formData.salePrice || ''}
+              onChange={(e) =>
+                handleChange('salePrice', e.target.value ? parseFloat(e.target.value) : '')
+              }
+              className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+              placeholder="Optional discounted price"
+            />
+            {formData.salePrice &&
+              parseFloat(formData.salePrice) >= parseFloat(formData.price || '0') && (
+                <p className="text-xs text-red-600 mt-1">
+                  Sale price should be less than regular price
+                </p>
+              )}
           </div>
 
           <div>

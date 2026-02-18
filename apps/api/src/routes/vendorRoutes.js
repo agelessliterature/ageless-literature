@@ -11,6 +11,7 @@ import * as vendorWithdrawalController from '../controllers/vendorWithdrawalCont
 import * as customOffersController from '../controllers/customOffersController.js';
 import { verifyToken } from '../controllers/authController.js';
 import { vendorAuth } from '../middleware/vendorAuth.js';
+import { createVendorImportRouter } from './importRoutes.js';
 
 const router = express.Router();
 
@@ -87,6 +88,9 @@ router.post('/requests/:id/respond', vendorAuth, vendorRequestsController.respon
 router.get('/settings', vendorAuth, vendorSettingsController.getSettings);
 router.put('/settings', vendorAuth, vendorSettingsController.updateSettings);
 router.put('/settings/payout', vendorAuth, vendorSettingsController.updatePayoutSettings);
+
+// CSV Import
+router.use('/imports/books', vendorAuth, createVendorImportRouter());
 
 // Custom Offers
 router.get('/offers', vendorAuth, customOffersController.getVendorOffers);

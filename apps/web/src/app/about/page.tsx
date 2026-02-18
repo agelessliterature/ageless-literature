@@ -1,48 +1,44 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
 
-// Cloudinary base URL
-const CLOUDINARY_BASE = 'https://res.cloudinary.com/dvohtcqvi';
-
-// Asset configuration
+// Asset configuration - using local public folder images
 const ASSETS = {
   // Static image pages (SVG or PNG)
   images: {
-    1: `${CLOUDINARY_BASE}/image/upload/src/about-page/1.png`,
-    2: `${CLOUDINARY_BASE}/raw/upload/src/about-page/2.svg`,
-    5: `${CLOUDINARY_BASE}/image/upload/src/about-page/5.png`,
-    7: `${CLOUDINARY_BASE}/raw/upload/src/about-page/7.svg`,
+    1: '/about-page/1.svg',
+    5: '/about-page/5.svg',
+    7: '/about-page/7.svg',
   },
   // Video pages with thumbnails
   videos: {
     3: {
-      thumbnail: `${CLOUDINARY_BASE}/raw/upload/src/about-page/3.svg`,
+      thumbnail: '/about-page/3.svg',
       video: 'https://videos.files.wordpress.com/cfiz6ZIj/ageless-literature-about-us-5.mp4',
     },
     4: {
-      thumbnail: `${CLOUDINARY_BASE}/image/upload/src/about-page/4.png`,
+      thumbnail: '/about-page/4.svg',
       video: 'https://videos.files.wordpress.com/kXmbNHXW/ageless-literature-about-us-1-2.mp4',
     },
     6: {
-      thumbnail: `${CLOUDINARY_BASE}/raw/upload/src/about-page/6.svg`,
+      thumbnail: '/about-page/6.svg',
       video: 'https://videos.files.wordpress.com/0pdIUURj/ageless-literature-about-us-4.mp4',
     },
     8: {
-      thumbnail: `${CLOUDINARY_BASE}/raw/upload/src/about-page/8.svg`,
+      thumbnail: '/about-page/8.svg',
       video: 'https://videos.files.wordpress.com/NhLv45UK/ageless-literature-about-us-3.mp4',
     },
     9: {
-      thumbnail: `${CLOUDINARY_BASE}/raw/upload/src/about-page/9.svg`,
+      thumbnail: '/about-page/9.svg',
       video: 'https://videos.files.wordpress.com/neQyxkK9/ageless-literature-about-us-2-2.mp4',
     },
   },
 };
 
-// Page order: 1, 2, 3(video), 4(video), 5, 6(video), 7, 8(video), 9(video)
-const PAGE_ORDER = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+// Page order: 1, 3(video), 4(video), 5, 6(video), 7, 8(video), 9(video)
+const PAGE_ORDER = [1, 3, 4, 5, 6, 7, 8, 9];
 const INITIAL_PAGES = 4;
 
 interface VideoPlayerProps {
@@ -160,6 +156,15 @@ interface ImagePageProps {
 function ImagePage({ src, pageNum }: ImagePageProps) {
   const [isLoading, setIsLoading] = useState(true);
 
+  // Fallback to ensure SVGs always become visible (they sometimes don't trigger onLoad)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 500); // Show image after 500ms if onLoad hasn't fired
+
+    return () => clearTimeout(timer);
+  }, [src]);
+
   return (
     <div className="relative w-full min-h-[200px]">
       {isLoading && (
@@ -172,6 +177,7 @@ function ImagePage({ src, pageNum }: ImagePageProps) {
         alt={`Page ${pageNum}`}
         className={`w-full h-auto transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
         onLoad={() => setIsLoading(false)}
+        onError={() => setIsLoading(false)}
         loading={pageNum <= 2 ? 'eager' : 'lazy'}
       />
     </div>
@@ -258,7 +264,7 @@ export default function AboutPage() {
       </div>
 
       {/* Content Container */}
-      <div className="w-full">
+      <div className="max-w-7xl mx-auto w-full">
         {/* Initial Pages */}
         <div className="space-y-0">
           {PAGE_ORDER.slice(0, INITIAL_PAGES).map((pageNum) => (
@@ -283,7 +289,7 @@ export default function AboutPage() {
                 icon={['fal', showAll ? 'chevron-up' : 'chevron-down']}
                 className="text-2xl"
               />
-              <span className="hidden sm:inline">
+              <span className="sm:inline">
                 {showAll ? 'Show Less' : 'Learn More - View Additional Content'}
               </span>
               <span className="inline sm:hidden">{showAll ? 'Show Less' : 'Learn More'}</span>

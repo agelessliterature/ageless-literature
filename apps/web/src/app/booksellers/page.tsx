@@ -102,7 +102,7 @@ export default function BookSellersPage() {
       style={{ borderRadius: '1.5rem' }}
     >
       {/* Banner with overlay and shop name */}
-      <div className="relative h-56 overflow-hidden flex-shrink-0">
+      <div className="relative overflow-hidden flex-shrink-0" style={{ height: '300px' }}>
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
@@ -163,7 +163,7 @@ export default function BookSellersPage() {
         </div>
 
         {/* Apply to be a Bookseller CTA */}
-        <div className="max-w-7xl mx-auto mb-8">
+        <div className="mx-auto mb-8">
           <div
             className="bg-gradient-to-br from-primary/5 to-secondary/10 border-2 border-secondary/30 p-6 sm:p-8"
             style={{ borderRadius: '1.5rem' }}
@@ -189,7 +189,7 @@ export default function BookSellersPage() {
 
         {/* Search and Sort Controls */}
         <div className="bg-white border-b border-gray-200 lg:sticky lg:top-0 z-30">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex flex-col md:flex-row gap-4">
               {/* Search */}
               <div className="flex-1">
@@ -245,7 +245,7 @@ export default function BookSellersPage() {
           ) : (
             <>
               {/* Grid Layout - Larger cards with max 3 columns */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 max-w-7xl mx-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 mx-auto">
                 {allVendors.map((vendor) => (
                   <VendorCard key={vendor.id} vendor={vendor} />
                 ))}

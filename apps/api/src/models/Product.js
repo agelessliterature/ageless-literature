@@ -52,6 +52,12 @@ export default (sequelize, DataTypes) => {
         allowNull: false,
         comment: 'Product price',
       },
+      salePrice: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: true,
+        field: 'sale_price',
+        comment: 'Discounted/sale price if item is on sale',
+      },
       compareAtPrice: {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: true,

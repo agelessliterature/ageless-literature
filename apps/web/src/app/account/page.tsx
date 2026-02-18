@@ -99,6 +99,12 @@ export default function AccountPage() {
       icon: ['fal', 'bell'] as [string, string],
     },
     {
+      title: 'Wishlist',
+      href: '/account/wishlist',
+      description: 'View and manage your saved books',
+      icon: ['fal', 'heart'] as [string, string],
+    },
+    {
       title: t('orders'),
       href: '/account/orders',
       description: t('ordersDescription'),
@@ -129,7 +135,7 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 sm:py-12 max-w-7xl">
+    <div className="container mx-auto px-4 py-8 sm:py-12">
       {/* Clean Header */}
       <div className="mb-8 sm:mb-16 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-6">
         <div className="flex items-center gap-4 sm:gap-6">
@@ -195,15 +201,11 @@ export default function AccountPage() {
             href={item.href}
             className="group relative bg-white border border-gray-200 p-8 hover:border-secondary transition-all duration-300"
           >
-            {/* Icon */}
-            <div className="mb-6">
-              <div className="inline-flex items-center justify-center text-5xl bg-primary text-white group-hover:bg-secondary transition-colors duration-300">
-                <FontAwesomeIcon icon={item.icon} className="text-xl" />
-              </div>
-            </div>
-
             {/* Content */}
-            <h3 className="text-xl font-semibold text-primary mb-2 group-hover:text-secondary transition-colors duration-300">
+            <h3
+              className="text-xl font-semibold text-primary mb-2 group-hover:text-secondary transition-colors duration-300"
+              style={{ fontSize: '1.5rem' }}
+            >
               {item.title}
             </h3>
             <p className="text-gray-600 text-sm">{item.description}</p>
@@ -212,30 +214,6 @@ export default function AccountPage() {
             <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-secondary group-hover:w-full transition-all duration-300"></div>
           </Link>
         ))}
-      </div>
-
-      {/* Clean Stats Section */}
-      <div className="bg-white border border-gray-200 p-8">
-        <h2 className="text-2xl font-semibold text-primary mb-8">{t('overview')}</h2>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          <div className="border-l-2 border-secondary pl-4">
-            <div className="text-3xl font-bold text-primary mb-1">0</div>
-            <div className="text-sm text-gray-600 uppercase tracking-wide">{t('totalOrders')}</div>
-          </div>
-          <div className="border-l-2 border-secondary pl-4">
-            <div className="text-3xl font-bold text-primary mb-1">0</div>
-            <div className="text-sm text-gray-600 uppercase tracking-wide">{t('activeBids')}</div>
-          </div>
-          <div className="border-l-2 border-secondary pl-4">
-            <div className="text-3xl font-bold text-primary mb-1">0</div>
-            <div className="text-sm text-gray-600 uppercase tracking-wide">{t('wins')}</div>
-          </div>
-          <div className="border-l-2 border-secondary pl-4">
-            <div className="text-3xl font-bold text-primary mb-1">$0</div>
-            <div className="text-sm text-gray-600 uppercase tracking-wide">{t('spent')}</div>
-          </div>
-        </div>
       </div>
     </div>
   );

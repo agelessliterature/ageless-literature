@@ -152,7 +152,7 @@ export default function AdminPayoutsPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+    <div className="mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
       <div className="mb-6 sm:mb-8">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
           <div>

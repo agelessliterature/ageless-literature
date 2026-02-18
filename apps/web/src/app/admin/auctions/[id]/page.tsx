@@ -142,7 +142,7 @@ export default function AuctionDetailPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center">Loading...</div>
       </div>
     );
@@ -155,7 +155,7 @@ export default function AuctionDetailPage() {
 
   if (error && !auction) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-red-50 border border-red-200 p-4 mb-4">
           <p className="text-red-800">{error}</p>
         </div>
@@ -175,7 +175,7 @@ export default function AuctionDetailPage() {
     auction?.status === 'upcoming' || (auction?.status === 'active' && !auction?.currentBid);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+    <div className="mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
       {/* Header */}
       <div className="mb-6">
         <Link href="/admin/auctions" className="text-primary hover:underline mb-2 inline-block">

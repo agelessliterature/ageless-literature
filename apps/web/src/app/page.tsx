@@ -365,7 +365,7 @@ export default function Home() {
 
       {/* Stats Section with Count-Up Animation */}
       <section className="py-12 sm:py-16 lg:py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -527,7 +527,7 @@ export default function Home() {
 
         {/* High Spots Bottom Section */}
         <div className="bg-gray-100 py-8 md:py-12">
-          <div className="max-w-7xl mx-auto px-8 md:px-16 lg:px-24">
+          <div className="mx-auto px-8 md:px-16 lg:px-24">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -562,7 +562,7 @@ export default function Home() {
           </div>
 
           {/* Categories Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-6 gap-8 lg:gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
             {featuredCategories.map((category) => (
               <Link
                 key={category.id}
@@ -658,7 +658,7 @@ export default function Home() {
       <section className="py-12 sm:py-16 lg:py-24 bg-white">
         <div className="mx-auto px-4 sm:px-6 lg:px-8">
           <div
-            className="max-w-7xl mx-auto p-8 md:p-12 relative"
+            className="mx-auto p-8 md:p-12 relative"
             style={{
               background:
                 'linear-gradient(white, white) padding-box, linear-gradient(135deg, #d4af37, #f4e5a1, #d4af37, #c9a02c) border-box',

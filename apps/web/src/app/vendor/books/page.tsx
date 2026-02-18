@@ -16,6 +16,7 @@ import { getApiUrl } from '@/lib/api';
 import PageLoading from '@/components/ui/PageLoading';
 import EmptyState from '@/components/ui/EmptyState';
 import { formatMoney } from '@/lib/format';
+import CSVImportWizard from '@/components/import/CSVImportWizard';
 
 declare global {
   interface Window {
@@ -31,6 +32,7 @@ export default function VendorBooksPage() {
   const [conditionFilter, setConditionFilter] = useState('all');
   const [page, setPage] = useState(1);
   const [showItemTypeModal, setShowItemTypeModal] = useState(false);
+  const [showImportWizard, setShowImportWizard] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState<Set<number>>(new Set());
   const [selectAll, setSelectAll] = useState(false);
 
@@ -171,6 +173,13 @@ export default function VendorBooksPage() {
                 Delete Selected ({selectedProducts.size})
               </button>
             )}
+            <button
+              onClick={() => setShowImportWizard(true)}
+              className="flex items-center justify-center gap-2 bg-white text-primary border border-primary px-4 py-2 hover:bg-primary/5 transition w-full sm:w-auto"
+            >
+              <FontAwesomeIcon icon={['fal', 'file-csv']} className="text-base" />
+              Import CSV
+            </button>
             <button
               onClick={() => setShowItemTypeModal(true)}
               className="flex items-center justify-center gap-2 bg-primary text-white px-4 py-2 hover:bg-opacity-90 transition w-full sm:w-auto"
@@ -548,6 +557,14 @@ export default function VendorBooksPage() {
       <ItemTypeSelectionModal
         isOpen={showItemTypeModal}
         onClose={() => setShowItemTypeModal(false)}
+      />
+
+      {/* CSV Import Wizard */}
+      <CSVImportWizard
+        isOpen={showImportWizard}
+        onClose={() => setShowImportWizard(false)}
+        onComplete={() => refetch()}
+        role="vendor"
       />
     </div>
   );

@@ -90,7 +90,7 @@ export default function AuctionsPage() {
 
       {/* Tabs */}
       <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex space-x-8" aria-label="Tabs">
             <Link
               href="/shop"
@@ -110,7 +110,7 @@ export default function AuctionsPage() {
 
       {/* Filters Section - Clean Style */}
       <section className="border-b border-gray-200 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center">
             {/* Search Bar */}
             <div className="relative flex-1">

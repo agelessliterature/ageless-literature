@@ -155,7 +155,7 @@ export default function ShopPage() {
     <div className="min-h-screen bg-gray-50 pb-12">
       {/* Header */}
       <div className="bg-primary border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">Rare & Collectibles</h1>
           <p className="text-lg text-white/90">
             Discover our curated collection of {pagination.total.toLocaleString()} products from
@@ -166,7 +166,7 @@ export default function ShopPage() {
 
       {/* Tabs */}
       <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex space-x-8" aria-label="Tabs">
             <Link
               href={withBasePath('/shop')}
@@ -186,7 +186,7 @@ export default function ShopPage() {
 
       {/* Search & Filters Bar */}
       <div className="bg-white border-b border-gray-200 lg:sticky lg:top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col md:flex-row gap-4">
             {/* Search */}
             <div className="flex-1">

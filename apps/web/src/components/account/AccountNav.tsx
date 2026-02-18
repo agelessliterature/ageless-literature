@@ -60,7 +60,7 @@ export default function AccountNav() {
 
   return (
     <nav className="bg-white border-b border-gray-200 mb-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8">
         {/* Desktop Navigation */}
         <div className="hidden md:flex justify-center space-x-8 overflow-x-auto">
           {navItems.map((item) => {

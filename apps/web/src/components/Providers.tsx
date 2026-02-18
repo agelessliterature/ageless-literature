@@ -4,8 +4,6 @@ import { SessionProvider } from 'next-auth/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { useState } from 'react';
-// Import to initialize FontAwesome icon library
-import '@/lib/fontawesome';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   // Create QueryClient inside the component to avoid issues with SSR

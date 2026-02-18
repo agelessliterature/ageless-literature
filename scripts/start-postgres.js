@@ -92,7 +92,7 @@ async function startPostgres() {
   console.log('Starting PostgreSQL container...');
   try {
     await execAsync(`docker start ${CONTAINER_NAME}`);
-    
+
     // Wait for PostgreSQL to be ready
     console.log('Waiting for PostgreSQL to be ready...');
     for (let i = 0; i < 30; i++) {
@@ -101,10 +101,10 @@ async function startPostgres() {
         console.log('✅ PostgreSQL is ready!');
         return;
       } catch (error) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }
-    
+
     console.log('⚠️  PostgreSQL started but may still be initializing');
   } catch (error) {
     console.error('❌ Failed to start PostgreSQL:', error.message);

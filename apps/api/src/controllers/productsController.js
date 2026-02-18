@@ -136,31 +136,40 @@ export const getProductBySlug = async (req, res) => {
 export const getRelatedProducts = async (req, res) => {
   try {
     const { id } = req.params;
-    const { limit = 4 } = req.query;
+    const { limit = 12, debugMode = false } = req.query;
 
-    const product = await Product.findByPk(id);
-    if (!product) {
-      return res.status(404).json({ success: false, error: 'Product not found' });
+    // Import the related items service
+    const { getRelatedItems } = await import('../services/relatedItemsService.js');
+
+    // Determine item type (product vs book) - try product first
+    let itemType = 'product';
+    let item = await Product.findByPk(id);
+
+    if (!item) {
+      // Try as book
+      item = await db.Book?.findByPk(id);
+      if (item) {
+        itemType = 'book';
+      } else {
+        return res.status(404).json({ success: false, error: 'Item not found' });
+      }
     }
 
-    const relatedProducts = await Product.findAll({
-      where: {
-        category: product.category,
-        id: { [Op.ne]: id },
-        status: 'published',
-      },
-      include: [
-        {
-          model: Vendor,
-          as: 'vendor',
-          attributes: ['id', 'shopName', 'shopUrl', 'logoUrl'],
-        },
-      ],
-      limit: parseInt(limit),
-      order: [['views', 'DESC']],
+    // Get related items using the smart service
+    const result = await getRelatedItems(id, itemType, {
+      productLimit: parseInt(limit),
+      auctionLimit: parseInt(limit),
+      debugMode: debugMode === 'true' || debugMode === '1',
     });
 
-    res.json({ success: true, data: relatedProducts });
+    res.json({
+      success: true,
+      data: {
+        products: result.products,
+        auctions: result.auctions,
+        meta: result.meta,
+      },
+    });
   } catch (error) {
     console.error('Error fetching related products:', error);
     res.status(500).json({ success: false, error: error.message });

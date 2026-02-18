@@ -325,3 +325,36 @@ export const deleteBook = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
+
+/**
+ * Get related books with smart scoring
+ * GET /api/books/:id/related
+ */
+export const getRelatedBooks = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { limit = 12, debugMode = false } = req.query;
+
+    // Import the related items service
+    const { getRelatedItems } = await import('../services/relatedItemsService.js');
+
+    // Get related items using the smart service
+    const result = await getRelatedItems(id, 'book', {
+      productLimit: parseInt(limit),
+      auctionLimit: parseInt(limit),
+      debugMode: debugMode === 'true' || debugMode === '1',
+    });
+
+    res.json({
+      success: true,
+      data: {
+        products: result.products,
+        auctions: result.auctions,
+        meta: result.meta,
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching related books:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};

@@ -483,6 +483,12 @@ export default function EditProductPage() {
                 placeholder="Discounted price"
                 className="w-full px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-black focus:border-black"
               />
+              {formData.salePrice &&
+                parseFloat(formData.salePrice) >= parseFloat(formData.price || '0') && (
+                  <p className="text-xs text-red-600 mt-1">
+                    Sale price should be less than regular price
+                  </p>
+                )}
             </div>
           )}
 
@@ -507,8 +513,8 @@ export default function EditProductPage() {
               className="w-full px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-black focus:border-black"
             >
               <option value="">Select Condition</option>
-              <option value="New">New</option>
-              <option value="Like New">Like New</option>
+              <option value="Fine">Fine</option>
+              <option value="Near Fine">Near Fine</option>
               <option value="Very Good">Very Good</option>
               <option value="Good">Good</option>
               <option value="Fair">Fair</option>

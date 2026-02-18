@@ -119,7 +119,7 @@ export default function MembershipPage() {
         <div className="absolute top-0 left-0 w-64 h-64 bg-secondary/10  blur-3xl" />
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-secondary/10  blur-3xl" />
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="relative mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold text-white mb-4 tracking-tight">
             {t('memberships.pageTitle')}
           </h1>
@@ -132,7 +132,7 @@ export default function MembershipPage() {
       {/* Current Subscription Banner */}
       {currentSubscription && currentSubscription.status === 'active' && (
         <section className="bg-green-50 border-b border-green-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div className="flex items-center justify-center gap-3">
               <FontAwesomeIcon icon={['fal', 'check-circle']} className="text-2xl text-green-600" />
               <p className="text-lg text-green-800">
@@ -146,7 +146,7 @@ export default function MembershipPage() {
 
       {/* Plans Grid */}
       <section className="py-12 sm:py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8">
           {plansLoading || subscriptionLoading ? (
             <PageLoading message="Loading membership plans..." fullPage={false} />
           ) : plansError ? (
@@ -204,7 +204,7 @@ export default function MembershipPage() {
 
       {/* Trust Section */}
       <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div>
               <FontAwesomeIcon

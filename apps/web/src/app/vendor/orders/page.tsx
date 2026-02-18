@@ -69,9 +69,13 @@ export default function VendorOrdersPage() {
     },
   });
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [page]);
+
   if (status === 'loading') {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <PageLoading message="Loading vendor dashboard..." fullPage={false} />
       </div>
     );
@@ -84,10 +88,6 @@ export default function VendorOrdersPage() {
 
   const orders = ordersData?.orders || [];
   const pagination = ordersData?.pagination || {};
-
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [page]);
 
   const handleMarkAsShipped = (order: any) => {
     setSelectedOrder(order);
@@ -105,7 +105,7 @@ export default function VendorOrdersPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+    <div className="mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
       <div className="mb-6 sm:mb-8">
         <Link
           href="/vendor/dashboard"

@@ -42,6 +42,10 @@ export default function VendorCollectiblesPage() {
     enabled: !!session,
   });
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [page]);
+
   if (status === 'loading')
     return <PageLoading message="Loading collectibles..." fullPage={false} />;
   if (status === 'unauthenticated') {
@@ -51,10 +55,6 @@ export default function VendorCollectiblesPage() {
 
   const collectibles = data?.data || [];
   const pagination = data?.pagination || {};
-
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [page]);
 
   const handleDelete = async (id: string) => {
     if (!confirm('Archive this collectible?')) return;
@@ -70,7 +70,7 @@ export default function VendorCollectiblesPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
         <Link
           href="/vendor/dashboard"

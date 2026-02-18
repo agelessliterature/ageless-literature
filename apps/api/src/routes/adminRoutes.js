@@ -12,6 +12,7 @@ import * as adminMembershipsController from '../controllers/admin/adminMembershi
 import * as adminGlossaryController from '../controllers/admin/adminGlossaryController.js';
 import * as adminEmailsController from '../controllers/admin/adminEmailsController.js';
 import * as adminProductsController from '../controllers/admin/adminProductsController.js';
+import { createAdminImportRouter } from './importRoutes.js';
 
 const router = express.Router();
 
@@ -90,6 +91,9 @@ router.get('/memberships/subscriptions', adminMembershipsController.listSubscrip
 router.post('/memberships/subscriptions/create', adminMembershipsController.createSubscription);
 router.put('/memberships/subscriptions/:id', adminMembershipsController.updateSubscription);
 router.post('/memberships/subscriptions/:id/cancel', adminMembershipsController.cancelSubscription);
+
+// CSV Import
+router.use('/imports/books', createAdminImportRouter());
 
 router.get('/products', adminProductsController.listAll);
 router.post('/products', adminProductsController.createProduct);

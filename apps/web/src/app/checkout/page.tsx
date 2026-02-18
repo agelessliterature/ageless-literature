@@ -213,7 +213,7 @@ function CheckoutForm({ clientSecret }: CheckoutFormProps) {
   if (cartLoading) {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-center py-20">
             <FontAwesomeIcon
               icon={['fal', 'spinner-third']}
@@ -229,7 +229,7 @@ function CheckoutForm({ clientSecret }: CheckoutFormProps) {
   if (isEmpty) {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white rounded-lg shadow-md p-8">
             <div className="text-center py-12">
               <FontAwesomeIcon
@@ -257,7 +257,7 @@ function CheckoutForm({ clientSecret }: CheckoutFormProps) {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 sm:py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8">Checkout</h1>
 
         <form onSubmit={handleSubmit}>
@@ -688,7 +688,7 @@ export default function CheckoutPage() {
   if (status === 'loading' || isLoadingPayment) {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-center py-20">
             <FontAwesomeIcon
               icon={['fal', 'spinner-third']}
@@ -708,7 +708,7 @@ export default function CheckoutPage() {
   if (!clientSecret) {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
               <p className="text-gray-600 mb-4">Failed to initialize payment system</p>

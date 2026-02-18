@@ -149,9 +149,20 @@ export function BookCard({ book }: BookCardProps) {
           {/* Price */}
           <div className="mt-auto">
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-2xl font-bold text-white">
-                {Number(book.price).toFixed(0)} USD
-              </span>
+              {book.salePrice && Number(book.salePrice) < Number(book.price) ? (
+                <>
+                  <span className="text-2xl font-bold text-white">
+                    {Number(book.salePrice).toFixed(0)} USD
+                  </span>
+                  <span className="text-lg font-medium text-gray-400 line-through">
+                    {Number(book.price).toFixed(0)} USD
+                  </span>
+                </>
+              ) : (
+                <span className="text-2xl font-bold text-white">
+                  {Number(book.price).toFixed(0)} USD
+                </span>
+              )}
             </div>
 
             {/* Action Buttons */}

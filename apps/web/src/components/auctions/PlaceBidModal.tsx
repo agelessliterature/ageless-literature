@@ -33,7 +33,7 @@ function BidForm({
   const [bidAmount, setBidAmount] = useState<string>('');
   const [smsOptIn, setSmsOptIn] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [collectCard, setCollectCard] = useState(false);
+  const [collectCard, setCollectCard] = useState(true); // Auto-expanded by default
   const [isPaymentReady, setIsPaymentReady] = useState(false);
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -90,8 +90,20 @@ function BidForm({
     e.preventDefault();
     const amount = parseFloat(bidAmount);
 
-    if (isNaN(amount) || amount < minBid) {
+    // Validate bid amount
+    if (isNaN(amount)) {
+      toast.error('Please enter a valid bid amount');
+      return;
+    }
+
+    if (amount < minBid) {
       toast.error(`Bid must be at least $${minBid.toFixed(2)}`);
+      return;
+    }
+
+    // Validate payment method is required
+    if (!collectCard) {
+      toast.error('Payment method is required to place a bid');
       return;
     }
 
@@ -228,61 +240,56 @@ function BidForm({
             )}
           </div>
 
-          {/* Card Collection */}
-          <div className="mb-6 border border-gray-200 p-4 rounded-lg bg-gray-50">
+          {/* Card Collection - Required */}
+          <div className="mb-6 border-2 border-red-200 p-4 rounded-lg bg-red-50">
             <div className="flex items-start gap-3 mb-3">
-              <input
-                type="checkbox"
-                id="collectCard"
-                checked={collectCard}
-                onChange={(e) => setCollectCard(e.target.checked)}
-                className="mt-1 w-4 h-4 text-secondary-600 border-gray-300 rounded focus:ring-secondary-500"
-                disabled={placeBidMutation.isPending}
-              />
-              <label
-                htmlFor="collectCard"
-                className="text-sm font-medium text-gray-700 cursor-pointer"
-              >
-                <div>Save payment method for automatic charge if I win</div>
-                <div className="text-xs text-gray-500 mt-1">
-                  Your card will only be charged if you win the auction. Secured by Stripe.
-                </div>
-              </label>
-            </div>
-            {collectCard && (
-              <div className="mt-3">
-                <PaymentElement
-                  options={{
-                    layout: 'accordion',
-                  }}
-                  onChange={(e) => {
-                    setIsPaymentReady(e.complete);
-                  }}
-                />
-                <p className="text-xs text-gray-500 mt-2">
-                  <FontAwesomeIcon icon={['fal', 'lock'] as [string, string]} className="mr-1" />
-                  Secured by Stripe. We never see your card details.
-                </p>
+              <div className="flex items-center gap-2 flex-1">
+                <label
+                  htmlFor="collectCard"
+                  className="text-sm font-semibold text-gray-900 cursor-pointer flex-1"
+                >
+                  <div className="flex items-center gap-1">
+                    Payment Method
+                    <span className="text-red-600 text-base">*</span>
+                  </div>
+                  <div className="text-xs text-gray-600 mt-1 font-normal">
+                    Required: Your card will only be charged if you win the auction
+                  </div>
+                </label>
               </div>
-            )}
+            </div>
+            <div className="mt-3">
+              <PaymentElement
+                options={{
+                  layout: 'accordion',
+                }}
+                onChange={(e) => {
+                  setIsPaymentReady(e.complete);
+                }}
+              />
+              <p className="text-xs text-gray-600 mt-2 flex items-center gap-1">
+                <FontAwesomeIcon icon={['fal', 'lock'] as [string, string]} />
+                Secured by Stripe. Your card details are encrypted and never stored on our servers.
+              </p>
+            </div>
           </div>
         </div>
 
         {/* Actions - Fixed at bottom */}
-        {bidAmount && collectCard && isPaymentReady && (
+        {bidAmount && isPaymentReady && (
           <div className="p-6 pt-4 border-t border-gray-200 flex-shrink-0 bg-white">
             <form onSubmit={handleSubmit} className="flex gap-3">
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-colors"
+                className="flex-1 px-6 py-3 border-2 border-gray-300 bg-white text-gray-700 font-semibold hover:bg-gray-100 transition-colors disabled:opacity-50"
                 disabled={placeBidMutation.isPending}
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="flex-1 px-6 py-3 bg-black hover:bg-secondary text-white hover:text-black font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed border-2 border-black hover:border-secondary"
+                className="flex-1 px-6 py-3 bg-black text-white font-semibold hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed border-2 border-black"
                 disabled={placeBidMutation.isPending}
               >
                 {placeBidMutation.isPending ? (

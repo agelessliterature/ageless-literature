@@ -46,7 +46,7 @@ export default function VendorEarningsPage() {
 
   if (isLoading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <PageLoading message="Loading earnings..." fullPage={false} />
       </div>
     );
@@ -57,7 +57,7 @@ export default function VendorEarningsPage() {
   const summary = earningsData?.summary;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+    <div className="mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
       {/* Header */}
       <div className="mb-6 sm:mb-8">
         <Link

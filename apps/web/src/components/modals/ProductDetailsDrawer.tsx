@@ -315,7 +315,7 @@ export default function ProductDetailsDrawer({
             <FontAwesomeIcon icon={['fal', 'times']} className="text-3xl" />
           </button>
 
-          <div className="relative max-w-7xl max-h-full w-full h-full flex items-center justify-center">
+          <div className="relative max-h-full w-full h-full flex items-center justify-center">
             <Image
               src={currentImage?.url || currentImage}
               alt={product.title}

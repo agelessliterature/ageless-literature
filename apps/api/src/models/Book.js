@@ -50,6 +50,12 @@ export default (sequelize, DataTypes) => {
         type: DataTypes.DECIMAL,
         allowNull: false,
       },
+      salePrice: {
+        type: DataTypes.DECIMAL,
+        allowNull: true,
+        field: 'sale_price',
+        comment: 'Discounted/sale price if item is on sale',
+      },
       quantity: {
         type: DataTypes.INTEGER,
         allowNull: false,

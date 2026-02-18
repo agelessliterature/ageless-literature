@@ -16,6 +16,7 @@ import PlaceBidModal from '@/components/auctions/PlaceBidModal';
 import BuyerOfferModal from '@/components/modals/BuyerOfferModal';
 import { AuctionSummary } from '@/types/Auction';
 import { formatMoney } from '@/lib/format';
+import RelatedItemsCarousel from '@/components/ui/RelatedItemsCarousel';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -150,18 +151,24 @@ export default function ProductDetailPage() {
   });
 
   const { data: related } = useQuery({
-    queryKey: ['related-products', product?.id, product?.type],
+    queryKey: ['related-items', product?.id, product?.type],
     queryFn: async () => {
-      if (!product?.id) return [];
+      if (!product?.id) return { products: [], auctions: [] };
       try {
         const endpoint =
           product.type === 'book'
-            ? `/books?limit=4&exclude=${product.id}`
+            ? `/books/${product.id}/related`
             : `/products/${product.id}/related`;
-        const response = await api.get(endpoint);
+        const response = await api.get(endpoint, {
+          params: {
+            limit: 12,
+            debugMode: false, // Set to true for debugging
+          },
+        });
         return response.data.data;
       } catch (err) {
-        return [];
+        console.error('Error fetching related items:', err);
+        return { products: [], auctions: [] };
       }
     },
     enabled: !!product?.id,
@@ -415,7 +422,7 @@ export default function ProductDetailPage() {
             {activeAuction ? (
               <button
                 onClick={handlePlaceBid}
-                className="w-full bg-black hover:bg-secondary text-white hover:text-black py-4 px-6 flex items-center justify-center gap-2 hover:scale-105 transition-all text-base font-semibold border-2 border-black hover:border-secondary"
+                className="w-full bg-black hover:bg-secondary text-white hover:text-black py-4 px-6 flex items-center justify-center gap-2 transition-colors text-base font-semibold border-2 border-black hover:border-secondary"
                 style={{ borderRadius: '1.5rem' }}
               >
                 <FontAwesomeIcon icon={['fal', 'gavel'] as [string, string]} className="text-xl" />
@@ -425,7 +432,7 @@ export default function ProductDetailPage() {
               <button
                 onClick={() => addToCartMutation.mutate()}
                 disabled={addToCartMutation.isPending || product.quantity < 1}
-                className="w-full bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-secondary hover:text-black hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-black disabled:hover:text-white disabled:hover:scale-100 text-base font-semibold border-2 border-black hover:border-secondary"
+                className="w-full bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-secondary hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-black disabled:hover:text-white text-base font-semibold border-2 border-black hover:border-secondary"
                 style={{ borderRadius: '1.5rem' }}
               >
                 {addToCartMutation.isPending ? (
@@ -549,7 +556,7 @@ export default function ProductDetailPage() {
             <div className="flex gap-3">
               <button
                 onClick={handlePlaceBid}
-                className="flex-[2] bg-black hover:bg-secondary text-white hover:text-black py-4 px-6 flex items-center justify-center gap-2 hover:scale-105 transition-all text-base sm:text-lg font-semibold border-2 border-black hover:border-secondary"
+                className="flex-[2] bg-black hover:bg-secondary text-white hover:text-black py-4 px-6 flex items-center justify-center gap-2 transition-colors text-base sm:text-lg font-semibold border-2 border-black hover:border-secondary"
                 style={{ borderRadius: '1.5rem' }}
               >
                 <FontAwesomeIcon
@@ -561,7 +568,7 @@ export default function ProductDetailPage() {
 
               <button
                 onClick={handleMessageSeller}
-                className="flex-1 bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-gray-800 hover:scale-105 transition-all text-base sm:text-lg font-medium"
+                className="flex-1 bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors text-base sm:text-lg font-medium"
                 style={{ borderRadius: '1.5rem' }}
               >
                 <FontAwesomeIcon
@@ -573,7 +580,7 @@ export default function ProductDetailPage() {
 
               <button
                 onClick={handleShare}
-                className="flex-1 bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-gray-800 hover:scale-105 transition-all text-base sm:text-lg font-medium"
+                className="flex-1 bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors text-base sm:text-lg font-medium"
                 style={{ borderRadius: '1.5rem' }}
               >
                 <FontAwesomeIcon
@@ -588,7 +595,7 @@ export default function ProductDetailPage() {
             <div className="flex flex-wrap gap-3">
               <button
                 onClick={handleMessageSeller}
-                className="bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-secondary hover:text-black hover:scale-105 transition-all duration-300 text-base sm:text-lg font-medium flex-1 border-2 border-black hover:border-secondary"
+                className="bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-secondary hover:text-black transition-colors text-base sm:text-lg font-medium flex-1 border-2 border-black hover:border-secondary"
                 style={{ borderRadius: '1.5rem' }}
               >
                 <FontAwesomeIcon
@@ -601,7 +608,7 @@ export default function ProductDetailPage() {
               <button
                 onClick={() => addToCartMutation.mutate()}
                 disabled={addToCartMutation.isPending || product.quantity < 1}
-                className="bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-secondary hover:text-black hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-base sm:text-lg font-medium flex-1 border-2 border-black hover:border-secondary"
+                className="bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-secondary hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-base sm:text-lg font-medium flex-1 border-2 border-black hover:border-secondary"
                 style={{ borderRadius: '1.5rem' }}
               >
                 {addToCartMutation.isPending ? (
@@ -631,7 +638,7 @@ export default function ProductDetailPage() {
                   }
                   setShowOfferModal(true);
                 }}
-                className="bg-primary text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-secondary hover:text-black hover:scale-105 transition-all duration-300 text-base sm:text-lg font-medium flex-1 border-2 border-primary hover:border-secondary"
+                className="bg-primary text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-secondary hover:text-black transition-colors text-base sm:text-lg font-medium flex-1 border-2 border-primary hover:border-secondary"
                 style={{ borderRadius: '1.5rem' }}
               >
                 <FontAwesomeIcon
@@ -644,7 +651,7 @@ export default function ProductDetailPage() {
               <button
                 onClick={() => addToWishlistMutation.mutate()}
                 disabled={addToWishlistMutation.isPending}
-                className="bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-secondary hover:text-black hover:scale-105 transition-all duration-300 text-base sm:text-lg font-medium flex-1 border-2 border-black hover:border-secondary"
+                className="bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-secondary hover:text-black transition-colors text-base sm:text-lg font-medium flex-1 border-2 border-black hover:border-secondary"
                 style={{ borderRadius: '1.5rem' }}
               >
                 <FontAwesomeIcon
@@ -656,7 +663,7 @@ export default function ProductDetailPage() {
 
               <button
                 onClick={handleShare}
-                className="bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-secondary hover:text-black hover:scale-105 transition-all duration-300 text-base sm:text-lg font-medium flex-1 border-2 border-black hover:border-secondary"
+                className="bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-secondary hover:text-black transition-colors text-base sm:text-lg font-medium flex-1 border-2 border-black hover:border-secondary"
                 style={{ borderRadius: '1.5rem' }}
               >
                 <FontAwesomeIcon
@@ -830,43 +837,29 @@ export default function ProductDetailPage() {
         </div>
       )}
 
-      {/* Related Products */}
-      {related && related.length > 0 && (
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold mb-6">Related Collectibles</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {related.map((item: any) => {
-              // Handle both optimized format (primaryImage) and legacy formats
-              const itemImage =
-                item.primaryImage ||
-                item.images?.[0]?.url ||
-                item.media?.[0]?.imageUrl ||
-                '/placeholder.jpg';
+      {/* Related Products and Auctions */}
+      {related && (related.products?.length > 0 || related.auctions?.length > 0) && (
+        <>
+          {/* Related Products Carousel */}
+          {related.products && related.products.length > 0 && (
+            <RelatedItemsCarousel
+              items={related.products}
+              title="Related Items"
+              emptyMessage="No related items found"
+            />
+          )}
 
-              return (
-                <Link
-                  key={item.id}
-                  href={`/products/${item.slug}`}
-                  className="bg-black shadow hover:shadow-lg transition overflow-hidden border border-gray-700 hover:border-[#d4af37]"
-                  style={{ borderRadius: '1.5rem' }}
-                >
-                  <div className="aspect-square relative bg-gray-100">
-                    <img src={itemImage} alt={item.title} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold line-clamp-2 mb-2 h-12 text-white">
-                      {item.title}
-                    </h3>
-                    <span className="text-lg font-bold text-white">
-                      {formatMoney(item.price, { fromCents: false })}
-                    </span>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
+          {/* Related Auctions Carousel */}
+          {related.auctions && related.auctions.length > 0 && (
+            <RelatedItemsCarousel
+              items={related.auctions}
+              title="Related Auctions"
+              emptyMessage="No related auctions found"
+            />
+          )}
+        </>
       )}
+
       {/* Place Bid Modal */}
       {activeAuction && (
         <PlaceBidModal

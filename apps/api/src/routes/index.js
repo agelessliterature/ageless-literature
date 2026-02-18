@@ -154,6 +154,7 @@ router.get('/stats', async (req, res) => {
 });
 
 router.get('/books', booksController.getAllBooks);
+router.get('/books/:id/related', booksController.getRelatedBooks);
 router.get('/books/:id', booksController.getBookById);
 router.post('/books', authMiddleware, booksController.createBook);
 router.put('/books/:id', authMiddleware, booksController.updateBook);

@@ -1,13 +1,28 @@
 import db from '../models/index.js';
 
-const { Wishlist, WishlistItem, Book } = db;
+const { Wishlist, WishlistItem, Book, BookMedia, Vendor } = db;
 
 export const getWishlist = async (req, res) => {
   try {
     const { userId } = req.user;
     let wishlist = await Wishlist.findOne({
       where: { userId },
-      include: [{ model: WishlistItem, as: 'items', include: [{ model: Book, as: 'book' }] }],
+      include: [
+        {
+          model: WishlistItem,
+          as: 'items',
+          include: [
+            {
+              model: Book,
+              as: 'book',
+              include: [
+                { model: BookMedia, as: 'media' },
+                { model: Vendor, as: 'vendor' },
+              ],
+            },
+          ],
+        },
+      ],
     });
 
     if (!wishlist) {

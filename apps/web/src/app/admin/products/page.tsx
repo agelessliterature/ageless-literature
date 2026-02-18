@@ -12,6 +12,7 @@ import DeleteConfirmationModal from '@/components/modals/DeleteConfirmationModal
 import ResponsiveDataView from '@/components/ui/ResponsiveDataView';
 import MobileCard from '@/components/ui/MobileCard';
 import MobileCardList from '@/components/ui/MobileCardList';
+import CSVImportWizard from '@/components/import/CSVImportWizard';
 
 interface Product {
   id: string;
@@ -85,6 +86,7 @@ export default function AdminProductsPage() {
   const [showDetailsDrawer, setShowDetailsDrawer] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
+  const [showImportWizard, setShowImportWizard] = useState(false);
   const [statusAction, setStatusAction] = useState<'published' | 'draft' | null>(null);
   const [vendors, setVendors] = useState<Vendor[]>([]);
 
@@ -398,6 +400,13 @@ export default function AdminProductsPage() {
           <p className="text-gray-600 mt-1">Manage all books and collectible products</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
+          <button
+            onClick={() => setShowImportWizard(true)}
+            className="px-4 py-2 bg-white text-primary border border-primary transition-colors flex items-center justify-center gap-2 hover:bg-primary/5"
+          >
+            <FontAwesomeIcon icon={['fal', 'file-csv']} />
+            Import CSV
+          </button>
           <button
             onClick={() => router.push('/admin/products/new?type=book')}
             className="px-4 py-2 bg-primary text-white transition-colors flex items-center justify-center gap-2"
@@ -1038,6 +1047,14 @@ export default function AdminProductsPage() {
           </div>
         </div>
       )}
+
+      {/* CSV Import Wizard */}
+      <CSVImportWizard
+        isOpen={showImportWizard}
+        onClose={() => setShowImportWizard(false)}
+        onComplete={() => fetchProducts()}
+        role="admin"
+      />
     </div>
   );
 }
