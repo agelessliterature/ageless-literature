@@ -632,7 +632,7 @@ export default function Home() {
             </span>
             <div className="flex flex-col sm:flex-row gap-4">
               <a
-                href="https://apps.apple.com/app/ageless-literature/id1234567890"
+                href="https://apps.apple.com/us/app/ageless-literature/id6747270974"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 bg-black hover:bg-gray-800 hover:-translate-y-1 text-white px-6 py-3 font-semibold transition-all duration-300 flex-1 sm:flex-none"
