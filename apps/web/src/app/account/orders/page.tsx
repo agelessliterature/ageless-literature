@@ -106,7 +106,7 @@ export default function AccountOrdersPage() {
                 </div>
               </div>
               <div className="border-t pt-4 flex justify-between items-center">
-                <p className="font-medium">{formatMoney(order.totalAmount, { fromCents: true })}</p>
+                <p className="font-medium">{formatMoney(order.totalAmount)}</p>
                 <Link
                   href={withBasePath(`/account/orders/${order.id}`)}
                   className="text-primary hover:text-secondary"

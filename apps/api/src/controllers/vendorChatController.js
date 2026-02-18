@@ -4,6 +4,7 @@
  */
 
 import db from '../models/index.js';
+import { Op } from 'sequelize';
 
 const { Conversation, Message, User, Vendor } = db;
 
@@ -23,35 +24,44 @@ export const getConversations = async (req, res) => {
       });
     }
 
-    // Get conversations where vendor is a participant
+    // Get conversations where vendor's user is a participant
     const conversations = await Conversation.findAll({
       where: {
-        vendorId: vendor.id,
+        [Op.or]: [{ userId1: userId }, { userId2: userId }],
       },
       include: [
         {
           model: User,
-          as: 'customer',
-          attributes: ['id', 'name', 'email'],
+          as: 'user1',
+          attributes: ['id', 'firstName', 'lastName', 'email'],
+        },
+        {
+          model: User,
+          as: 'user2',
+          attributes: ['id', 'firstName', 'lastName', 'email'],
         },
         {
           model: Message,
           as: 'messages',
           limit: 1,
           order: [['createdAt', 'DESC']],
-          attributes: ['message', 'createdAt'],
+          attributes: ['body', 'createdAt'],
         },
       ],
       order: [['updatedAt', 'DESC']],
     });
 
-    const formattedConversations = conversations.map((conv) => ({
-      id: conv.id,
-      customer: conv.customer,
-      lastMessage: conv.messages?.[0]?.message || 'No messages yet',
-      lastMessageAt: conv.messages?.[0]?.createdAt || conv.createdAt,
-      unreadCount: 0,
-    }));
+    const formattedConversations = conversations.map((conv) => {
+      // Determine which user is the "other" party (not the vendor)
+      const otherUser = conv.userId1 === userId ? conv.user2 : conv.user1;
+      return {
+        id: conv.id,
+        customer: otherUser,
+        lastMessage: conv.messages?.[0]?.body || 'No messages yet',
+        lastMessageAt: conv.messages?.[0]?.createdAt || conv.createdAt,
+        unreadCount: 0,
+      };
+    });
 
     return res.status(200).json({
       success: true,
@@ -86,11 +96,11 @@ export const getMessages = async (req, res) => {
       });
     }
 
-    // Verify conversation belongs to vendor
+    // Verify conversation involves vendor's user
     const conversation = await Conversation.findOne({
       where: {
         id: conversationId,
-        vendorId: vendor.id,
+        [Op.or]: [{ userId1: userId }, { userId2: userId }],
       },
     });
 
@@ -107,7 +117,7 @@ export const getMessages = async (req, res) => {
         {
           model: User,
           as: 'sender',
-          attributes: ['id', 'name'],
+          attributes: ['id', 'firstName', 'lastName', 'email'],
         },
       ],
       order: [['createdAt', 'ASC']],
@@ -115,7 +125,7 @@ export const getMessages = async (req, res) => {
 
     const formattedMessages = messages.map((msg) => ({
       id: msg.id,
-      message: msg.message,
+      message: msg.body,
       isVendor: msg.senderId === userId,
       sender: msg.sender,
       createdAt: msg.createdAt,
@@ -161,11 +171,11 @@ export const sendMessage = async (req, res) => {
       });
     }
 
-    // Verify conversation belongs to vendor
+    // Verify conversation involves vendor's user
     const conversation = await Conversation.findOne({
       where: {
         id: conversationId,
-        vendorId: vendor.id,
+        [Op.or]: [{ userId1: userId }, { userId2: userId }],
       },
     });
 
@@ -179,7 +189,7 @@ export const sendMessage = async (req, res) => {
     const newMessage = await Message.create({
       conversationId,
       senderId: userId,
-      message: message.trim(),
+      body: message.trim(),
     });
 
     // Update conversation timestamp

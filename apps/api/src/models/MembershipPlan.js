@@ -13,7 +13,7 @@ export default (sequelize, DataTypes) => {
       features: { type: DataTypes.JSONB, defaultValue: [] },
       isActive: { type: DataTypes.BOOLEAN, defaultValue: true },
     },
-    { tableName: 'membership_plans', timestamps: true, underscored: true },
+    { tableName: 'membership_plans', timestamps: true },
   );
 
   MembershipPlan.associate = (models) => {

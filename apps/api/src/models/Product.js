@@ -8,8 +8,8 @@ export default (sequelize, DataTypes) => {
     'Product',
     {
       id: {
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
       },
       sid: {
@@ -17,6 +17,10 @@ export default (sequelize, DataTypes) => {
         allowNull: false,
         unique: true,
         comment: 'Short unique identifier for URLs',
+        defaultValue: () =>
+          Math.random().toString(36).substring(2, 8) +
+          '-' +
+          Math.random().toString(36).substring(2, 8),
       },
       vendorId: {
         type: DataTypes.INTEGER,
@@ -34,7 +38,7 @@ export default (sequelize, DataTypes) => {
         comment: 'Product title/name',
       },
       description: {
-        type: DataTypes.JSONB,
+        type: DataTypes.TEXT,
         allowNull: true,
         comment: 'Product description',
       },
@@ -64,7 +68,7 @@ export default (sequelize, DataTypes) => {
         comment: 'Product category: Art, Painting, Manuscript, Map, Vintage, Memorabilia, etc.',
       },
       tags: {
-        type: DataTypes.JSONB,
+        type: DataTypes.ARRAY(DataTypes.TEXT),
         allowNull: true,
         defaultValue: [],
         comment: 'Array of tag strings for search/filtering',
@@ -211,10 +215,8 @@ export default (sequelize, DataTypes) => {
         { fields: ['sid'], unique: true },
         { fields: ['category'] },
         { fields: ['status'] },
-        { fields: ['condition'] },
         { fields: ['price'] },
         { fields: ['created_at'] },
-        { fields: ['published_at'] },
         { fields: ['auction_locked_until'] },
       ],
     },

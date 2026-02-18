@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import VendorLayout from '@/components/layout/VendorLayout';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Vendor Dashboard - Ageless Literature',
   description:

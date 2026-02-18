@@ -230,7 +230,11 @@ export default function AuctionDetailPage() {
                 </h3>
                 <p className="text-gray-600 mb-2">{item?.author || item?.artist}</p>
                 {item?.description && (
-                  <p className="text-sm text-gray-500 line-clamp-3">{item.description}</p>
+                  <p className="text-sm text-gray-500 line-clamp-3">
+                    {typeof item.description === 'object'
+                      ? (item.description as any)?.html || (item.description as any)?.en || ''
+                      : item.description}
+                  </p>
                 )}
               </div>
             </div>

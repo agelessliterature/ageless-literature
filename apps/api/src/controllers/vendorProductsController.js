@@ -49,7 +49,12 @@ export const getVendorProducts = async (req, res) => {
 
     if (category) where.category = category;
     if (condition) where.condition = condition;
-    if (status) where.status = status;
+    if (status && status !== 'all') {
+      where.status = status;
+    } else {
+      // By default, exclude archived (deleted) products from the listing
+      where.status = { [Op.ne]: 'archived' };
+    }
 
     console.log('[DEBUG] Fetching products for vendor:', vendor.id);
 
@@ -178,8 +183,18 @@ export const getVendorProduct = async (req, res) => {
     const firstImage = productData.media?.[0];
     const imageSource = primaryImage || firstImage;
 
+    // Normalize JSONB description to string
+    const normalizeDescription = (desc) => {
+      if (desc && typeof desc === 'object') {
+        return desc.html || desc.en || '';
+      }
+      return desc || '';
+    };
+
     const transformedProduct = {
       ...productData,
+      description: normalizeDescription(productData.description),
+      fullDescription: normalizeDescription(productData.fullDescription),
       inventory: productData.quantity || 0, // Map quantity to inventory for frontend
       imageUrl: imageSource?.imageUrl || imageSource?.thumbnailUrl || null, // Get image from media
       status: productData.status || 'draft', // Ensure status is present
@@ -249,13 +264,18 @@ export const createProduct = async (req, res) => {
       });
     }
 
+    // Map frontend status values to valid DB enum values
+    // DB enum: draft, pending, published, sold, archived (no "active")
+    const statusMap = { active: 'published' };
+    const dbStatus = statusMap[status] || status;
+
     // Create product
     const product = await Book.create({
       vendorId: vendor.id,
       title,
       author,
       isbn,
-      description,
+      description: typeof description === 'string' ? { html: description } : description,
       price,
       salePrice,
       quantity: quantity || 1,
@@ -268,7 +288,7 @@ export const createProduct = async (req, res) => {
       language,
       binding,
       isSigned,
-      status,
+      status: dbStatus,
       shippingWeight,
       shippingDimensions,
       sellerNotes,
@@ -379,10 +399,20 @@ export const updateProduct = async (req, res) => {
       'metaDescription',
     ];
 
+    // Map frontend status values to valid DB enum values
+    const statusMap = { active: 'published' };
+
     const updates = {};
     allowedUpdates.forEach((field) => {
       if (req.body[field] !== undefined) {
-        updates[field] = req.body[field];
+        // Wrap description in JSONB format if it's a plain string
+        if (field === 'description' && typeof req.body[field] === 'string') {
+          updates[field] = { html: req.body[field] };
+        } else if (field === 'status') {
+          updates[field] = statusMap[req.body[field]] || req.body[field];
+        } else {
+          updates[field] = req.body[field];
+        }
       }
     });
 

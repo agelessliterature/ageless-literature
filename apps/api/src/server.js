@@ -19,6 +19,7 @@ import searchRoutes from './routes/searchRoutes.js';
 import { seedDatabase } from './config/seed.js';
 import { initializeSocket } from './sockets/index.js';
 import { updateAuctionStatuses } from './services/auctionStatusService.js';
+import { initializeIndexes } from './utils/meilisearch.js';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -105,6 +106,17 @@ const start = async () => {
     // Initialize Socket.IO and attach to app for access in controllers
     const io = initializeSocket(httpServer);
     app.set('io', io);
+
+    // Initialize Meilisearch indexes with filterable attributes
+    try {
+      await initializeIndexes();
+      console.log('[Meilisearch] Indexes initialized with filterable attributes');
+    } catch (error) {
+      console.error(
+        '[Meilisearch] Index initialization failed (search may be degraded):',
+        error.message,
+      );
+    }
 
     // Schedule auction status updates (runs every minute)
     cron.schedule('* * * * *', async () => {

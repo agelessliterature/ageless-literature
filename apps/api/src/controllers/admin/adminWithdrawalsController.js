@@ -43,7 +43,7 @@ export const listWithdrawals = async (req, res) => {
         {
           model: VendorPayout,
           as: 'payout',
-          attributes: ['id', 'amount', 'method', 'status', 'transactionId'],
+          attributes: ['id', 'amount', 'method', 'status', 'stripeTransferId', 'paypalBatchId'],
         },
       ],
       order: [['createdAt', 'DESC']],

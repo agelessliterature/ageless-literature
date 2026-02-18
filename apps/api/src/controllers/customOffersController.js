@@ -282,7 +282,7 @@ export const getUserOffers = async (req, res) => {
         {
           model: Vendor,
           as: 'vendor',
-          attributes: ['id', 'shopName', 'shopLogo'],
+          attributes: ['id', 'shopName', 'logoUrl'],
         },
       ],
       order: [['createdAt', 'DESC']],
@@ -427,7 +427,7 @@ export const getOfferById = async (req, res) => {
         {
           model: Vendor,
           as: 'vendor',
-          attributes: ['id', 'shopName', 'shopLogo', 'shopUrl'],
+          attributes: ['id', 'shopName', 'logoUrl', 'shopUrl'],
         },
       ],
     });

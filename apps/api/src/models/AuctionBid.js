@@ -27,9 +27,20 @@ export default (sequelize, DataTypes) => {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false,
       },
+      bidTime: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        comment: 'When the bid was placed',
+      },
+      maxBidAmount: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: true,
+        comment: 'Maximum auto-bid amount',
+      },
       status: {
-        type: DataTypes.ENUM('active', 'outbid', 'winning', 'won', 'lost'),
+        type: DataTypes.STRING(20),
         defaultValue: 'active',
+        comment: 'active, outbid, winning, won, lost',
       },
       isAutoBid: {
         type: DataTypes.BOOLEAN,

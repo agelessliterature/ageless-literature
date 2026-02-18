@@ -32,7 +32,6 @@ export const getVendorCollectibles = async (req, res) => {
       limit = 20,
       search,
       category,
-      condition,
       status,
       sortBy = 'createdAt',
       sortOrder = 'DESC',
@@ -51,13 +50,11 @@ export const getVendorCollectibles = async (req, res) => {
     if (search) {
       where[Op.or] = [
         { title: { [Op.iLike]: `%${search}%` } },
-        { artist: { [Op.iLike]: `%${search}%` } },
         { category: { [Op.iLike]: `%${search}%` } },
       ];
     }
 
     if (category) where.category = category;
-    if (condition) where.condition = condition;
     if (status) where.status = status;
 
     const { count, rows: products } = await Product.findAndCountAll({
@@ -201,27 +198,26 @@ export const createCollectible = async (req, res) => {
       title,
       description,
       price,
-      salePrice,
+      salePrice: salePrice || null,
       quantity: quantity || 1,
       condition,
-      conditionNotes,
+      conditionNotes: conditionNotes || null,
       category,
       tags,
       sku,
       images,
       slug,
       status,
-      publishedAt: status === 'published' ? new Date() : null,
-      yearMade,
-      origin,
-      artist,
-      dimensions,
+      yearMade: yearMade || null,
+      origin: origin || null,
+      artist: artist || null,
+      dimensions: dimensions || null,
       weight,
-      materials,
+      materials: materials || null,
       isSigned,
       isAuthenticated,
-      metaTitle: metaTitle || title,
-      metaDescription: metaDescription || '',
+      seoTitle: metaTitle || title,
+      seoDescription: metaDescription || '',
     });
 
     // Handle category associations
@@ -283,31 +279,30 @@ export const updateCollectible = async (req, res) => {
       });
     }
 
-    // Update allowed fields
+    // Update allowed fields (matching Product model columns)
     const allowedUpdates = [
       'title',
       'description',
       'shortDescription',
       'price',
-      'salePrice',
+      'compareAtPrice',
+      'cost',
       'quantity',
-      'condition',
-      'conditionNotes',
       'category',
       'tags',
       'sku',
       'images',
+      'featuredImage',
       'status',
-      'yearMade',
-      'origin',
-      'artist',
-      'dimensions',
       'weight',
-      'materials',
-      'isSigned',
-      'isAuthenticated',
-      'metaTitle',
-      'metaDescription',
+      'weightUnit',
+      'requiresShipping',
+      'taxable',
+      'trackQuantity',
+      'lowStockThreshold',
+      'seoTitle',
+      'seoDescription',
+      'metadata',
     ];
 
     const updates = {};
@@ -317,14 +312,13 @@ export const updateCollectible = async (req, res) => {
       }
     });
 
+    // Also support legacy field names from frontend
+    if (req.body.metaTitle !== undefined) updates.seoTitle = req.body.metaTitle;
+    if (req.body.metaDescription !== undefined) updates.seoDescription = req.body.metaDescription;
+
     // Update slug if title changed
     if (updates.title && updates.title !== product.title) {
       updates.slug = generateSlug(updates.title, vendor.id);
-    }
-
-    // Update published_at if status changed to published
-    if (updates.status === 'published' && product.status !== 'published') {
-      updates.publishedAt = new Date();
     }
 
     await product.update(updates);
@@ -490,9 +484,16 @@ export const getCollectibleStats = async (req, res) => {
       where: { vendorId: vendor.id },
     });
 
-    const totalFavorites = await Product.sum('favoriteCount', {
-      where: { vendorId: vendor.id },
-    });
+    // favoriteCount column may not exist; gracefully handle
+    let totalFavorites = 0;
+    try {
+      totalFavorites =
+        (await Product.sum('favoriteCount', {
+          where: { vendorId: vendor.id },
+        })) || 0;
+    } catch (_e) {
+      totalFavorites = 0;
+    }
 
     return res.json({
       success: true,

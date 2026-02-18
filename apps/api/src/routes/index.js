@@ -44,6 +44,7 @@ router.post('/stripe/setup-intent', authMiddleware, stripeController.createSetup
 
 router.get('/cart', authMiddleware, cartController.getCart);
 router.post('/cart', authMiddleware, cartController.addToCart);
+router.put('/cart/:itemId', authMiddleware, cartController.updateCartItem);
 router.delete('/cart/:itemId', authMiddleware, cartController.removeFromCart);
 router.delete('/cart', authMiddleware, cartController.clearCart);
 
@@ -136,12 +137,17 @@ router.get('/vendors/:shopUrl', vendorController.getVendorByShopUrl);
 router.get('/stats', async (req, res) => {
   try {
     const db = (await import('../models/index.js')).default;
-    const [booksCount, vendorsCount, auctionsCount] = await Promise.all([
-      db.Product.count({ where: { status: 'active' } }).catch(() => db.Product.count()),
+    const [booksCount, productsCount, vendorsCount, auctionsCount] = await Promise.all([
+      db.Book ? db.Book.count().catch(() => 0) : Promise.resolve(0),
+      db.Product ? db.Product.count().catch(() => 0) : Promise.resolve(0),
       db.Vendor.count({ where: { verified: true } }).catch(() => db.Vendor.count()),
       db.Auction.count().catch(() => 0),
     ]);
-    return res.json({ success: true, data: { booksCount, vendorsCount, auctionsCount } });
+    const totalListings = booksCount + productsCount;
+    return res.json({
+      success: true,
+      data: { booksCount: totalListings, vendorsCount, auctionsCount },
+    });
   } catch (error) {
     return res.json({ success: true, data: { booksCount: 0, vendorsCount: 0, auctionsCount: 0 } });
   }

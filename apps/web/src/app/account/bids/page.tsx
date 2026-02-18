@@ -106,9 +106,7 @@ export default function AccountBidsPage() {
                 </div>
               </div>
               <div className="border-t pt-4 flex justify-between items-center">
-                <p className="font-medium">
-                  Your bid: {formatMoney(bid.amount, { fromCents: true })}
-                </p>
+                <p className="font-medium">Your bid: {formatMoney(bid.amount)}</p>
                 <Link
                   href={withBasePath(`/auctions/${bid.auctionId}`)}
                   className="text-primary hover:text-secondary"

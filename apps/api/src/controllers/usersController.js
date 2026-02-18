@@ -75,7 +75,7 @@ export const updateUser = async (req, res) => {
     const { userId, role } = req.user;
 
     // Check permission: users can only update their own profile unless admin
-    if (userId !== id && role !== 'admin') {
+    if (userId !== parseInt(id) && role !== 'admin') {
       return res.status(403).json({ success: false, message: 'Unauthorized' });
     }
 
@@ -197,7 +197,7 @@ export const updatePassword = async (req, res) => {
     const { userId } = req.user;
     const { currentPassword, newPassword } = req.body;
 
-    if (userId !== id) {
+    if (userId !== parseInt(id)) {
       return res.status(403).json({ success: false, message: 'Unauthorized' });
     }
 
@@ -256,7 +256,7 @@ export const updateLanguage = async (req, res) => {
     const { userId } = req.user;
     const { language } = req.body;
 
-    if (userId !== id && req.user.role !== 'admin') {
+    if (userId !== parseInt(id) && req.user.role !== 'admin') {
       return res.status(403).json({ success: false, message: 'Unauthorized' });
     }
 
@@ -421,7 +421,7 @@ export const deleteUser = async (req, res) => {
     const { userId, role } = req.user;
 
     // Only admin or self can delete
-    if (userId !== id && role !== 'admin') {
+    if (userId !== parseInt(id) && role !== 'admin') {
       return res.status(403).json({ success: false, message: 'Unauthorized' });
     }
 

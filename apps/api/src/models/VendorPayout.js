@@ -43,17 +43,20 @@ export default (sequelize, DataTypes) => {
         allowNull: true,
         comment: 'Payout status: pending, processing, completed, failed, cancelled',
       },
-      transactionId: {
-        type: DataTypes.STRING(255),
-        allowNull: true,
-        field: 'transaction_id',
-        comment: 'Generic transaction ID (maps to DB column)',
-      },
       stripeTransferId: {
         type: DataTypes.STRING(255),
         allowNull: true,
         field: 'stripe_transfer_id',
         comment: 'Stripe transfer ID if using Stripe',
+      },
+      transactionId: {
+        type: DataTypes.VIRTUAL,
+        get() {
+          return (
+            this.getDataValue('stripeTransferId') || this.getDataValue('paypalBatchId') || null
+          );
+        },
+        comment: 'Virtual field: returns stripe transfer ID or paypal batch ID',
       },
       paypalBatchId: {
         type: DataTypes.STRING(255),

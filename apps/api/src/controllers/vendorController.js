@@ -226,11 +226,6 @@ export const getVendorEarnings = async (req, res) => {
           as: 'order',
           attributes: ['orderNumber', 'status', 'createdAt'],
         },
-        {
-          model: Book,
-          as: 'book',
-          attributes: ['title', 'slug'],
-        },
       ],
       order: [['createdAt', 'DESC']],
       limit: parseInt(limit),

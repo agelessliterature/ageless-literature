@@ -3,6 +3,9 @@ import { generateOrderNumber } from '../utils/helpers.js';
 import { sendTemplatedEmail, sendSms } from '../services/emailService.js';
 import { emitNotification } from '../sockets/index.js';
 import inventoryService from '../services/inventoryService.js';
+import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const { Order, OrderItem, Book, Product, Vendor, VendorEarning, User, Notification, sequelize } =
   db;
@@ -12,7 +15,16 @@ export const createOrder = async (req, res) => {
 
   try {
     const { userId } = req.user;
-    const { items, shippingAddress, billingAddress } = req.body;
+    const { items, shippingAddress, billingAddress, paymentMethodId } = req.body;
+
+    // Validate payment method
+    if (!paymentMethodId) {
+      await transaction.rollback();
+      return res.status(400).json({
+        success: false,
+        error: 'Payment method is required',
+      });
+    }
 
     // Validate and reserve inventory for all items first
     const validatedItems = [];
@@ -104,13 +116,91 @@ export const createOrder = async (req, res) => {
     const shippingCost = 10.0; // Flat shipping
     const totalAmount = subtotal + tax + shippingCost;
 
-    // Create order
+    // Look up / create Stripe Customer for this user
+    const user = await User.findByPk(userId);
+    if (!user) {
+      await transaction.rollback();
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
+    let stripeCustomerId = user.stripeCustomerId;
+    if (!stripeCustomerId) {
+      const customer = await stripe.customers.create({
+        email: user.email,
+        name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
+        metadata: { userId: user.id.toString() },
+      });
+      stripeCustomerId = customer.id;
+      user.stripeCustomerId = stripeCustomerId;
+      await user.save({ transaction });
+    }
+
+    // Attach PaymentMethod to Customer (required for PMs from SetupIntents)
+    try {
+      await stripe.paymentMethods.attach(paymentMethodId, {
+        customer: stripeCustomerId,
+      });
+    } catch (attachError) {
+      // PM may already be attached to this customer — that's fine
+      if (
+        attachError.code !== 'resource_already_exists' &&
+        !attachError.message?.includes('already been attached')
+      ) {
+        await transaction.rollback();
+        console.error('Stripe attach PM error:', attachError);
+        return res.status(400).json({
+          success: false,
+          error: attachError.message || 'Failed to attach payment method',
+        });
+      }
+    }
+
+    // Process payment with Stripe
+    let paymentIntent;
+    try {
+      paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(totalAmount * 100), // Stripe expects amount in cents
+        currency: 'usd',
+        customer: stripeCustomerId,
+        payment_method: paymentMethodId,
+        confirm: true,
+        automatic_payment_methods: {
+          enabled: true,
+          allow_redirects: 'never',
+        },
+        metadata: {
+          userId: userId.toString(),
+          orderNumber: 'pending', // Will update after order creation
+        },
+      });
+
+      // Check if payment succeeded
+      if (paymentIntent.status !== 'succeeded') {
+        await transaction.rollback();
+        return res.status(400).json({
+          success: false,
+          error: `Payment ${paymentIntent.status}. Please try again or use a different payment method.`,
+        });
+      }
+    } catch (stripeError) {
+      await transaction.rollback();
+      console.error('Stripe payment error:', stripeError);
+      return res.status(400).json({
+        success: false,
+        error:
+          stripeError.message || 'Payment failed. Please check your card details and try again.',
+      });
+    }
+
+    // Create order (payment succeeded)
     const order = await Order.create(
       {
         userId,
         orderNumber: generateOrderNumber(),
         status: 'pending',
-        paymentStatus: 'pending',
+        paymentStatus: 'completed', // Payment succeeded
+        paymentMethod: 'card',
+        stripePaymentIntentId: paymentIntent.id,
         subtotal,
         tax,
         shippingCost,
@@ -126,8 +216,28 @@ export const createOrder = async (req, res) => {
       await OrderItem.create({ ...item, orderId: order.id }, { transaction });
     }
 
-    // Commit transaction - inventory is now reserved
+    // Update PaymentIntent metadata with order number (async, don't block)
+    stripe.paymentIntents
+      .update(paymentIntent.id, {
+        metadata: {
+          userId: userId.toString(),
+          orderNumber: order.orderNumber,
+          orderId: order.id.toString(),
+        },
+      })
+      .catch((err) => console.error('Failed to update PaymentIntent metadata:', err.message));
+
+    // Commit transaction - inventory is now reserved and payment is complete
     await transaction.commit();
+
+    // Process commission since payment is completed
+    setImmediate(async () => {
+      try {
+        await processOrderCommission(order);
+      } catch (commissionError) {
+        console.error('Failed to process order commission:', commissionError.message);
+      }
+    });
 
     // Send order confirmation emails (async, don't block)
     setImmediate(() => {
@@ -334,9 +444,8 @@ async function sendOrderNotifications(orderId, userId, _orderItems) {
           model: OrderItem,
           as: 'items',
           include: [
-            { model: Book, as: 'book' },
-            { model: Product, as: 'product' },
-            { model: Vendor, as: 'vendor' },
+            { model: Book, as: 'book', attributes: ['id', 'title', 'vendorId'] },
+            { model: Product, as: 'product', attributes: ['id', 'title', 'vendorId'] },
           ],
         },
       ],
@@ -429,11 +538,12 @@ async function sendOrderNotifications(orderId, userId, _orderItems) {
     // 2. Send vendor new order emails (group by vendor)
     const vendorItemsMap = {};
     for (const item of order.items) {
-      if (!item.vendorId) continue;
-      if (!vendorItemsMap[item.vendorId]) {
-        vendorItemsMap[item.vendorId] = [];
+      const vendorId = item.book?.vendorId || item.product?.vendorId;
+      if (!vendorId) continue;
+      if (!vendorItemsMap[vendorId]) {
+        vendorItemsMap[vendorId] = [];
       }
-      vendorItemsMap[item.vendorId].push(item);
+      vendorItemsMap[vendorId].push(item);
     }
 
     for (const [vendorId, vendorItems] of Object.entries(vendorItemsMap)) {

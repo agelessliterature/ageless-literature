@@ -24,6 +24,11 @@ export default (sequelize, DataTypes) => {
         references: { model: 'users', key: 'id' },
         onDelete: 'CASCADE',
       },
+      winningBidId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: { model: 'auction_bids', key: 'id' },
+      },
       orderId: {
         type: DataTypes.INTEGER,
         allowNull: true,
@@ -34,12 +39,20 @@ export default (sequelize, DataTypes) => {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false,
       },
+      wonAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
+      isPaid: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
       paidAt: {
         type: DataTypes.DATE,
         allowNull: true,
       },
       status: {
-        type: DataTypes.ENUM('pending_payment', 'paid', 'shipped', 'completed', 'cancelled'),
+        type: DataTypes.STRING(20),
         defaultValue: 'pending_payment',
       },
     },
@@ -48,9 +61,9 @@ export default (sequelize, DataTypes) => {
       timestamps: true,
       underscored: true,
       indexes: [
-        { fields: ['auctionId'], unique: true },
-        { fields: ['userId'] },
-        { fields: ['orderId'] },
+        { fields: ['auction_id'], unique: true },
+        { fields: ['user_id'] },
+        { fields: ['order_id'] },
         { fields: ['status'] },
       ],
     },

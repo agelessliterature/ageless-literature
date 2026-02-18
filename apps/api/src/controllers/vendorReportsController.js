@@ -296,10 +296,10 @@ export const getRevenueBreakdown = async (req, res) => {
       attributes: [
         [sequelize.col('book.category'), 'category'],
         [
-          sequelize.fn('SUM', sequelize.literal('order_items.price * order_items.quantity')),
+          sequelize.fn('SUM', sequelize.literal('"OrderItem"."price" * "OrderItem"."quantity"')),
           'revenue',
         ],
-        [sequelize.fn('COUNT', sequelize.col('order_items.id')), 'count'],
+        [sequelize.fn('COUNT', sequelize.col('OrderItem.id')), 'count'],
       ],
       include: [
         {
@@ -319,6 +319,7 @@ export const getRevenueBreakdown = async (req, res) => {
         },
       ],
       group: [sequelize.col('book.category')],
+      subQuery: false,
       raw: true,
     });
 
@@ -327,10 +328,10 @@ export const getRevenueBreakdown = async (req, res) => {
       attributes: [
         [sequelize.col('book.condition'), 'condition'],
         [
-          sequelize.fn('SUM', sequelize.literal('order_items.price * order_items.quantity')),
+          sequelize.fn('SUM', sequelize.literal('"OrderItem"."price" * "OrderItem"."quantity"')),
           'revenue',
         ],
-        [sequelize.fn('COUNT', sequelize.col('order_items.id')), 'count'],
+        [sequelize.fn('COUNT', sequelize.col('OrderItem.id')), 'count'],
       ],
       include: [
         {
@@ -350,6 +351,7 @@ export const getRevenueBreakdown = async (req, res) => {
         },
       ],
       group: [sequelize.col('book.condition')],
+      subQuery: false,
       raw: true,
     });
 

@@ -1,7 +1,7 @@
 import db from '../models/index.js';
 import { Op } from 'sequelize';
 
-const { Cart, CartItem, Book, Product, Auction } = db;
+const { Cart, CartItem, Book, Product, Auction, BookMedia } = db;
 
 export const getCart = async (req, res) => {
   try {
@@ -13,7 +13,11 @@ export const getCart = async (req, res) => {
           model: CartItem,
           as: 'items',
           include: [
-            { model: Book, as: 'book' },
+            {
+              model: Book,
+              as: 'book',
+              include: BookMedia ? [{ model: BookMedia, as: 'media' }] : [],
+            },
             { model: Product, as: 'product' },
           ],
         },
@@ -22,9 +26,80 @@ export const getCart = async (req, res) => {
 
     if (!cart) {
       cart = await Cart.create({ userId });
+      return res.json({
+        success: true,
+        data: { items: [], subtotal: 0, total: 0 },
+      });
     }
 
-    res.json({ success: true, data: cart });
+    // Normalize items into the shape the frontend expects
+    const items = (cart.items || [])
+      .map((item) => {
+        const raw = item.toJSON ? item.toJSON() : item;
+        const isBook = !!raw.bookId;
+        const source = isBook ? raw.book : raw.product;
+
+        if (!source) {
+          // Item references a deleted book/product – skip on the client
+          return null;
+        }
+
+        // Build a unified product object the frontend can consume
+        const product = {
+          id: source.id,
+          title: source.title,
+          price: parseFloat(source.salePrice || source.price) || 0,
+          quantity: source.quantity ?? 1,
+          sid: source.sid || source.slug || null,
+          // Books use BookMedia (array of { imageUrl }), Products use images JSONB (array of { url })
+          images: source.images || [],
+          media: source.media || [],
+        };
+
+        return {
+          id: raw.id,
+          bookId: raw.bookId || null,
+          productId: raw.productId || null,
+          productType: isBook ? 'book' : 'product',
+          quantity: raw.quantity,
+          product,
+        };
+      })
+      .filter(Boolean);
+
+    // Compute subtotal and total
+    const subtotal = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+    const total = subtotal; // Shipping / tax are computed at checkout
+
+    res.json({ success: true, data: { items, subtotal, total } });
+  } catch (error) {
+    console.error('getCart error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+export const updateCartItem = async (req, res) => {
+  try {
+    const { itemId } = req.params;
+    const { quantity } = req.body;
+
+    if (!quantity || quantity < 1) {
+      return res.status(400).json({
+        success: false,
+        error: 'Quantity must be at least 1',
+      });
+    }
+
+    const cartItem = await CartItem.findByPk(itemId);
+    if (!cartItem) {
+      return res.status(404).json({
+        success: false,
+        error: 'Cart item not found',
+      });
+    }
+
+    await cartItem.update({ quantity });
+    res.json({ success: true, message: 'Cart item updated' });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }

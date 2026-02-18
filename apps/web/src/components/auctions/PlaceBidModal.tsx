@@ -40,8 +40,10 @@ function BidForm({
   const stripe = useStripe();
   const elements = useElements();
 
-  const currentBid = Number(auction.currentBid);
-  const minBid = currentBid + 1;
+  const startingPrice = Number(auction.startingPrice) || 0;
+  const rawCurrentBid = Number(auction.currentBid);
+  const currentBid = rawCurrentBid > 0 ? rawCurrentBid : startingPrice;
+  const minBid = rawCurrentBid > 0 ? rawCurrentBid + 1 : startingPrice;
 
   // Notify parent when collectCard changes
   useEffect(() => {
@@ -71,6 +73,8 @@ function BidForm({
     onSuccess: () => {
       toast.success('Bid placed successfully!');
       queryClient.invalidateQueries({ queryKey: ['activeAuction'] });
+      queryClient.invalidateQueries({ queryKey: ['auctionById'] });
+      queryClient.invalidateQueries({ queryKey: ['product'] });
       router.refresh();
       onClose();
       setBidAmount('');

@@ -93,10 +93,10 @@ async function processAuctionEnding(auction) {
 
   try {
     // Re-fetch auction with row lock to prevent concurrent processing
+    // Note: FOR UPDATE cannot be used with LEFT JOIN (include), so lock first then fetch vendor
     const lockedAuction = await Auction.findByPk(auction.id, {
       lock: transaction.LOCK.UPDATE,
       transaction,
-      include: [{ model: Vendor, as: 'vendor' }],
     });
 
     // Skip if already ended (another process got it)
@@ -104,6 +104,9 @@ async function processAuctionEnding(auction) {
       await transaction.commit();
       return;
     }
+
+    // Note: Vendor could be fetched if needed in future
+    // const vendor = await Vendor.findByPk(lockedAuction.vendorId, { transaction });
 
     const endedAt = new Date();
     const paymentWindowHours = lockedAuction.paymentWindowHours || 48;

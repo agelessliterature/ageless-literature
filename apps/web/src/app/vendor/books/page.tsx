@@ -208,6 +208,7 @@ export default function VendorBooksPage() {
             <option value="published">Published</option>
             <option value="draft">Draft</option>
             <option value="sold">Sold</option>
+            <option value="archived">Deleted</option>
           </select>
 
           <select
@@ -248,6 +249,7 @@ export default function VendorBooksPage() {
                     published: 'bg-green-100 text-green-800',
                     draft: 'bg-yellow-100 text-yellow-800',
                     sold: 'bg-red-100 text-red-800',
+                    archived: 'bg-gray-200 text-gray-600',
                   };
                   return (
                     <MobileCard
@@ -287,7 +289,7 @@ export default function VendorBooksPage() {
                           <span
                             className={`px-2 py-0.5 text-xs font-semibold rounded-full ${statusColors[product.status] || 'bg-gray-100 text-gray-800'}`}
                           >
-                            {product.status}
+                            {product.status === 'archived' ? 'Deleted' : product.status}
                           </span>
                         </div>
                       }
@@ -460,10 +462,12 @@ export default function VendorBooksPage() {
                                       ? 'bg-yellow-100 text-yellow-800'
                                       : product.status === 'sold'
                                         ? 'bg-red-100 text-red-800'
-                                        : 'bg-gray-100 text-gray-800'
+                                        : product.status === 'archived'
+                                          ? 'bg-gray-200 text-gray-600'
+                                          : 'bg-gray-100 text-gray-800'
                                 }`}
                               >
-                                {product.status}
+                                {product.status === 'archived' ? 'Deleted' : product.status}
                               </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">

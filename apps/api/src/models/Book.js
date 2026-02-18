@@ -198,6 +198,22 @@ export default (sequelize, DataTypes) => {
     },
   );
 
+  // Override toJSON to normalize JSONB description to string
+  // This prevents React error #31 "Objects are not valid as a React child"
+  const originalToJSON = Book.prototype.toJSON;
+  Book.prototype.toJSON = function () {
+    const values = originalToJSON ? originalToJSON.call(this) : { ...this.get() };
+    // Flatten JSONB description to HTML string
+    if (values.description && typeof values.description === 'object') {
+      values.description = values.description.html || values.description.en || '';
+    }
+    // Also flatten fullDescription virtual field
+    if (values.fullDescription && typeof values.fullDescription === 'object') {
+      values.fullDescription = values.fullDescription.html || values.fullDescription.en || '';
+    }
+    return values;
+  };
+
   Book.associate = (models) => {
     // Vendor relationship
     Book.belongsTo(models.Vendor, {

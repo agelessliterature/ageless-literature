@@ -52,13 +52,6 @@ export default (sequelize, DataTypes) => {
         defaultValue: 'pending',
         comment: 'pending, available, or paid',
       },
-      paidOut: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-        allowNull: false,
-        field: 'paid_out',
-        comment: 'Whether this earning has been paid out to vendor',
-      },
       paidAt: {
         type: DataTypes.DATE,
         allowNull: true,
@@ -99,7 +92,7 @@ export default (sequelize, DataTypes) => {
       tableName: 'vendor_earnings',
       timestamps: true,
       underscored: true,
-      indexes: [{ fields: ['vendorId'] }, { fields: ['orderId'] }, { fields: ['status'] }],
+      indexes: [{ fields: ['vendor_id'] }, { fields: ['order_id'] }, { fields: ['status'] }],
     },
   );
 

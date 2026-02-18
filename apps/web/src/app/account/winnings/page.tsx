@@ -204,7 +204,7 @@ export default function AccountWinningsPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div>
                     <p className="text-2xl font-bold text-primary">
-                      {formatMoney(winning.winningAmount, { fromCents: true })}
+                      {formatMoney(winning.winningAmount)}
                     </p>
                     <p className="text-sm text-gray-500">Winning bid amount</p>
                   </div>

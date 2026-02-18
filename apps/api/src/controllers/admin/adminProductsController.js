@@ -9,6 +9,17 @@ import { Op } from 'sequelize';
 const { Book, Product, Vendor, BookMedia, Category } = db;
 
 /**
+ * Normalize JSONB description to string
+ * Books store description as JSONB {html: "..."}, this extracts the HTML string
+ */
+const normalizeDescription = (desc) => {
+  if (desc && typeof desc === 'object') {
+    return desc.html || desc.en || '';
+  }
+  return desc || '';
+};
+
+/**
  * List all products (Books + Collectibles) with filtering, search, and pagination
  * GET /api/admin/products
  */
@@ -470,7 +481,7 @@ export const getProduct = async (req, res) => {
             quantity: product.quantity,
             condition: product.condition,
             category: product.category,
-            description: product.description,
+            description: normalizeDescription(product.description),
             shortDescription: product.shortDescription,
             vendor: product.vendor
               ? {
@@ -516,7 +527,7 @@ export const getProduct = async (req, res) => {
             quantity: product.quantity,
             condition: product.condition,
             category: product.category,
-            description: product.description,
+            description: normalizeDescription(product.description),
             shortDescription: product.shortDescription,
             sku: product.sku,
             artist: product.artist,

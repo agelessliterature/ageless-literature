@@ -154,7 +154,15 @@ export const getWithdrawals = async (req, res) => {
         {
           model: VendorPayout,
           as: 'payout',
-          attributes: ['id', 'amount', 'method', 'status', 'transactionId', 'processedAt'],
+          attributes: [
+            'id',
+            'amount',
+            'method',
+            'status',
+            'stripeTransferId',
+            'paypalBatchId',
+            'processedAt',
+          ],
         },
       ],
       order: [['createdAt', 'DESC']],
@@ -218,7 +226,15 @@ export const getWithdrawalById = async (req, res) => {
         {
           model: VendorPayout,
           as: 'payout',
-          attributes: ['id', 'amount', 'method', 'status', 'transactionId', 'processedAt'],
+          attributes: [
+            'id',
+            'amount',
+            'method',
+            'status',
+            'stripeTransferId',
+            'paypalBatchId',
+            'processedAt',
+          ],
         },
       ],
     });

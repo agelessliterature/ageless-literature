@@ -7,7 +7,7 @@ import db from '../models/index.js';
 import { Op } from 'sequelize';
 import { indexBook, removeBookFromIndex } from '../utils/meilisearch.js';
 
-const { Book, Vendor, BookMedia, Category, Tag } = db;
+const { Book, Vendor, BookMedia, Category, Tag, Auction } = db;
 
 /**
  * Get all books with filtering and pagination
@@ -211,10 +211,8 @@ export const getBookById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Check if it's a numeric ID or sid
-    let where = {
-      status: 'published', // Only show published books
-    };
+    // Build where clause — no status filter here; we check viewability after fetch
+    let where = {};
 
     if (id.match(/^\d+$/)) {
       // Integer ID
@@ -236,6 +234,21 @@ export const getBookById = async (req, res) => {
 
     if (!book) {
       return res.status(404).json({ success: false, error: 'Book not found' });
+    }
+
+    // If not published, check if the book has an active/upcoming auction
+    if (book.status !== 'published') {
+      const activeAuction = await Auction.findOne({
+        where: {
+          auctionableId: book.id.toString(),
+          auctionableType: 'book',
+          status: ['active', 'upcoming'],
+        },
+      });
+
+      if (!activeAuction) {
+        return res.status(404).json({ success: false, error: 'Book not found' });
+      }
     }
 
     res.json({ success: true, data: book });

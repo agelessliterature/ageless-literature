@@ -37,7 +37,7 @@ export default (sequelize, DataTypes) => {
       paymentMethodLast4: { type: DataTypes.STRING(4), allowNull: true },
       paymentMethodBrand: { type: DataTypes.STRING, allowNull: true },
     },
-    { tableName: 'membership_subscriptions', timestamps: true, underscored: true },
+    { tableName: 'membership_subscriptions', timestamps: true },
   );
 
   MembershipSubscription.associate = (models) => {

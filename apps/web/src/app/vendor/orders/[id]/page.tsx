@@ -178,7 +178,7 @@ export default function VendorOrderDetailPage() {
             <div className="text-sm">
               <p className="text-gray-600">Your Earnings</p>
               <p className="text-xl font-bold text-green-600">
-                {formatMoney(calculateVendorEarnings(), { fromCents: true })}
+                {formatMoney(calculateVendorEarnings())}
               </p>
             </div>
           </div>
@@ -229,17 +229,14 @@ export default function VendorOrderDetailPage() {
                       <div className="mt-2 space-y-1">
                         <p className="text-sm text-gray-500">Quantity: {item.quantity}</p>
                         <p className="text-sm text-gray-500">
-                          Price: {formatMoney(parseFloat(item.price), { fromCents: true })} each
+                          Price: {formatMoney(item.price)} each
                         </p>
                         <p className="text-sm font-semibold text-gray-900">
-                          Subtotal:{' '}
-                          {formatMoney(parseFloat(item.price) * item.quantity, { fromCents: true })}
+                          Subtotal: {formatMoney(parseFloat(item.price) * item.quantity)}
                         </p>
                         <p className="text-sm text-green-600 font-medium">
                           Your Earnings:{' '}
-                          {formatMoney(parseFloat(item.price) * item.quantity * 0.92, {
-                            fromCents: true,
-                          })}
+                          {formatMoney(parseFloat(item.price) * item.quantity * 0.92)}
                         </p>
                       </div>
                     </div>
@@ -307,7 +304,7 @@ export default function VendorOrderDetailPage() {
             <div className="space-y-3 text-sm">
               <div className="flex justify-between text-gray-600">
                 <span>Order Total</span>
-                <span>{formatMoney(order.totalAmount, { fromCents: true })}</span>
+                <span>{formatMoney(order.totalAmount)}</span>
               </div>
               <div className="flex justify-between text-gray-600">
                 <span>Your Items Subtotal</span>
@@ -317,7 +314,6 @@ export default function VendorOrderDetailPage() {
                       (sum: number, item: any) => sum + parseFloat(item.price) * item.quantity,
                       0,
                     ),
-                    { fromCents: true },
                   )}
                 </span>
               </div>
@@ -330,15 +326,12 @@ export default function VendorOrderDetailPage() {
                       (sum: number, item: any) => sum + parseFloat(item.price) * item.quantity,
                       0,
                     ) * 0.08,
-                    { fromCents: true },
                   )}
                 </span>
               </div>
               <div className="border-t pt-3 flex justify-between font-semibold text-lg">
                 <span>Your Earnings</span>
-                <span className="text-green-600">
-                  {formatMoney(calculateVendorEarnings(), { fromCents: true })}
-                </span>
+                <span className="text-green-600">{formatMoney(calculateVendorEarnings())}</span>
               </div>
             </div>
           </div>

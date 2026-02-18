@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { CldUploadWidget } from 'next-cloudinary';
 import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
 
@@ -18,6 +18,12 @@ interface ImageUploaderProps {
 
 export default function ImageUploader({ images, onChange, maxImages = 10 }: ImageUploaderProps) {
   const [uploading, setUploading] = useState(false);
+  // Use a ref to always have the latest images array, avoiding stale closure issues
+  // when multiple uploads fire onSuccess in quick succession
+  const imagesRef = useRef(images);
+  useEffect(() => {
+    imagesRef.current = images;
+  }, [images]);
 
   const handleUploadSuccess = (result: any) => {
     const newImage: ImageItem = {
@@ -25,8 +31,9 @@ export default function ImageUploader({ images, onChange, maxImages = 10 }: Imag
       publicId: result.info.public_id,
       thumbnail: result.info.thumbnail_url || result.info.secure_url,
     };
-    onChange([...images, newImage]);
-    setUploading(false);
+    const updated = [...imagesRef.current, newImage];
+    imagesRef.current = updated;
+    onChange(updated);
   };
 
   const handleRemove = (index: number) => {
@@ -100,6 +107,7 @@ export default function ImageUploader({ images, onChange, maxImages = 10 }: Imag
       {images.length < maxImages && (
         <CldUploadWidget
           uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'ageless-lit'}
+          options={{ multiple: true, maxFiles: maxImages - images.length }}
           onSuccess={handleUploadSuccess}
           onOpen={() => setUploading(true)}
           onClose={() => setUploading(false)}

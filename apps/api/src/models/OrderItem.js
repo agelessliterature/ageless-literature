@@ -19,7 +19,7 @@ export default (sequelize, DataTypes) => {
         references: { model: 'books', key: 'id' },
       },
       productId: {
-        type: DataTypes.UUID,
+        type: DataTypes.INTEGER,
         allowNull: true,
         references: { model: 'products', key: 'id' },
       },

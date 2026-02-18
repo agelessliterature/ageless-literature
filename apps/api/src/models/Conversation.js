@@ -1,26 +1,24 @@
 /**
  * Conversation Model
- * Messaging conversations between buyers and vendors
+ * Messaging conversations between two users
  *
- * MIGRATION NOTE (Phase 2 - Nov 11, 2025):
+ * DB columns: id, userId1, userId2, lastMessageAt, createdAt, updatedAt
  */
 export default (sequelize, DataTypes) => {
   const Conversation = sequelize.define(
     'Conversation',
     {
       id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
-      buyerId: {
-        type: DataTypes.UUID,
+      userId1: {
+        type: DataTypes.INTEGER,
         allowNull: false,
         references: { model: 'users', key: 'id' },
       },
-      vendorId: {
-        type: DataTypes.UUID,
+      userId2: {
+        type: DataTypes.INTEGER,
         allowNull: false,
-        references: { model: 'vendors', key: 'id' },
+        references: { model: 'users', key: 'id' },
       },
-      bookId: { type: DataTypes.UUID, allowNull: true, references: { model: 'books', key: 'id' } },
-      status: { type: DataTypes.ENUM('active', 'archived'), defaultValue: 'active' },
       lastMessageAt: { type: DataTypes.DATE, allowNull: true },
     },
     { tableName: 'conversations', timestamps: true },
@@ -28,10 +26,9 @@ export default (sequelize, DataTypes) => {
 
   Conversation.associate = (models) => {
     if (models.User) {
-      Conversation.belongsTo(models.User, { foreignKey: 'buyerId', as: 'buyer' });
+      Conversation.belongsTo(models.User, { foreignKey: 'userId1', as: 'user1' });
+      Conversation.belongsTo(models.User, { foreignKey: 'userId2', as: 'user2' });
     }
-    Conversation.belongsTo(models.Vendor, { foreignKey: 'vendorId', as: 'vendor' });
-    Conversation.belongsTo(models.Book, { foreignKey: 'bookId', as: 'book' });
     Conversation.hasMany(models.Message, { foreignKey: 'conversationId', as: 'messages' });
   };
   return Conversation;

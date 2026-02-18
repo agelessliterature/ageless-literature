@@ -15,7 +15,8 @@ import { formatMoney } from '@/lib/format';
 
 interface CartItem {
   id: number;
-  productId: number;
+  bookId: number | null;
+  productId: number | null;
   productType: 'book' | 'product';
   quantity: number;
   product: {
@@ -50,7 +51,11 @@ interface Address {
 
 const stripePromise = getStripe();
 
-function CheckoutForm() {
+interface CheckoutFormProps {
+  clientSecret: string;
+}
+
+function CheckoutForm({ clientSecret }: CheckoutFormProps) {
   const { data: session } = useSession();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -79,7 +84,6 @@ function CheckoutForm() {
 
   const [sameAsShipping, setSameAsShipping] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [setupIntentClientSecret, setSetupIntentClientSecret] = useState<string | null>(null);
 
   // Fetch cart items
   const { data: cartData, isLoading: cartLoading } = useQuery({
@@ -91,35 +95,12 @@ function CheckoutForm() {
     enabled: !!session,
   });
 
-  // Fetch setup intent for payment
-  useEffect(() => {
-    if (session) {
-      fetch('/api/stripe/setup-intent', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.accessToken}`,
-        },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.clientSecret) {
-            setSetupIntentClientSecret(data.clientSecret);
-          }
-        })
-        .catch((error) => {
-          console.error('Failed to fetch setup intent:', error);
-          toast.error('Failed to initialize payment');
-        });
-    }
-  }, [session]);
-
   // Create order mutation
   const createOrderMutation = useMutation({
     mutationFn: async (paymentMethodId?: string) => {
-      const items = cartData?.items.map((item) => ({
-        productId: item.productId,
-        bookId: item.productType === 'book' ? item.productId : undefined,
+      const items = cartData?.items.map((item: any) => ({
+        bookId: item.bookId || undefined,
+        productId: item.productId || undefined,
         quantity: item.quantity,
       }));
 
@@ -150,7 +131,7 @@ function CheckoutForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!stripe || !elements || !setupIntentClientSecret) {
+    if (!stripe || !elements || !clientSecret) {
       toast.error('Payment system not ready. Please wait...');
       return;
     }
@@ -197,7 +178,7 @@ function CheckoutForm() {
       // Confirm setup intent to get payment method
       const { error, setupIntent } = await stripe.confirmSetup({
         elements,
-        clientSecret: setupIntentClientSecret,
+        clientSecret: clientSecret,
         confirmParams: {
           return_url: window.location.href,
         },
@@ -313,7 +294,7 @@ function CheckoutForm() {
                           </h3>
                           <p className="text-sm text-gray-600 mt-1">Quantity: {item.quantity}</p>
                           <p className="text-base sm:text-lg font-bold text-primary mt-1">
-                            ${product.price.toLocaleString()}
+                            {formatMoney(product.price)}
                           </p>
                         </div>
                       </div>
@@ -579,7 +560,7 @@ function CheckoutForm() {
               <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">Payment Information</h2>
                 <div className="space-y-4">
-                  {setupIntentClientSecret ? (
+                  {clientSecret ? (
                     <div className="border border-gray-300 rounded-md p-4">
                       <PaymentElement
                         options={{
@@ -635,7 +616,7 @@ function CheckoutForm() {
 
                 <button
                   type="submit"
-                  disabled={isProcessing || !stripe || !setupIntentClientSecret}
+                  disabled={isProcessing || !stripe || !clientSecret}
                   className="w-full px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {isProcessing ? (
@@ -664,8 +645,10 @@ function CheckoutForm() {
 }
 
 export default function CheckoutPage() {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [isLoadingPayment, setIsLoadingPayment] = useState(true);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -673,7 +656,36 @@ export default function CheckoutPage() {
     }
   }, [status, router]);
 
-  if (status === 'loading') {
+  // Fetch setup intent client secret
+  useEffect(() => {
+    if (session && status === 'authenticated') {
+      setIsLoadingPayment(true);
+      fetch('/api/stripe/setup-intent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.accessToken}`,
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.clientSecret) {
+            setClientSecret(data.clientSecret);
+          } else {
+            toast.error('Failed to initialize payment');
+          }
+        })
+        .catch((error) => {
+          console.error('Failed to fetch setup intent:', error);
+          toast.error('Failed to initialize payment');
+        })
+        .finally(() => {
+          setIsLoadingPayment(false);
+        });
+    }
+  }, [session, status]);
+
+  if (status === 'loading' || isLoadingPayment) {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -693,9 +705,29 @@ export default function CheckoutPage() {
     return null;
   }
 
+  if (!clientSecret) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-center py-20">
+            <div className="text-center">
+              <p className="text-gray-600 mb-4">Failed to initialize payment system</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark"
+              >
+                Try Again
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <Elements stripe={stripePromise}>
-      <CheckoutForm />
+    <Elements stripe={stripePromise} options={{ clientSecret }}>
+      <CheckoutForm clientSecret={clientSecret} />
     </Elements>
   );
 }

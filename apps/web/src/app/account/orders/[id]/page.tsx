@@ -166,12 +166,12 @@ export default function AccountOrderDetailPage() {
                       {book?.author && <p className="text-sm text-gray-600">by {book.author}</p>}
                       <p className="text-sm text-gray-500 mt-1">Quantity: {item.quantity}</p>
                       <p className="text-sm font-semibold text-gray-900 mt-2">
-                        {formatMoney(parseFloat(item.price), { fromCents: true })} each
+                        {formatMoney(item.price)} each
                       </p>
                     </div>
                     <div className="text-right">
                       <p className="font-semibold text-gray-900">
-                        {formatMoney(parseFloat(item.price) * item.quantity, { fromCents: true })}
+                        {formatMoney(parseFloat(item.price) * item.quantity)}
                       </p>
                     </div>
                   </div>
@@ -225,21 +225,19 @@ export default function AccountOrderDetailPage() {
             <div className="space-y-3">
               <div className="flex justify-between text-gray-600">
                 <span>Subtotal</span>
-                <span>{formatMoney(order.subtotal, { fromCents: true })}</span>
+                <span>{formatMoney(order.subtotal)}</span>
               </div>
               <div className="flex justify-between text-gray-600">
                 <span>Shipping</span>
-                <span>{formatMoney(order.shippingCost, { fromCents: true })}</span>
+                <span>{formatMoney(order.shippingCost)}</span>
               </div>
               <div className="flex justify-between text-gray-600">
                 <span>Tax</span>
-                <span>{formatMoney(order.tax, { fromCents: true })}</span>
+                <span>{formatMoney(order.tax)}</span>
               </div>
               <div className="border-t pt-3 flex justify-between font-semibold text-lg">
                 <span>Total</span>
-                <span className="text-primary">
-                  {formatMoney(order.totalAmount, { fromCents: true })}
-                </span>
+                <span className="text-primary">{formatMoney(order.totalAmount)}</span>
               </div>
             </div>
           </div>

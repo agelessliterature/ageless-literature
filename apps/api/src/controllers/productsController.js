@@ -45,9 +45,7 @@ export const getAllProducts = async (req, res) => {
     if (search) {
       where[Op.or] = [
         { title: { [Op.iLike]: `%${search}%` } },
-        { artist: { [Op.iLike]: `%${search}%` } },
         { category: { [Op.iLike]: `%${search}%` } },
-        { materials: { [Op.iLike]: `%${search}%` } },
       ];
     }
 
@@ -89,11 +87,12 @@ export const getProductBySlug = async (req, res) => {
   try {
     const { identifier } = req.params;
 
-    // Check if identifier is UUID or sid
+    // Check if identifier is numeric (ID), UUID, or sid
+    const isNumericId = /^\d+$/.test(identifier);
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
       identifier,
     );
-    const where = isUUID ? { id: identifier } : { sid: identifier };
+    const where = isNumericId || isUUID ? { id: identifier } : { sid: identifier };
     where.status = 'published';
 
     const product = await Product.findOne({

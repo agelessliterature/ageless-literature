@@ -9,10 +9,12 @@ import api from '@/lib/api';
 import { withBasePath } from '@/lib/path-utils';
 import PageLoading from '@/components/ui/PageLoading';
 import EmptyState from '@/components/ui/EmptyState';
+import { formatMoney } from '@/lib/format';
 
 interface CartItem {
   id: number;
-  productId: number;
+  bookId: number | null;
+  productId: number | null;
   productType: 'book' | 'product';
   quantity: number;
   product: {
@@ -173,7 +175,7 @@ export default function CartPage() {
                           </h3>
                         </Link>
                         <p className="text-xl font-bold text-primary mt-2">
-                          ${product.price.toLocaleString()}
+                          {formatMoney(product.price)}
                         </p>
 
                         {/* Quantity Controls */}
@@ -232,7 +234,7 @@ export default function CartPage() {
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between text-gray-600">
                     <span>Subtotal</span>
-                    <span>${cartData?.subtotal.toLocaleString() || '0.00'}</span>
+                    <span>{formatMoney(cartData?.subtotal || 0)}</span>
                   </div>
                   <div className="flex justify-between text-gray-600">
                     <span>Shipping</span>
@@ -241,7 +243,7 @@ export default function CartPage() {
                   <div className="border-t border-gray-200 pt-3">
                     <div className="flex justify-between text-xl font-bold text-gray-900">
                       <span>Total</span>
-                      <span>${cartData?.total.toLocaleString() || '0.00'}</span>
+                      <span>{formatMoney(cartData?.total || 0)}</span>
                     </div>
                   </div>
                 </div>

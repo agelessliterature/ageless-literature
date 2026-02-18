@@ -27,6 +27,10 @@ export const addToWishlist = async (req, res) => {
     const { userId } = req.user;
     const { bookId } = req.body;
 
+    if (!bookId) {
+      return res.status(400).json({ success: false, error: 'bookId is required' });
+    }
+
     let wishlist = await Wishlist.findOne({ where: { userId } });
     if (!wishlist) {
       wishlist = await Wishlist.create({ userId });

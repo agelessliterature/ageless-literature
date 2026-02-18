@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import AdminLayout from '@/components/layout/AdminLayout';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Admin Dashboard - Ageless Literature',
   description:

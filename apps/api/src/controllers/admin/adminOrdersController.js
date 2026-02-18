@@ -1,7 +1,9 @@
 /**
  * Admin Orders Controller
- * Manages orders (mock implementation until Orders collection is created)
+ * Manages orders
  */
+
+import db from '../../models/index.js';
 
 /**
  * List all orders
@@ -82,12 +84,22 @@ export const updateStatus = async (req, res) => {
       });
     }
 
-    // TODO: Create Orders collection and implement actual database update
-    // TODO: Send status update email
+    // Find the order first
+    const order = await db.Order.findByPk(id);
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found',
+      });
+    }
+
+    // Update order status
+    order.status = status;
+    await order.save();
 
     return res.json({
       success: true,
-      data: { id, status },
+      data: { id: order.id, status: order.status },
       message: 'Order status updated successfully',
     });
   } catch (error) {

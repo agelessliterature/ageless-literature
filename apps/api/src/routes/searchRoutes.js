@@ -59,13 +59,30 @@ router.get('/', async (req, res) => {
       sortArray = [sort];
     }
 
-    const results = await search(q, {
-      type,
-      limit: parseInt(limit),
-      offset: parseInt(offset),
-      filters: filters.join(' AND '),
-      sort: sortArray,
-    });
+    let results;
+    try {
+      results = await search(q, {
+        type,
+        limit: parseInt(limit),
+        offset: parseInt(offset),
+        filters: filters.join(' AND '),
+        sort: sortArray,
+      });
+    } catch (searchError) {
+      // If filters fail (e.g. attributes not configured as filterable), retry without filters
+      if (searchError.message && searchError.message.includes('not filterable')) {
+        console.warn('Search filter failed, retrying without filters:', searchError.message);
+        results = await search(q, {
+          type,
+          limit: parseInt(limit),
+          offset: parseInt(offset),
+          filters: '',
+          sort: sortArray,
+        });
+      } else {
+        throw searchError;
+      }
+    }
 
     res.json({
       success: true,

@@ -115,7 +115,7 @@ export const getAdminDashboard = async (req, res) => {
         include: [
           {
             model: User,
-            as: 'customer',
+            as: 'user',
             attributes: ['id', 'firstName', 'lastName', 'email'],
           },
           {
@@ -149,7 +149,7 @@ export const getAdminDashboard = async (req, res) => {
         include: [
           {
             model: User,
-            as: 'customer',
+            as: 'user',
             attributes: ['id', 'firstName', 'lastName', 'email'],
           },
         ],
@@ -202,10 +202,10 @@ export const getAdminDashboard = async (req, res) => {
         id: order.id,
         orderNumber: order.orderNumber,
         customer:
-          `${order.customer?.firstName || ''} ${order.customer?.lastName || ''}`.trim() ||
-          order.customer?.email ||
+          `${order.user?.firstName || ''} ${order.user?.lastName || ''}`.trim() ||
+          order.user?.email ||
           'Unknown Customer',
-        customerEmail: order.customer?.email,
+        customerEmail: order.user?.email,
         totalAmount: order.totalAmount,
         status: order.status,
         createdAt: order.createdAt,
@@ -233,8 +233,8 @@ export const getAdminDashboard = async (req, res) => {
         id: order.id,
         orderNumber: order.orderNumber,
         customer:
-          `${order.customer?.firstName || ''} ${order.customer?.lastName || ''}`.trim() ||
-          order.customer?.email ||
+          `${order.user?.firstName || ''} ${order.user?.lastName || ''}`.trim() ||
+          order.user?.email ||
           'Unknown Customer',
         totalAmount: order.totalAmount,
         status: order.status,

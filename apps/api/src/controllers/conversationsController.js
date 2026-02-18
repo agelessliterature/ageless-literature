@@ -8,11 +8,11 @@ export const getConversations = async (req, res) => {
     const { userId } = req.user;
     const conversations = await Conversation.findAll({
       where: {
-        [Op.or]: [{ user1Id: userId }, { user2Id: userId }],
+        [Op.or]: [{ userId1: userId }, { userId2: userId }],
       },
       include: [
-        { model: User, as: 'user1' },
-        { model: User, as: 'user2' },
+        { model: User, as: 'user1', attributes: ['id', 'email', 'firstName', 'lastName'] },
+        { model: User, as: 'user2', attributes: ['id', 'email', 'firstName', 'lastName'] },
       ],
       order: [['lastMessageAt', 'DESC']],
     });
@@ -27,19 +27,35 @@ export const createConversation = async (req, res) => {
     const { userId } = req.user;
     const { otherUserId } = req.body;
 
+    if (!otherUserId) {
+      return res.status(400).json({ success: false, error: 'otherUserId is required' });
+    }
+
+    if (parseInt(otherUserId) === userId) {
+      return res
+        .status(400)
+        .json({ success: false, error: 'Cannot create a conversation with yourself' });
+    }
+
+    // Verify the other user exists
+    const otherUser = await User.findByPk(otherUserId);
+    if (!otherUser) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
     let conversation = await Conversation.findOne({
       where: {
         [Op.or]: [
-          { user1Id: userId, user2Id: otherUserId },
-          { user1Id: otherUserId, user2Id: userId },
+          { userId1: userId, userId2: otherUserId },
+          { userId1: otherUserId, userId2: userId },
         ],
       },
     });
 
     if (!conversation) {
       conversation = await Conversation.create({
-        user1Id: userId,
-        user2Id: otherUserId,
+        userId1: userId,
+        userId2: otherUserId,
       });
     }
 

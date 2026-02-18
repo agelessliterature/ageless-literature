@@ -32,7 +32,6 @@ export default (sequelize, DataTypes) => {
     {
       tableName: 'reservations',
       timestamps: true,
-      underscored: true,
     },
   );
 
