@@ -60,7 +60,7 @@ export default function VendorPage() {
   const [sortBy, setSortBy] = useState('menu_order-ASC');
   const [page, setPage] = useState(1);
   const [showShareMenu, setShowShareMenu] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(true);
 
   // Fetch vendor profile
   const { data: vendorData, isLoading: vendorLoading } = useQuery({

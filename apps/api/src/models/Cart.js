@@ -14,6 +14,11 @@ export default (sequelize, DataTypes) => {
         references: { model: 'users', key: 'id' },
         onDelete: 'CASCADE',
       },
+      couponCode: {
+        type: DataTypes.STRING(50),
+        allowNull: true,
+        field: 'coupon_code',
+      },
     },
     {
       tableName: 'carts',

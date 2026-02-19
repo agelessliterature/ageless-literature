@@ -80,6 +80,8 @@ const allowedModels = [
   'GlossaryTerm.js',
   'CustomOffer.js',
   'RareBookRequest.cjs',
+  'Coupon.js',
+  'CouponRedemption.js',
 ];
 
 // Load all model files using dynamic import (they use module.exports, which works with import)

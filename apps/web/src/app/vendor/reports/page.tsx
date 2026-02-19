@@ -18,6 +18,7 @@ export default function VendorReportsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [period, setPeriod] = useState('30');
+  const [activityPage, setActivityPage] = useState(1);
 
   // Use aggregated endpoint to fetch both summary and products data in one call
   const { data: reportsData, isLoading: reportsLoading } = useQuery({
@@ -34,6 +35,20 @@ export default function VendorReportsPage() {
     staleTime: 1000 * 60 * 2, // Cache for 2 minutes since reports change frequently
   });
 
+  const { data: activityData, isLoading: activityLoading } = useQuery({
+    queryKey: ['vendor-payment-activity', activityPage],
+    queryFn: async () => {
+      const params = new URLSearchParams({ page: activityPage.toString(), limit: '15' });
+      const res = await fetch(getApiUrl(`api/vendor/earnings?${params}`), {
+        headers: { Authorization: `Bearer ${session?.accessToken}` },
+      });
+      if (!res.ok) return null;
+      const result = await res.json();
+      return result.data;
+    },
+    enabled: !!session,
+  });
+
   if (status === 'loading') {
     return <PageLoading message="Loading reports..." fullPage={false} />;
   }
@@ -46,6 +61,8 @@ export default function VendorReportsPage() {
   // Extract data from the aggregated response
   const summary = reportsData?.summary || {};
   const topProducts = reportsData?.topProducts || [];
+  const activityEarnings: any[] = activityData?.earnings || [];
+  const activityMeta = activityData?.meta || {};
   const isLoading = reportsLoading;
 
   return (
@@ -89,59 +106,181 @@ export default function VendorReportsPage() {
               className="text-2xl sm:text-3xl text-green-600 mb-2"
             />
             <p className="text-xl sm:text-3xl font-bold text-gray-900">
-              {formatMoney(summary.lifetimeVendorEarnings, { fromCents: false })}
+              {formatMoney(summary.periodEarnings, { fromCents: false })}
             </p>
-            <p className="text-sm text-gray-600">Total Earnings</p>
+            <p className="text-sm text-gray-600">Net Earnings</p>
+            <p className="text-xs text-gray-400">after platform fee</p>
           </div>
 
-          <div className="bg-white p-6 border-l-4 border-blue-500 shadow-sm">
-            <FontAwesomeIcon icon={['fal', 'chart-line']} className="text-3xl text-blue-600 mb-2" />
-            <p className="text-3xl font-bold text-gray-900">
-              {formatMoney(summary.lifetimeGrossSales, { fromCents: false })}
+          <div className="bg-white p-4 sm:p-6 border-l-4 border-blue-500 shadow-sm">
+            <FontAwesomeIcon
+              icon={['fal', 'chart-line']}
+              className="text-2xl sm:text-3xl text-blue-600 mb-2"
+            />
+            <p className="text-xl sm:text-3xl font-bold text-gray-900">
+              {formatMoney(summary.periodRevenue, { fromCents: false })}
             </p>
             <p className="text-sm text-gray-600">Gross Sales</p>
           </div>
 
-          <div className="bg-white p-6 border-l-4 border-purple-500 shadow-sm">
+          <div className="bg-white p-4 sm:p-6 border-l-4 border-purple-500 shadow-sm">
             <FontAwesomeIcon
               icon={['fal', 'shopping-cart']}
-              className="text-3xl text-purple-600 mb-2"
+              className="text-2xl sm:text-3xl text-purple-600 mb-2"
             />
-            <p className="text-3xl font-bold text-gray-900">{summary.totalOrders || 0}</p>
-            <p className="text-sm text-gray-600">Total Orders</p>
+            <p className="text-xl sm:text-3xl font-bold text-gray-900">
+              {summary.periodOrdersCount || 0}
+            </p>
+            <p className="text-sm text-gray-600">Orders</p>
           </div>
 
-          <div className="bg-white p-6 border-l-4 border-yellow-500 shadow-sm">
+          <div className="bg-white p-4 sm:p-6 border-l-4 border-red-500 shadow-sm">
             <FontAwesomeIcon
               icon={['fal', 'percentage']}
-              className="text-3xl text-yellow-600 mb-2"
+              className="text-2xl sm:text-3xl text-red-500 mb-2"
             />
-            <p className="text-3xl font-bold text-gray-900">{summary.conversionRate || '0.00'}%</p>
-            <p className="text-sm text-gray-600">Conversion Rate</p>
+            <p className="text-xl sm:text-3xl font-bold text-gray-900">
+              {formatMoney(summary.periodCommission, { fromCents: false })}
+            </p>
+            <p className="text-sm text-gray-600">Commission Paid</p>
+            <p className="text-xs text-gray-400">platform fee (8%)</p>
           </div>
         </div>
       )}
 
       {/* Commission Breakdown */}
-      {summary.commissions && (
+      {!isLoading && (
         <div className="bg-white border border-gray-200 p-4 sm:p-6 mb-6 sm:mb-8">
-          <h3 className="text-lg font-semibold text-primary mb-4">Commission Breakdown</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <h3 className="text-lg font-semibold text-primary mb-4">Period Breakdown</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="flex justify-between items-center p-4 bg-gray-50">
-              <span className="text-gray-700">Platform Commission (8%)</span>
+              <span className="text-gray-700">Gross Revenue</span>
+              <span className="font-bold text-gray-900">
+                {formatMoney(summary.periodRevenue, { fromCents: false })}
+              </span>
+            </div>
+            <div className="flex justify-between items-center p-4 bg-red-50">
+              <span className="text-gray-700">Platform Fee (8%)</span>
               <span className="font-bold text-red-600">
-                -{formatMoney(summary.commissions.platformCommission, { fromCents: false })}
+                &minus;{formatMoney(summary.periodCommission, { fromCents: false })}
               </span>
             </div>
             <div className="flex justify-between items-center p-4 bg-green-50">
-              <span className="text-gray-700">Your Net Earnings (92%)</span>
+              <span className="text-gray-700">Your Net Earnings</span>
               <span className="font-bold text-green-600">
-                {formatMoney(summary.lifetimeVendorEarnings, { fromCents: false })}
+                {formatMoney(summary.periodEarnings, { fromCents: false })}
               </span>
             </div>
           </div>
         </div>
       )}
+
+      {/* Payment Activity */}
+      <div className="bg-white border border-gray-200 mb-6 sm:mb-8">
+        <div className="p-4 sm:p-6 border-b flex justify-between items-center">
+          <h3 className="text-lg font-semibold text-primary">Payment Activity</h3>
+          <Link href="/vendor/earnings" className="text-sm text-primary hover:underline">
+            View all earnings
+            <FontAwesomeIcon icon={['fal', 'arrow-right']} className="ml-1" />
+          </Link>
+        </div>
+        {activityLoading ? (
+          <div className="p-8 text-center text-gray-400">Loading activity...</div>
+        ) : activityEarnings.length === 0 ? (
+          <EmptyState
+            icon={['fal', 'receipt']}
+            title="No payment activity yet"
+            description="Earnings will appear here once orders are placed"
+          />
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 text-sm">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      Date
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      Order #
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      Sale Amount
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      Platform Fee
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      Your Earnings
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {activityEarnings.map((e: any) => {
+                    const statusColors: Record<string, string> = {
+                      pending: 'bg-yellow-100 text-yellow-800',
+                      available: 'bg-green-100 text-green-800',
+                      completed: 'bg-green-100 text-green-800',
+                      paid: 'bg-blue-100 text-blue-800',
+                    };
+                    const badge = statusColors[e.status] || 'bg-gray-100 text-gray-700';
+                    return (
+                      <tr key={e.id}>
+                        <td className="px-4 py-3 whitespace-nowrap text-gray-500">
+                          {e.createdAt ? new Date(e.createdAt).toLocaleDateString() : '—'}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-gray-700">
+                          {e.order?.orderNumber || e.orderId || '—'}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap font-medium text-gray-900">
+                          {formatMoney(e.amount, { fromCents: false })}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-red-600">
+                          &minus;{formatMoney(e.platformFee, { fromCents: false })}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap font-semibold text-green-600">
+                          {formatMoney(e.netAmount, { fromCents: false })}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <span
+                            className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full ${badge}`}
+                          >
+                            {e.status}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            {activityMeta.totalPages > 1 && (
+              <div className="p-4 border-t flex justify-center gap-3">
+                <button
+                  onClick={() => setActivityPage((p) => Math.max(1, p - 1))}
+                  disabled={activityPage === 1}
+                  className="px-3 py-1 border text-sm disabled:opacity-40 hover:bg-gray-50"
+                >
+                  Previous
+                </button>
+                <span className="px-3 py-1 text-sm text-gray-600">
+                  {activityPage} / {activityMeta.totalPages}
+                </span>
+                <button
+                  onClick={() => setActivityPage((p) => Math.min(activityMeta.totalPages, p + 1))}
+                  disabled={activityPage === activityMeta.totalPages}
+                  className="px-3 py-1 border text-sm disabled:opacity-40 hover:bg-gray-50"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
 
       {/* Top Products */}
       {isLoading ? (

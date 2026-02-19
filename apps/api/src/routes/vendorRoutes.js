@@ -9,6 +9,7 @@ import * as vendorRequestsController from '../controllers/vendorRequestsControll
 import * as vendorSettingsController from '../controllers/vendorSettingsController.js';
 import * as vendorWithdrawalController from '../controllers/vendorWithdrawalController.js';
 import * as customOffersController from '../controllers/customOffersController.js';
+import * as vendorCouponsController from '../controllers/vendorCouponsController.js';
 import { verifyToken } from '../controllers/authController.js';
 import { vendorAuth } from '../middleware/vendorAuth.js';
 import { createVendorImportRouter } from './importRoutes.js';
@@ -98,5 +99,12 @@ router.get('/offers/search-users', vendorAuth, customOffersController.searchUser
 router.post('/offers', vendorAuth, customOffersController.createOffer);
 router.post('/offers/:id/respond', vendorAuth, customOffersController.vendorRespondToOffer);
 router.delete('/offers/:id', vendorAuth, customOffersController.cancelOffer);
+
+// Coupons
+router.get('/coupons', vendorAuth, vendorCouponsController.getVendorCoupons);
+router.get('/coupons/:id', vendorAuth, vendorCouponsController.getVendorCoupon);
+router.post('/coupons', vendorAuth, vendorCouponsController.createVendorCoupon);
+router.put('/coupons/:id', vendorAuth, vendorCouponsController.updateVendorCoupon);
+router.delete('/coupons/:id', vendorAuth, vendorCouponsController.deleteVendorCoupon);
 
 export default router;

@@ -12,6 +12,7 @@ import * as adminMembershipsController from '../controllers/admin/adminMembershi
 import * as adminGlossaryController from '../controllers/admin/adminGlossaryController.js';
 import * as adminEmailsController from '../controllers/admin/adminEmailsController.js';
 import * as adminProductsController from '../controllers/admin/adminProductsController.js';
+import * as adminCouponsController from '../controllers/admin/adminCouponsController.js';
 import { createAdminImportRouter } from './importRoutes.js';
 
 const router = express.Router();
@@ -115,5 +116,13 @@ router.put('/emails/:id', adminEmailsController.update);
 router.delete('/emails/:id', adminEmailsController.deleteTemplate);
 router.get('/emails/:id/preview', adminEmailsController.preview);
 router.post('/emails/:id/test', adminEmailsController.sendTest);
+
+// Coupons
+router.get('/coupons', adminCouponsController.listAll);
+router.get('/coupons/stats', adminCouponsController.getStats);
+router.get('/coupons/:id', adminCouponsController.getOne);
+router.post('/coupons', adminCouponsController.create);
+router.put('/coupons/:id', adminCouponsController.update);
+router.delete('/coupons/:id', adminCouponsController.deleteCoupon);
 
 export default router;

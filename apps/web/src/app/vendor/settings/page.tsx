@@ -27,7 +27,7 @@ export default function VendorSettingsPage() {
   const [formData, setFormData] = useState({
     shopName: '',
     businessDescription: '',
-    websiteUrl: '',
+
     phoneNumber: '',
     logoUrl: '',
     logoPublicId: '',
@@ -70,7 +70,7 @@ export default function VendorSettingsPage() {
       setFormData({
         shopName: vendorData.shopName || '',
         businessDescription: vendorData.businessDescription || '',
-        websiteUrl: vendorData.websiteUrl || '',
+
         phoneNumber: vendorData.phoneNumber || '',
         logoUrl: vendorData.logoUrl || '',
         logoPublicId: vendorData.logoPublicId || '',
@@ -322,25 +322,6 @@ export default function VendorSettingsPage() {
                         placeholder="+1 (555) 123-4567"
                         required
                       />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Website URL (Optional)
-                      </label>
-                      <div className="relative">
-                        <FontAwesomeIcon
-                          icon={['fal', 'globe']}
-                          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-xl text-gray-400"
-                        />
-                        <input
-                          type="url"
-                          value={formData.websiteUrl}
-                          onChange={(e) => setFormData({ ...formData, websiteUrl: e.target.value })}
-                          className="w-full pl-10 pr-4 py-2 border border-gray-300 focus:ring-2 focus:ring-black focus:border-transparent"
-                          placeholder="https://yourwebsite.com"
-                        />
-                      </div>
                     </div>
                   </div>
                 </div>

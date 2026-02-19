@@ -31,6 +31,7 @@ const navItems: NavItem[] = [
   { href: '/admin/books/sort', label: 'Sort Books', icon: ['fal', 'sort'] },
   { href: '/admin/auctions', label: 'Auctions', icon: ['fal', 'gavel'] },
   { href: '/admin/categories', label: 'Categories', icon: ['fal', 'folder'] },
+  { href: '/admin/coupons', label: 'Coupons', icon: ['fal', 'ticket-alt'] },
   { href: '/admin/payouts', label: 'Payouts', icon: ['fal', 'dollar-sign'] },
 ];
 

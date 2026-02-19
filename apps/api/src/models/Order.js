@@ -88,6 +88,23 @@ export default (sequelize, DataTypes) => {
         type: DataTypes.TEXT,
         allowNull: true,
       },
+      couponId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        field: 'coupon_id',
+        references: { model: 'coupons', key: 'id' },
+      },
+      couponCode: {
+        type: DataTypes.STRING(50),
+        allowNull: true,
+        field: 'coupon_code',
+      },
+      discountAmount: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: true,
+        defaultValue: 0,
+        field: 'discount_amount',
+      },
     },
     {
       tableName: 'orders',
@@ -99,6 +116,7 @@ export default (sequelize, DataTypes) => {
   Order.associate = (models) => {
     Order.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
     Order.hasMany(models.OrderItem, { foreignKey: 'orderId', as: 'items' });
+    Order.belongsTo(models.Coupon, { foreignKey: 'couponId', as: 'coupon' });
   };
   return Order;
 };

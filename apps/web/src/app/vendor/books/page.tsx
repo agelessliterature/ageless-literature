@@ -66,11 +66,11 @@ export default function VendorBooksPage() {
     enabled: !!session,
   });
 
-  // Fetch active auctions for products
+  // Fetch auctions for products (active + upcoming so draft auction books show correct price)
   const { data: auctionsData } = useQuery({
-    queryKey: ['vendor-auctions-active'],
+    queryKey: ['vendor-auctions-for-books'],
     queryFn: async () => {
-      const res = await fetch(getApiUrl('api/auctions?status=active'), {
+      const res = await fetch(getApiUrl('api/auctions?limit=500'), {
         headers: { Authorization: `Bearer ${session?.accessToken}` },
       });
       if (!res.ok) return [];
@@ -93,10 +93,10 @@ export default function VendorBooksPage() {
   const pagination = productsData?.pagination || {};
   const activeAuctions = auctionsData || [];
 
-  // Create a map of product IDs to their active auctions
+  // Create a map of book IDs to their active/upcoming auctions
   const auctionMap = new Map();
   activeAuctions.forEach((auction: any) => {
-    if (auction.auctionableType === 'book') {
+    if (auction.auctionableType === 'book' && ['active', 'upcoming'].includes(auction.status)) {
       // Convert to string to ensure consistent comparison
       auctionMap.set(String(auction.auctionableId), auction);
     }
@@ -148,6 +148,57 @@ export default function VendorBooksPage() {
     setSelectAll(newSelected.size === products.length && products.length > 0);
   };
 
+  const handleExportCSV = async () => {
+    try {
+      const params = new URLSearchParams({ page: '1', limit: '999' });
+      if (statusFilter !== 'all') params.set('status', statusFilter);
+      if (conditionFilter !== 'all') params.set('condition', conditionFilter);
+      const res = await fetch(getApiUrl(`api/vendor/products?${params}`), {
+        headers: { Authorization: `Bearer ${session?.accessToken}` },
+      });
+      if (!res.ok) throw new Error('Export failed');
+      const result = await res.json();
+      const allProducts: any[] = result.data || [];
+
+      const q = (s: string) => `"${(s || '').replace(/"/g, '""')}"`;
+      const headers = [
+        'Title',
+        'Author',
+        'ISBN',
+        'Price',
+        'Sale Price',
+        'Quantity',
+        'Condition',
+        'Status',
+        'Views',
+      ];
+      const rows = allProducts.map((p: any) => [
+        q(p.title),
+        q(p.author),
+        q(p.isbn || ''),
+        p.price ?? 0,
+        p.salePrice ?? '',
+        p.trackQuantity !== false ? (p.quantity ?? 0) : '',
+        p.condition || '',
+        p.status || '',
+        p.views ?? 0,
+      ]);
+
+      const csv = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `products-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      alert('Failed to export CSV. Please try again.');
+    }
+  };
+
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
       <div className="mb-6 sm:mb-8">
@@ -179,6 +230,13 @@ export default function VendorBooksPage() {
             >
               <FontAwesomeIcon icon={['fal', 'file-csv']} className="text-base" />
               Import CSV
+            </button>
+            <button
+              onClick={handleExportCSV}
+              className="flex items-center justify-center gap-2 bg-white text-primary border border-primary px-4 py-2 hover:bg-primary/5 transition w-full sm:w-auto"
+            >
+              <FontAwesomeIcon icon={['fal', 'file-export']} className="text-base" />
+              Export CSV
             </button>
             <button
               onClick={() => setShowItemTypeModal(true)}
@@ -303,7 +361,19 @@ export default function VendorBooksPage() {
                         </div>
                       }
                       details={[
-                        { label: 'Price', value: formatMoney(product.price, { fromCents: false }) },
+                        {
+                          label: hasActiveAuction ? 'Starting Bid' : 'Price',
+                          value: hasActiveAuction
+                            ? formatMoney(
+                                parseFloat(
+                                  auctionMap.get(String(product.id))?.startingBid ||
+                                    auctionMap.get(String(product.id))?.startingPrice ||
+                                    0,
+                                ),
+                                { fromCents: false },
+                              )
+                            : formatMoney(product.price, { fromCents: false }),
+                        },
                         {
                           label: 'Qty',
                           value: product.trackQuantity !== false ? product.quantity || 0 : '∞',
@@ -454,8 +524,20 @@ export default function VendorBooksPage() {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="text-sm text-gray-900">
-                                {formatMoney(product.price, { fromCents: false })}
+                                {hasActiveAuction
+                                  ? formatMoney(
+                                      parseFloat(
+                                        auctionMap.get(String(product.id))?.startingBid ||
+                                          auctionMap.get(String(product.id))?.startingPrice ||
+                                          0,
+                                      ),
+                                      { fromCents: false },
+                                    )
+                                  : formatMoney(product.price, { fromCents: false })}
                               </div>
+                              {hasActiveAuction && (
+                                <div className="text-xs text-purple-600">starting bid</div>
+                              )}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="text-sm text-gray-900">

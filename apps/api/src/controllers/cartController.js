@@ -1,5 +1,10 @@
 import db from '../models/index.js';
 import { Op } from 'sequelize';
+import {
+  validateCoupon,
+  calculateDiscount,
+  getDiscountSummary,
+} from '../services/couponService.js';
 
 const { Cart, CartItem, Book, Product, Auction, BookMedia } = db;
 
@@ -71,7 +76,27 @@ export const getCart = async (req, res) => {
     const subtotal = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
     const total = subtotal; // Shipping / tax are computed at checkout
 
-    res.json({ success: true, data: { items, subtotal, total } });
+    // Check for applied coupon
+    let couponData = null;
+    if (cart.couponCode) {
+      try {
+        const coupon = await validateCoupon(cart.couponCode, userId, items, subtotal);
+        const shippingCost = 10;
+        const discountAmount = calculateDiscount(coupon, items, subtotal, shippingCost);
+        const summary = getDiscountSummary(coupon, discountAmount);
+        couponData = {
+          ...summary,
+          couponId: coupon.id,
+          discountAmount,
+          freeShipping: coupon.discountType === 'free_shipping',
+        };
+      } catch {
+        // Coupon is no longer valid - remove it silently
+        await cart.update({ couponCode: null });
+      }
+    }
+
+    res.json({ success: true, data: { items, subtotal, total, coupon: couponData } });
   } catch (error) {
     console.error('getCart error:', error);
     res.status(500).json({ success: false, error: error.message });

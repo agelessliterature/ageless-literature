@@ -25,6 +25,7 @@ import * as vendorController from '../controllers/vendorController.js';
 import * as notificationsController from '../controllers/notificationsController.js';
 import * as usersController from '../controllers/usersController.js';
 import * as stripeController from '../controllers/stripeController.js';
+import * as couponsController from '../controllers/couponsController.js';
 import { verifyToken } from '../controllers/authController.js';
 
 const router = express.Router();
@@ -47,6 +48,11 @@ router.post('/cart', authMiddleware, cartController.addToCart);
 router.put('/cart/:itemId', authMiddleware, cartController.updateCartItem);
 router.delete('/cart/:itemId', authMiddleware, cartController.removeFromCart);
 router.delete('/cart', authMiddleware, cartController.clearCart);
+
+// Coupon routes (customer-facing)
+router.post('/coupons/validate', authMiddleware, couponsController.validate);
+router.post('/coupons/apply', authMiddleware, couponsController.apply);
+router.delete('/coupons/remove', authMiddleware, couponsController.remove);
 
 router.get('/orders', authMiddleware, ordersController.getOrders);
 router.get('/orders/:id', authMiddleware, ordersController.getOrderById);

@@ -27,6 +27,7 @@ const navItems: NavItem[] = [
   { href: '/vendor/orders', label: 'Orders', icon: ['fal', 'shopping-bag'] },
   { href: '/vendor/auctions', label: 'Auctions', icon: ['fal', 'gavel'] },
   { href: '/vendor/offers', label: 'Offers', icon: ['fal', 'tags'] },
+  { href: '/vendor/coupons', label: 'Coupons', icon: ['fal', 'ticket-alt'] },
   { href: '/vendor/earnings', label: 'Earnings', icon: ['fal', 'chart-line'] },
   { href: '/vendor/payouts', label: 'Payouts', icon: ['fal', 'money-check-alt'] },
   { href: '/vendor/withdrawals', label: 'Withdrawals', icon: ['fal', 'wallet'] },
@@ -226,8 +227,8 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
         </div>
       </header>
 
-      {/* Sidebar */}
-      <div className="flex min-h-screen">
+      {/* Sidebar + Main Content (push below fixed 64px header) */}
+      <div className="flex min-h-screen pt-16">
         {/* Mobile sidebar overlay */}
         {sidebarOpen && (
           <div
@@ -238,11 +239,11 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
 
         {/* Sidebar */}
         <aside
-          className={`fixed top-16 bottom-0 left-0 z-20 w-20 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] ${
+          className={`fixed top-16 bottom-0 left-0 z-20 w-20 shrink-0 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
-          <nav className="flex-1 space-y-2 px-3 py-4">
+          <nav className="flex-1 space-y-2 px-3 py-4 overflow-y-auto h-full">
             {navItems.map((item) => {
               const itemPath = withBasePath(item.href);
               const isActive =

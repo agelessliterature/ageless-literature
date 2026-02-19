@@ -3,12 +3,23 @@ import { generateOrderNumber } from '../utils/helpers.js';
 import { sendTemplatedEmail, sendSms } from '../services/emailService.js';
 import { emitNotification } from '../sockets/index.js';
 import inventoryService from '../services/inventoryService.js';
+import { validateCoupon, calculateDiscount, recordRedemption } from '../services/couponService.js';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-const { Order, OrderItem, Book, Product, Vendor, VendorEarning, User, Notification, sequelize } =
-  db;
+const {
+  Order,
+  OrderItem,
+  Book,
+  Product,
+  Vendor,
+  VendorEarning,
+  User,
+  Notification,
+  Cart,
+  sequelize,
+} = db;
 
 export const createOrder = async (req, res) => {
   const transaction = await sequelize.transaction();
@@ -114,7 +125,38 @@ export const createOrder = async (req, res) => {
 
     const tax = subtotal * 0.08; // Example tax rate
     const shippingCost = 10.0; // Flat shipping
-    const totalAmount = subtotal + tax + shippingCost;
+
+    // --- Coupon Processing ---
+    let couponId = null;
+    let couponCode = null;
+    let discountAmount = 0;
+    let appliedCoupon = null;
+
+    // Check if user has a coupon code (from cart or request body)
+    const requestCouponCode = req.body.couponCode;
+    let effectiveCouponCode = requestCouponCode;
+
+    if (!effectiveCouponCode) {
+      // Check if a coupon is stored on the cart
+      const userCart = await Cart.findOne({ where: { userId }, transaction });
+      if (userCart && userCart.couponCode) {
+        effectiveCouponCode = userCart.couponCode;
+      }
+    }
+
+    if (effectiveCouponCode) {
+      try {
+        appliedCoupon = await validateCoupon(effectiveCouponCode, userId, validatedItems, subtotal);
+        discountAmount = calculateDiscount(appliedCoupon, validatedItems, subtotal, shippingCost);
+        couponId = appliedCoupon.id;
+        couponCode = appliedCoupon.code;
+      } catch (couponError) {
+        // If coupon validation fails, we don't block the order - just skip the discount
+        console.warn(`Coupon validation failed during order: ${couponError.message}`);
+      }
+    }
+
+    const totalAmount = subtotal + tax + shippingCost - discountAmount;
 
     // Look up / create Stripe Customer for this user
     const user = await User.findByPk(userId);
@@ -205,6 +247,9 @@ export const createOrder = async (req, res) => {
         tax,
         shippingCost,
         totalAmount,
+        couponId,
+        couponCode,
+        discountAmount,
         shippingAddress,
         billingAddress,
       },
@@ -214,6 +259,17 @@ export const createOrder = async (req, res) => {
     // Create order items
     for (const item of validatedItems) {
       await OrderItem.create({ ...item, orderId: order.id }, { transaction });
+    }
+
+    // Record coupon redemption if a coupon was applied
+    if (appliedCoupon && discountAmount > 0) {
+      await recordRedemption(appliedCoupon.id, userId, order.id, discountAmount, transaction);
+
+      // Clear coupon from cart
+      const userCart = await Cart.findOne({ where: { userId }, transaction });
+      if (userCart) {
+        await userCart.update({ couponCode: null }, { transaction });
+      }
     }
 
     // Update PaymentIntent metadata with order number (async, don't block)
