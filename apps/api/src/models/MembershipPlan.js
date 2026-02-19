@@ -2,7 +2,7 @@ export default (sequelize, DataTypes) => {
   const MembershipPlan = sequelize.define(
     'MembershipPlan',
     {
-      id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+      id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
       name: { type: DataTypes.STRING, allowNull: false },
       slug: { type: DataTypes.STRING, allowNull: false, unique: true },
       description: { type: DataTypes.TEXT, allowNull: true },
@@ -13,7 +13,7 @@ export default (sequelize, DataTypes) => {
       features: { type: DataTypes.JSONB, defaultValue: [] },
       isActive: { type: DataTypes.BOOLEAN, defaultValue: true },
     },
-    { tableName: 'membership_plans', timestamps: true },
+    { tableName: 'membership_plans', timestamps: true, underscored: true },
   );
 
   MembershipPlan.associate = (models) => {

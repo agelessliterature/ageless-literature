@@ -101,9 +101,9 @@ export default function BookSellersPage() {
       className="relative overflow-hidden transition-all duration-300 group border border-gray-200 bg-white hover:shadow-xl hover:border-[#d4af37] h-full flex flex-col"
     >
       {/* Banner with overlay and shop name */}
-      <div className="relative h-96 overflow-hidden flex-shrink-0">
+      <div className="relative w-full aspect-video overflow-hidden flex-shrink-0">
         <div
-          className="absolute inset-0 bg-cover bg-center"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage: vendor.bannerUrl
               ? `url(${vendor.bannerUrl})`

@@ -9,6 +9,35 @@ import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
+const baseUserAttributes = [
+  'id',
+  'email',
+  'firstName',
+  'lastName',
+  'phoneNumber',
+  'role',
+  'status',
+  'emailVerified',
+  'emailVerifiedAt',
+  'profilePhotoUrl',
+  'profilePhotoPublicId',
+  'stripeCustomerId',
+  'defaultPaymentMethodId',
+  'billingAddress',
+  'shippingAddress',
+  'defaultLanguage',
+  'timezone',
+  'currency',
+  'lastLoginAt',
+  'lastLogoutAt',
+  'isOnline',
+  'emailNotifications',
+  'marketingEmails',
+  'metadata',
+  'createdAt',
+  'updatedAt',
+];
+
 /**
  * List all users with advanced filtering
  * Query params: page, limit, role, search, sortBy, sortOrder, membershipStatus
@@ -93,12 +122,15 @@ export const listAll = async (req, res) => {
     const sortField = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
     const sortDirection = sortOrder.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
+    // Explicitly select only existing database columns (excluding virtual fields)
+    const userAttributes = baseUserAttributes;
+
     const { count, rows } = await db.User.findAndCountAll({
       where,
       include,
       limit: parseInt(limit),
       offset,
-      attributes: { exclude: ['passwordHash'] },
+      attributes: userAttributes,
       order: [[sortField, sortDirection]],
       distinct: true,
     });
@@ -177,8 +209,10 @@ export const updateRole = async (req, res) => {
       },
     );
 
+    const userAttributes = baseUserAttributes;
+
     const user = await db.User.findByPk(id, {
-      attributes: { exclude: ['passwordHash'] },
+      attributes: userAttributes,
     });
 
     return res.json({
@@ -223,8 +257,10 @@ export const toggleStatus = async (req, res) => {
 
     await db.User.update({ status }, { where: { id } });
 
+    const userAttributes = baseUserAttributes;
+
     const user = await db.User.findByPk(id, {
-      attributes: { exclude: ['passwordHash'] },
+      attributes: userAttributes,
     });
 
     return res.json({
@@ -304,8 +340,10 @@ export const getUser = async (req, res) => {
     const { id } = req.params;
     console.log('[AdminUsersController] getUser called for ID:', id);
 
+    const userAttributes = baseUserAttributes;
+
     const user = await db.User.findByPk(id, {
-      attributes: { exclude: ['passwordHash'] },
+      attributes: userAttributes,
       include: [
         {
           model: db.MembershipSubscription,
@@ -419,8 +457,10 @@ export const updateUser = async (req, res) => {
 
     await db.User.update(filteredUpdates, { where: { id } });
 
+    const userAttributes = baseUserAttributes;
+
     const updatedUser = await db.User.findByPk(id, {
-      attributes: { exclude: ['passwordHash'] },
+      attributes: userAttributes,
       include: [
         {
           model: db.MembershipSubscription,
@@ -567,7 +607,7 @@ export const createUser = async (req, res) => {
       role: role || 'customer',
       status: userStatus,
       defaultLanguage: defaultLanguage || 'en',
-      provider: 'credentials',
+      // provider: 'credentials', // REMOVED: Virtual field, can't be set directly
       emailVerified: !sendInviteEmail, // Not verified if sending invite, verified if creating with password
     });
 
@@ -578,8 +618,44 @@ export const createUser = async (req, res) => {
       // Future: Implement email sending with password reset link
     }
 
+    const userAttributes = [
+      'id',
+      'email',
+      'firstName',
+      'lastName',
+      'phoneNumber',
+      'role',
+      'createdAt',
+      'updatedAt',
+      'username',
+      'bio',
+      'location',
+      'avatarUrl',
+      'defaultCurrency',
+      'defaultLanguage',
+      'newsletterOptIn',
+      'themePreference',
+      'notificationPreferences',
+      'profilePhotoUrl',
+      'profilePhotoPublicId',
+      'stripeCustomerId',
+      'defaultPaymentMethodId',
+      'billingAddress',
+      'shippingAddress',
+      'status',
+      'emailVerified',
+      'emailVerifiedAt',
+      'lastLoginAt',
+      'lastLogoutAt',
+      'isOnline',
+      'emailNotifications',
+      'marketingEmails',
+      'timezone',
+      'metadata',
+    ];
+
     const userResponse = await db.User.findByPk(newUser.id, {
-      attributes: { exclude: ['passwordHash'] },
+      attributes: userAttributes,
       include: [
         ...(db.MembershipSubscription
           ? [

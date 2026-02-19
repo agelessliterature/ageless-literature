@@ -17,25 +17,24 @@ export default function AdminUserCreatePage() {
     password: '',
     firstName: '',
     lastName: '',
-    role: 'collector',
+    role: 'customer',
     status: 'active',
     defaultLanguage: 'en',
   });
   const [error, setError] = useState('');
 
+  const getErrorMessage = (err: unknown) => {
+    const errorObj = err as { response?: { data?: { message?: string } }; message?: string };
+    return errorObj.response?.data?.message || errorObj.message || 'Failed to create user';
+  };
+
   const createMutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: typeof formData) => {
       const session = await getSession();
 
       if (!session?.accessToken) {
-        console.error('No accessToken in session:', session);
         throw new Error('Authentication token not available. Please log in again.');
       }
-
-      console.log(
-        '[AdminUserCreate] Using accessToken:',
-        session.accessToken.substring(0, 20) + '...',
-      );
 
       const response = await adminApi.post('/admin/users/create', data, {
         headers: {
@@ -50,12 +49,10 @@ export default function AdminUserCreatePage() {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
       router.push('/admin/users');
     },
-    onError: (error: any) => {
-      const errorMessage =
-        error.response?.data?.message || error.message || 'Failed to create user';
+    onError: (error: unknown) => {
+      const errorMessage = getErrorMessage(error);
       setError(errorMessage);
       toast.error(errorMessage);
-      console.error('[AdminUserCreate] Error:', error);
     },
   });
 
@@ -150,7 +147,7 @@ export default function AdminUserCreatePage() {
                   onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-black"
                 >
-                  <option value="collector">Collector</option>
+                  <option value="customer">Customer</option>
                   <option value="vendor">Vendor</option>
                   <option value="admin">Admin</option>
                 </select>
@@ -164,7 +161,8 @@ export default function AdminUserCreatePage() {
                 >
                   <option value="active">Active</option>
                   <option value="inactive">Inactive</option>
-                  <option value="suspended">Suspended</option>
+                  <option value="pending">Pending</option>
+                  <option value="revoked">Revoked</option>
                 </select>
               </div>
               <div>

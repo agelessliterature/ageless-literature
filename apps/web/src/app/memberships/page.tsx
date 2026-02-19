@@ -31,7 +31,20 @@ interface UserSubscription {
 
 export default function MembershipPage() {
   const t = useTranslations('home');
-  const messages = useMessages() as any;
+  const messages = useMessages() as {
+    home?: {
+      memberships?: {
+        plans?: Record<
+          string,
+          {
+            features?: string[];
+            name?: string;
+            tagline?: string;
+          }
+        >;
+      };
+    };
+  };
 
   // Fetch membership plans
   const {
@@ -146,7 +159,7 @@ export default function MembershipPage() {
 
       {/* Plans Grid */}
       <section className="py-12 sm:py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8">
           {plansLoading || subscriptionLoading ? (
             <PageLoading message="Loading membership plans..." fullPage={false} />
           ) : plansError ? (
@@ -204,7 +217,7 @@ export default function MembershipPage() {
 
       {/* Trust Section */}
       <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div>
               <FontAwesomeIcon

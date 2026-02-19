@@ -17,8 +17,9 @@ interface User {
   name: string;
   firstName: string;
   lastName: string;
-  role: 'admin' | 'vendor' | 'collector';
-  status: 'active' | 'inactive' | 'suspended';
+  image?: string | null;
+  role: 'admin' | 'vendor' | 'customer';
+  status: 'active' | 'inactive' | 'pending' | 'revoked';
   emailVerified: boolean;
   provider: 'credentials' | 'google' | 'apple';
   createdAt: string;
@@ -413,9 +414,9 @@ export default function UsersAdminPage() {
                       key={user.id}
                       onClick={() => router.push(`/admin/users/${user.id}/edit`)}
                       thumbnail={
-                        user.profilePhotoUrl || (user as any).image ? (
+                        user.profilePhotoUrl || user.image ? (
                           <img
-                            src={user.profilePhotoUrl || (user as any).image}
+                            src={user.profilePhotoUrl || user.image}
                             alt={user.name || user.email}
                             className="h-full w-full object-cover rounded-full"
                           />
@@ -540,10 +541,10 @@ export default function UsersAdminPage() {
                       >
                         <td className="px-3 sm:px-6 py-4">
                           <div className="flex items-center">
-                            {user.profilePhotoUrl || (user as any).image ? (
+                            {user.profilePhotoUrl || user.image ? (
                               <div className="h-10 w-10 flex-shrink-0 rounded-full relative overflow-hidden">
                                 <img
-                                  src={user.profilePhotoUrl || (user as any).image}
+                                  src={user.profilePhotoUrl || user.image}
                                   alt={user.name || user.email}
                                   className="h-full w-full object-cover"
                                 />

@@ -1,31 +1,54 @@
-// create-admin.mjs
-import bcrypt from 'bcrypt';
-import db from './src/models/index.js'; // make sure this is the correct path
+/**
+ * Create Admin Account Script
+ * Creates an admin user with credentials:
+ *   Email: admin@agelessliterature.local
+ *   Password: password
+ * 
+ * Usage: node create-admin.mjs
+ */
+import db from './src/models/index.js';
 
 async function createAdmin() {
   try {
     await db.sequelize.authenticate();
-    console.log('DB connected');
+    console.log('✓ Database connected');
 
-    const passwordHash = await bcrypt.hash('password', 10); // change to a secure password
+    const adminEmail = 'admin@agelessliterature.local';
+    const adminPassword = 'password';
 
-    const existing = await db.User.findOne({ where: { email: 'admin@agelessliterature.local' } });
+    // Check if admin already exists
+    const existing = await db.User.findOne({ where: { email: adminEmail } });
     if (existing) {
-      console.log('Admin already exists:', existing.email);
+      console.log('✓ Admin account already exists:', existing.email);
+      console.log('  Email:', adminEmail);
+      console.log('  Password: password');
+      console.log('  Role:', existing.role);
       process.exit(0);
     }
 
+    // Create admin user (password will be auto-hashed by beforeCreate hook)
     const admin = await db.User.create({
-      email: 'admin@agelessliterature.local',
-      password: passwordHash,
+      email: adminEmail,
+      password: adminPassword, // Plain password - will be hashed by model hook
+      firstName: 'Admin',
+      lastName: 'User',
       role: 'admin',
-      name: 'Local Admin',
+      status: 'active',
+      emailVerified: true,
+      emailVerifiedAt: new Date(),
+      provider: 'credentials',
+      defaultLanguage: 'en',
     });
 
-    console.log('Admin created:', admin.email);
+    console.log('✓ Admin account created successfully!');
+    console.log('  Email:', admin.email);
+    console.log('  Password: password');
+    console.log('  Role:', admin.role);
+    console.log('  ID:', admin.id);
     process.exit(0);
   } catch (err) {
-    console.error('Error creating admin:', err);
+    console.error('✗ Error creating admin:', err.message);
+    console.error(err);
     process.exit(1);
   }
 }

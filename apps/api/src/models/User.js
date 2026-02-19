@@ -70,9 +70,15 @@ export default (sequelize, DataTypes) => {
         comment: 'User phone number',
       },
       image: {
-        type: DataTypes.STRING(500),
+        type: DataTypes.VIRTUAL,
         allowNull: true,
-        comment: 'Profile picture URL (from OAuth or uploaded)',
+        get() {
+          return this.getDataValue('profilePhotoUrl') || null;
+        },
+        set(value) {
+          this.setDataValue('profilePhotoUrl', value);
+        },
+        comment: 'Profile picture URL (virtual field mapping to profilePhotoUrl)',
       },
       // Cloudinary image fields
       profilePhotoUrl: {
@@ -87,17 +93,21 @@ export default (sequelize, DataTypes) => {
         field: 'profile_photo_public_id',
         comment: 'Cloudinary public_id for profile photo deletion',
       },
-      // OAuth fields
+      // OAuth fields (VIRTUAL - columns don't exist in DB yet, will be added by migration)
       provider: {
-        type: DataTypes.STRING(50),
+        type: DataTypes.VIRTUAL,
         defaultValue: 'credentials',
-        allowNull: false,
+        get() {
+          return 'credentials'; // Default until migration adds the column
+        },
         comment: 'Authentication provider: credentials, google, apple',
       },
       providerId: {
-        type: DataTypes.STRING(255),
-        allowNull: true,
-        field: 'provider_id',
+        type: DataTypes.VIRTUAL,
+        defaultValue: null,
+        get() {
+          return null; // Default until migration adds the column
+        },
         comment: 'User ID from OAuth provider',
       },
       emailVerified: {
@@ -315,8 +325,11 @@ export default (sequelize, DataTypes) => {
     return this.findOne({ where: { email } });
   };
 
-  User.findByProviderId = async function (provider, providerId) {
-    return this.findOne({ where: { provider, providerId } });
+  // TEMPORARILY DISABLED: provider/providerId columns don't exist yet
+  // Will be re-enabled after migrations add these columns
+  User.findByProviderId = async function (_provider, _providerId) {
+    // return this.findOne({ where: { provider, providerId } });
+    return null; // Temporarily disabled - OAuth columns don't exist in DB
   };
 
   User.getOnlineUsers = async function () {

@@ -103,7 +103,7 @@ export default function PlanCard({
               icon={['fal', 'check-circle']}
               className="text-secondary text-lg mt-0.5 flex-shrink-0"
             />
-            <span className="text-gray-700 leading-relaxed text-sm">{feature}</span>
+            <span className="text-gray-700 leading-relaxed text-sm font-bold">{feature}</span>
           </li>
         ))}
       </ul>
