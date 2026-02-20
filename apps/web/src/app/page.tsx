@@ -507,13 +507,13 @@ export default function Home() {
 
             {/* Content on Right */}
             <div className="flex flex-col justify-center">
-              <h2 className="text-4xl md:text-5xl lg:text-7xl font-serif italic text-gray-800 mb-6">
+              <h2 className="text-4xl text-center lg:text-start md:text-5xl lg:text-7xl font-serif italic text-gray-800 mb-6">
                 {t('highSpots.title')}
               </h2>
               <p className="text-lg md:text-base text-gray-600 leading-relaxed mb-8 max-w-[700px]">
                 {t('highSpots.description')}
               </p>
-              <div>
+              <div className="flex justify-center lg:justify-start">
                 <Link
                   href="/high-spots/"
                   className="inline-block bg-black text-white px-8 py-3 text-sm font-semibold hover:bg-[#d4af37] hover:text-black hover:-translate-y-1 transition-all duration-300"
