@@ -63,18 +63,6 @@ export default function ShopPage() {
     }
   }, [searchParams]);
 
-  // Auto-close filters on scroll (mobile only)
-  useEffect(() => {
-    const handleScroll = () => {
-      if (showFilters && window.innerWidth < 1024) {
-        setShowFilters(false);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [showFilters]);
-
   // Reset to page 1 when filters change
   useEffect(() => {
     setPage(1);
@@ -185,7 +173,7 @@ export default function ShopPage() {
       </div>
 
       {/* Search & Filters Bar */}
-      <div className="bg-white border-b border-gray-200 lg:sticky lg:top-0 z-30">
+      <div className="bg-white border-b border-gray-200 sm:static md:static lg:static lg:top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col md:flex-row gap-4">
             {/* Search */}
