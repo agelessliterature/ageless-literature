@@ -18,8 +18,8 @@ interface User {
   firstName: string;
   lastName: string;
   image?: string | null;
-  role: 'admin' | 'vendor' | 'customer';
-  status: 'active' | 'inactive' | 'pending' | 'revoked';
+  role: 'admin' | 'vendor' | 'customer' | 'collector';
+  status: 'active' | 'inactive' | 'pending' | 'revoked' | 'suspended';
   emailVerified: boolean;
   provider: 'credentials' | 'google' | 'apple';
   createdAt: string;
@@ -409,71 +409,78 @@ export default function UsersAdminPage() {
                 <div className="px-6 py-12 text-center text-gray-500">No users found</div>
               ) : (
                 <MobileCardList gap="sm">
-                  {users.map((user) => (
-                    <MobileCard
-                      key={user.id}
-                      onClick={() => router.push(`/admin/users/${user.id}/edit`)}
-                      thumbnail={
-                        user.profilePhotoUrl || user.image ? (
-                          <img
-                            src={user.profilePhotoUrl || user.image}
-                            alt={user.name || user.email}
-                            className="h-full w-full object-cover rounded-full"
-                          />
-                        ) : (
-                          <div className="h-10 w-10 rounded-full bg-primary text-white flex items-center justify-center text-xs font-semibold">
-                            {(() => {
-                              const name = user.name || user.firstName || user.email;
-                              const parts = name.trim().split(' ');
-                              if (parts.length >= 2)
-                                return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
-                              return name.substring(0, 2).toUpperCase();
-                            })()}
+                  {users.map((user) => {
+                    const avatarSrc = user.profilePhotoUrl ?? user.image ?? undefined;
+                    return (
+                      <MobileCard
+                        key={user.id}
+                        onClick={() => router.push(`/admin/users/${user.id}/edit`)}
+                        thumbnail={
+                          avatarSrc ? (
+                            <img
+                              src={avatarSrc}
+                              alt={user.name || user.email}
+                              className="h-full w-full object-cover rounded-full"
+                            />
+                          ) : (
+                            <div className="h-10 w-10 rounded-full bg-primary text-white flex items-center justify-center text-xs font-semibold">
+                              {(() => {
+                                const name = user.name || user.firstName || user.email;
+                                const parts = name.trim().split(' ');
+                                if (parts.length >= 2) {
+                                  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+                                }
+                                return name.substring(0, 2).toUpperCase();
+                              })()}
+                            </div>
+                          )
+                        }
+                        title={user.name || 'N/A'}
+                        subtitle={user.email}
+                        badge={
+                          <div className="flex flex-col gap-1 items-end">
+                            <span
+                              className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full border ${getRoleBadgeClass(user.role)}`}
+                            >
+                              {user.role}
+                            </span>
+                            <span
+                              className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full border ${getStatusBadgeClass(user.status)}`}
+                            >
+                              {user.status}
+                            </span>
                           </div>
-                        )
-                      }
-                      title={user.name || 'N/A'}
-                      subtitle={user.email}
-                      badge={
-                        <div className="flex flex-col gap-1 items-end">
-                          <span
-                            className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full border ${getRoleBadgeClass(user.role)}`}
-                          >
-                            {user.role}
-                          </span>
-                          <span
-                            className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full border ${getStatusBadgeClass(user.status)}`}
-                          >
-                            {user.status}
-                          </span>
-                        </div>
-                      }
-                      details={[
-                        { label: 'Joined', value: new Date(user.createdAt).toLocaleDateString() },
-                        {
-                          label: 'Membership',
-                          value: user.subscription
-                            ? `${user.subscription.plan.name} ($${user.subscription.plan.price}/mo)`
-                            : 'None',
-                        },
-                        ...(user.vendorProfile
-                          ? [{ label: 'Shop', value: user.vendorProfile.shopName }]
-                          : []),
-                      ]}
-                      actions={[
-                        {
-                          label: 'Edit',
-                          href: `/admin/users/${user.id}/edit`,
-                          variant: 'primary' as const,
-                        },
-                        {
-                          label: 'Delete',
-                          onClick: () => openDeleteModal(user),
-                          variant: 'danger' as const,
-                        },
-                      ]}
-                    />
-                  ))}
+                        }
+                        details={[
+                          {
+                            label: 'Joined',
+                            value: new Date(user.createdAt).toLocaleDateString(),
+                          },
+                          {
+                            label: 'Membership',
+                            value: user.subscription
+                              ? `${user.subscription.plan.name} ($${user.subscription.plan.price}/mo)`
+                              : 'None',
+                          },
+                          ...(user.vendorProfile
+                            ? [{ label: 'Shop', value: user.vendorProfile.shopName }]
+                            : []),
+                        ]}
+                        actions={[
+                          {
+                            label: 'Edit',
+                            href: `/admin/users/${user.id}/edit`,
+                            variant: 'primary' as const,
+                          },
+                          {
+                            label: 'Delete',
+                            onClick: () => openDeleteModal(user),
+                            variant: 'danger' as const,
+                          },
+                        ]}
+                      />
+                    );
+                  })}
                 </MobileCardList>
               )}
             </div>
@@ -533,145 +540,148 @@ export default function UsersAdminPage() {
                       </td>
                     </tr>
                   ) : (
-                    users.map((user) => (
-                      <tr
-                        key={user.id}
-                        className="hover:bg-gray-50 transition-colors cursor-pointer"
-                        onClick={() => router.push(`/admin/users/${user.id}/edit`)}
-                      >
-                        <td className="px-3 sm:px-6 py-4">
-                          <div className="flex items-center">
-                            {user.profilePhotoUrl || user.image ? (
-                              <div className="h-10 w-10 flex-shrink-0 rounded-full relative overflow-hidden">
-                                <img
-                                  src={user.profilePhotoUrl || user.image}
-                                  alt={user.name || user.email}
-                                  className="h-full w-full object-cover"
-                                />
+                    users.map((user) => {
+                      const avatarSrc = user.profilePhotoUrl ?? user.image ?? undefined;
+                      return (
+                        <tr
+                          key={user.id}
+                          className="hover:bg-gray-50 transition-colors cursor-pointer"
+                          onClick={() => router.push(`/admin/users/${user.id}/edit`)}
+                        >
+                          <td className="px-3 sm:px-6 py-4">
+                            <div className="flex items-center">
+                              {avatarSrc ? (
+                                <div className="h-10 w-10 flex-shrink-0 rounded-full relative overflow-hidden">
+                                  <img
+                                    src={avatarSrc}
+                                    alt={user.name || user.email}
+                                    className="h-full w-full object-cover"
+                                  />
+                                </div>
+                              ) : (
+                                <div className="h-10 w-10 flex-shrink-0 rounded-full bg-primary text-white flex items-center justify-center text-xs font-semibold">
+                                  {(() => {
+                                    const name = user.name || user.firstName || user.email;
+                                    const parts = name.trim().split(' ');
+                                    if (parts.length >= 2) {
+                                      return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+                                    }
+                                    return name.substring(0, 2).toUpperCase();
+                                  })()}
+                                </div>
+                              )}
+                              <div className="ml-4">
+                                <div className="text-sm font-medium text-gray-900">
+                                  {user.name || 'N/A'}
+                                </div>
+                                <div className="text-sm text-gray-500">{user.email}</div>
+                                <div className="flex items-center gap-2 mt-1">
+                                  {user.emailVerified && (
+                                    <span className="inline-flex items-center text-xs text-green-600">
+                                      <FontAwesomeIcon
+                                        icon={['fal', 'check']}
+                                        className="text-sm mr-1"
+                                      />
+                                      Verified
+                                    </span>
+                                  )}
+                                  {user.provider === 'google' && (
+                                    <span className="inline-flex items-center text-xs text-gray-600 bg-white border border-gray-300 px-2 py-0.5 rounded">
+                                      <FontAwesomeIcon
+                                        icon={['fab', 'google']}
+                                        className="text-sm mr-1"
+                                      />
+                                      Google
+                                    </span>
+                                  )}
+                                  {user.provider === 'apple' && (
+                                    <span className="inline-flex items-center text-xs text-gray-900 bg-white border border-gray-300 px-2 py-0.5 rounded">
+                                      <FontAwesomeIcon
+                                        icon={['fab', 'apple']}
+                                        className="text-sm mr-1"
+                                      />
+                                      Apple
+                                    </span>
+                                  )}
+                                  {user.provider === 'credentials' && (
+                                    <span className="inline-flex items-center text-xs text-gray-600 bg-white border border-gray-300 px-2 py-0.5 rounded">
+                                      <FontAwesomeIcon
+                                        icon={['fal', 'key']}
+                                        className="text-sm mr-1"
+                                      />
+                                      Email/Password
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-3 sm:px-6 py-4">
+                            <span
+                              className={`inline-flex px-2 py-1 text-xs font-semibold border ${getRoleBadgeClass(user.role)}`}
+                            >
+                              {user.role}
+                            </span>
+                            {user.vendorProfile && (
+                              <Link
+                                href={`/admin/vendors/${user.vendorProfile.id}`}
+                                className="block mt-1 text-xs text-blue-600 hover:text-blue-800"
+                              >
+                                <FontAwesomeIcon icon={['fal', 'store']} className="mr-1 text-sm" />
+                                {user.vendorProfile.shopName}
+                              </Link>
+                            )}
+                          </td>
+                          <td className="px-3 sm:px-6 py-4">
+                            <span
+                              className={`inline-flex px-2 py-1 text-xs font-semibold border ${getStatusBadgeClass(user.status)}`}
+                            >
+                              {user.status}
+                            </span>
+                          </td>
+                          <td className="px-3 sm:px-6 py-4">
+                            {user.subscription ? (
+                              <div className="text-sm">
+                                <div className="font-medium text-gray-900 flex items-center">
+                                  <FontAwesomeIcon
+                                    icon={['fal', 'crown']}
+                                    className="text-sm mr-1 text-secondary"
+                                  />
+                                  {user.subscription.plan.name}
+                                </div>
+                                <div className="text-gray-500">
+                                  ${user.subscription.plan.price}/mo
+                                </div>
                               </div>
                             ) : (
-                              <div className="h-10 w-10 flex-shrink-0 rounded-full bg-primary text-white flex items-center justify-center text-xs font-semibold">
-                                {(() => {
-                                  const name = user.name || user.firstName || user.email;
-                                  const parts = name.trim().split(' ');
-                                  if (parts.length >= 2) {
-                                    return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
-                                  }
-                                  return name.substring(0, 2).toUpperCase();
-                                })()}
-                              </div>
+                              <span className="text-sm text-gray-400">None</span>
                             )}
-                            <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">
-                                {user.name || 'N/A'}
-                              </div>
-                              <div className="text-sm text-gray-500">{user.email}</div>
-                              <div className="flex items-center gap-2 mt-1">
-                                {user.emailVerified && (
-                                  <span className="inline-flex items-center text-xs text-green-600">
-                                    <FontAwesomeIcon
-                                      icon={['fal', 'check']}
-                                      className="text-sm mr-1"
-                                    />
-                                    Verified
-                                  </span>
-                                )}
-                                {user.provider === 'google' && (
-                                  <span className="inline-flex items-center text-xs text-gray-600 bg-white border border-gray-300 px-2 py-0.5 rounded">
-                                    <FontAwesomeIcon
-                                      icon={['fab', 'google']}
-                                      className="text-sm mr-1"
-                                    />
-                                    Google
-                                  </span>
-                                )}
-                                {user.provider === 'apple' && (
-                                  <span className="inline-flex items-center text-xs text-gray-900 bg-white border border-gray-300 px-2 py-0.5 rounded">
-                                    <FontAwesomeIcon
-                                      icon={['fab', 'apple']}
-                                      className="text-sm mr-1"
-                                    />
-                                    Apple
-                                  </span>
-                                )}
-                                {user.provider === 'credentials' && (
-                                  <span className="inline-flex items-center text-xs text-gray-600 bg-white border border-gray-300 px-2 py-0.5 rounded">
-                                    <FontAwesomeIcon
-                                      icon={['fal', 'key']}
-                                      className="text-sm mr-1"
-                                    />
-                                    Email/Password
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-3 sm:px-6 py-4">
-                          <span
-                            className={`inline-flex px-2 py-1 text-xs font-semibold border ${getRoleBadgeClass(user.role)}`}
+                          </td>
+                          <td className="px-3 sm:px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
+                            {new Date(user.createdAt).toLocaleDateString()}
+                          </td>
+                          <td
+                            className="px-3 sm:px-6 py-4 text-right text-sm font-medium whitespace-nowrap"
+                            onClick={(e) => e.stopPropagation()}
                           >
-                            {user.role}
-                          </span>
-                          {user.vendorProfile && (
                             <Link
-                              href={`/admin/vendors/${user.vendorProfile.id}`}
-                              className="block mt-1 text-xs text-blue-600 hover:text-blue-800"
+                              href={`/admin/users/${user.id}/edit`}
+                              className="text-yellow-600 hover:text-yellow-900 mr-2"
+                              title="Edit User"
                             >
-                              <FontAwesomeIcon icon={['fal', 'store']} className="mr-1 text-sm" />
-                              {user.vendorProfile.shopName}
+                              <FontAwesomeIcon icon={['fal', 'edit']} className="text-base" />
                             </Link>
-                          )}
-                        </td>
-                        <td className="px-3 sm:px-6 py-4">
-                          <span
-                            className={`inline-flex px-2 py-1 text-xs font-semibold border ${getStatusBadgeClass(user.status)}`}
-                          >
-                            {user.status}
-                          </span>
-                        </td>
-                        <td className="px-3 sm:px-6 py-4">
-                          {user.subscription ? (
-                            <div className="text-sm">
-                              <div className="font-medium text-gray-900 flex items-center">
-                                <FontAwesomeIcon
-                                  icon={['fal', 'crown']}
-                                  className="text-sm mr-1 text-secondary"
-                                />
-                                {user.subscription.plan.name}
-                              </div>
-                              <div className="text-gray-500">
-                                ${user.subscription.plan.price}/mo
-                              </div>
-                            </div>
-                          ) : (
-                            <span className="text-sm text-gray-400">None</span>
-                          )}
-                        </td>
-                        <td className="px-3 sm:px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
-                          {new Date(user.createdAt).toLocaleDateString()}
-                        </td>
-                        <td
-                          className="px-3 sm:px-6 py-4 text-right text-sm font-medium whitespace-nowrap"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Link
-                            href={`/admin/users/${user.id}/edit`}
-                            className="text-yellow-600 hover:text-yellow-900 mr-2"
-                            title="Edit User"
-                          >
-                            <FontAwesomeIcon icon={['fal', 'edit']} className="text-base" />
-                          </Link>
-                          <button
-                            onClick={() => openDeleteModal(user)}
-                            className="text-red-600 hover:text-red-900"
-                            title="Delete User"
-                          >
-                            <FontAwesomeIcon icon={['fal', 'trash']} className="text-base" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))
+                            <button
+                              onClick={() => openDeleteModal(user)}
+                              className="text-red-600 hover:text-red-900"
+                              title="Delete User"
+                            >
+                              <FontAwesomeIcon icon={['fal', 'trash']} className="text-base" />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>

@@ -220,14 +220,14 @@ export default function HighSpotsPage() {
       >
         <h1
           className="absolute top-8 sm:top-12 md:top-16 left-1/2 -translate-x-1/2 
-               text-[2.25rem] sm:text-[2.75rem] md:text-[3.5rem] 
-               font-bold tracking-[0.05em] text-white text-center px-4"
+               text-3xl sm:text-[2.25rem] md:text-[2.75rem] lg:text-[3.5rem]
+               font-bold tracking-[0.05em] text-white text-center px-4 mb-6"
         >
           High Spots
         </h1>
 
         <div className="h-full flex items-center justify-center text-center px-4">
-          <p className="max-w-[48rem] text-[1.25rem] leading-[1.6] text-gray-200">
+          <p className="max-w-[48rem] text-[1.25rem] leading-[1.6] text-gray-200 -mt-3">
             Your insight into the most captivating and significant moments in literature, art, and
             culture. Discover the stories behind the masterpieces, the historical contexts that
             shaped them, and the enduring impact they have on our world today. Each month, we delve
