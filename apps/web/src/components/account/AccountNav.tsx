@@ -55,7 +55,7 @@ export default function AccountNav() {
     }
 
     // Always sign out from NextAuth
-    await signOut({ callbackUrl: '/' });
+    await signOut({ callbackUrl: '/' }); // ensure redirect to root, not localhost
   };
 
   return (

@@ -13,7 +13,7 @@ const { Coupon, CouponRedemption, User, Order } = db;
  */
 export const getVendorCoupons = async (req, res) => {
   try {
-    const { vendorId } = req.vendor;
+    const vendorId = req.vendorId || req.vendor?.id;
     const { page = 1, limit = 20, search, status } = req.query;
 
     const where = { vendorId };
@@ -92,7 +92,7 @@ export const getVendorCoupons = async (req, res) => {
  */
 export const getVendorCoupon = async (req, res) => {
   try {
-    const { vendorId } = req.vendor;
+    const vendorId = req.vendorId || req.vendor?.id;
     const { id } = req.params;
 
     const coupon = await Coupon.findOne({
@@ -127,7 +127,7 @@ export const getVendorCoupon = async (req, res) => {
  */
 export const createVendorCoupon = async (req, res) => {
   try {
-    const { vendorId } = req.vendor;
+    const vendorId = req.vendorId || req.vendor?.id;
 
     const {
       code,
@@ -209,7 +209,7 @@ export const createVendorCoupon = async (req, res) => {
  */
 export const updateVendorCoupon = async (req, res) => {
   try {
-    const { vendorId } = req.vendor;
+    const vendorId = req.vendorId || req.vendor?.id;
     const { id } = req.params;
 
     const coupon = await Coupon.findOne({ where: { id, vendorId } });
@@ -275,7 +275,7 @@ export const updateVendorCoupon = async (req, res) => {
  */
 export const deleteVendorCoupon = async (req, res) => {
   try {
-    const { vendorId } = req.vendor;
+    const vendorId = req.vendorId || req.vendor?.id;
     const { id } = req.params;
 
     const coupon = await Coupon.findOne({ where: { id, vendorId } });

@@ -3,6 +3,11 @@
 import { ReactNode, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 
+// Auto-generate the current month name for the page title
+function getCurrentMonth() {
+  return new Date().toLocaleString('en-US', { month: 'long' });
+}
+
 /* -----------------------------
    Sections Data
 ------------------------------ */
@@ -213,7 +218,7 @@ export default function HighSpotsPage() {
         className="relative h-[700px] w-full bg-cover bg-center"
         style={{
           backgroundImage: `
-            linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)),
+            linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)),
             url('/high-spots/dark-academia-books.webp')
           `,
         }}
@@ -223,7 +228,7 @@ export default function HighSpotsPage() {
                text-3xl sm:text-[2.25rem] md:text-[2.75rem] lg:text-[3.5rem]
                font-bold tracking-[0.05em] text-white text-center px-4 mb-6"
         >
-          High Spots
+          {getCurrentMonth()} High Spots
         </h1>
 
         <div className="h-full flex items-center justify-center text-center px-4">

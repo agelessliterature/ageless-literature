@@ -96,8 +96,7 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
   }, [profileDropdownOpen]);
 
   const handleLogout = async () => {
-    await signOut({ redirect: false });
-    router.push(withBasePath('/'));
+    await signOut({ callbackUrl: '/', redirect: true });
   };
 
   const getInitials = (name?: string | null) => {

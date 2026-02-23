@@ -211,7 +211,7 @@ export default function ProductDetailPage() {
   const addToWishlistMutation = useMutation({
     mutationFn: async () => {
       await api.post('/wishlist', {
-        productId: product.id,
+        bookId: product.id,
       });
     },
     onSuccess: () => {

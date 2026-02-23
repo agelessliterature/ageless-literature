@@ -54,7 +54,7 @@ export default function BuyerOfferModal({ onClose, onSuccess, item }: BuyerOffer
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
-        className="bg-white w-full max-w-md shadow-2xl overflow-hidden"
+        className="bg-white w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
         style={{ borderRadius: '1.5rem' }}
       >
         {/* Header */}
@@ -68,7 +68,7 @@ export default function BuyerOfferModal({ onClose, onSuccess, item }: BuyerOffer
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="p-6 space-y-6 overflow-y-auto flex-1">
           {/* Item Info */}
           <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
             {item.primaryImage && (

@@ -100,14 +100,14 @@ export default function Home() {
     {
       id: 1,
       name: 'CURATED',
-      slug: 'curated',
+      slug: 'first-editions',
       imageUrl:
         'https://res.cloudinary.com/dvohtcqvi/image/upload/v1767984844/categories/african-american.jpg',
     },
     {
       id: 2,
       name: 'AUCTIONS',
-      slug: 'auctions',
+      slug: 'ageless-auctions',
       imageUrl:
         'https://res.cloudinary.com/dvohtcqvi/image/upload/v1767984846/categories/americana.jpg',
     },
@@ -573,6 +573,56 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Download Mobile App Section */}
+      <section className="bg-white py-12">
+        <div className="grid bg-gradient-to-b from-[#ffffff] to-[#c39e25] grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center shadow-sm px-8 lg:px-12 py-12">
+          <div className="flex justify-center relative py-12">
+            {/* Black Circle Backdrop */}
+            <div className="absolute inset-0 flex justify-center items-center">
+              <div className="w-96 h-96 bg-black rounded-full" />
+            </div>
+            {/* Image */}
+            <div
+              className="relative w-full max-w-sm aspect-[12/16] z-10"
+              style={{
+                backgroundImage: `url(${BASE_PATH}/home-page/al-mobile-phone.png)`,
+                backgroundSize: 'contain',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+              }}
+              role="img"
+              aria-label="Mobile App"
+            />
+          </div>
+          <div>
+            <span className="block text-2xl font-bold mb-4">Download Our Mobile App Today!</span>
+            <span className="block text-lg mb-6">
+              Collect like a true professional from anywhere, in the palm of your hand.
+            </span>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <a
+                href="https://apps.apple.com/us/app/ageless-literature/id6747270974"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 bg-black hover:bg-gray-800 hover:-translate-y-1 text-white px-6 py-3 font-semibold transition-all duration-300 flex-1 sm:flex-none"
+              >
+                <FontAwesomeIcon icon={['fab', 'apple']} className="text-xl" />
+                <span>App Store</span>
+              </a>
+              <a
+                href="https://play.google.com/store/apps/details?id=com.agelessliterature"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 bg-black hover:bg-gray-800 hover:-translate-y-1 text-white px-6 py-3 font-semibold transition-all duration-300 flex-1 sm:flex-none"
+              >
+                <FontAwesomeIcon icon={['fab', 'google-play']} className="text-xl" />
+                <span>Google Play</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Explore Categories Section */}
       <section className="py-10 sm:py-12 lg:py-16 bg-white">
         <div className="mx-auto px-4 sm:px-6 lg:px-8">
@@ -673,56 +723,6 @@ export default function Home() {
                   {t('memberships.learnMore')}
                 </Link>
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Download Mobile App Section */}
-      <section className="bg-white py-12">
-        <div className="grid bg-gradient-to-b from-[#ffffff] to-[#c39e25] grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center shadow-sm px-8 lg:px-12 py-12">
-          <div className="flex justify-center relative py-12">
-            {/* Black Circle Backdrop */}
-            <div className="absolute inset-0 flex justify-center items-center">
-              <div className="w-96 h-96 bg-black rounded-full" />
-            </div>
-            {/* Image */}
-            <div
-              className="relative w-full max-w-sm aspect-[12/16] z-10"
-              style={{
-                backgroundImage: `url(${BASE_PATH}/home-page/al-mobile-phone.png)`,
-                backgroundSize: 'contain',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-              }}
-              role="img"
-              aria-label="Mobile App"
-            />
-          </div>
-          <div>
-            <span className="block text-2xl font-bold mb-4">Download Our Mobile App Today!</span>
-            <span className="block text-lg mb-6">
-              Collect like a true professional from anywhere, in the palm of your hand.
-            </span>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <a
-                href="https://apps.apple.com/us/app/ageless-literature/id6747270974"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 bg-black hover:bg-gray-800 hover:-translate-y-1 text-white px-6 py-3 font-semibold transition-all duration-300 flex-1 sm:flex-none"
-              >
-                <FontAwesomeIcon icon={['fab', 'apple']} className="text-xl" />
-                <span>App Store</span>
-              </a>
-              <a
-                href="https://play.google.com/store/apps/details?id=com.agelessliterature"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 bg-black hover:bg-gray-800 hover:-translate-y-1 text-white px-6 py-3 font-semibold transition-all duration-300 flex-1 sm:flex-none"
-              >
-                <FontAwesomeIcon icon={['fab', 'google-play']} className="text-xl" />
-                <span>Google Play</span>
-              </a>
             </div>
           </div>
         </div>

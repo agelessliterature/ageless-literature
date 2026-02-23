@@ -96,8 +96,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, [profileDropdownOpen]);
 
   const handleLogout = async () => {
-    await signOut({ redirect: false });
-    router.push(withBasePath('/admin/login'));
+    await signOut({ callbackUrl: '/admin/login', redirect: true });
   };
 
   const getInitials = (name?: string | null) => {

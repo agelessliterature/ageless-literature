@@ -53,7 +53,7 @@ export default function ShopPage() {
   });
 
   const [page, setPage] = useState(1);
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(true);
 
   // Update filters when URL params change
   useEffect(() => {

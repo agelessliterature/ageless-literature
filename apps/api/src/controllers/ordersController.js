@@ -365,7 +365,21 @@ export const getOrderById = async (req, res) => {
           model: OrderItem,
           as: 'items',
           include: [
-            { model: Book, as: 'book' },
+            {
+              model: Book,
+              as: 'book',
+              include: [
+                {
+                  model: db.BookMedia,
+                  as: 'media',
+                  limit: 3,
+                  order: [
+                    ['isPrimary', 'DESC'],
+                    ['displayOrder', 'ASC'],
+                  ],
+                },
+              ],
+            },
             { model: Product, as: 'product' },
           ],
         },

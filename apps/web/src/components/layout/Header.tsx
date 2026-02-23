@@ -782,7 +782,7 @@ export default function Header() {
                     </Link>
                     <button
                       onClick={() => {
-                        signOut();
+                        signOut({ callbackUrl: '/' });
                         setMobileMenuOpen(false);
                       }}
                       className="flex items-center gap-3 w-full text-left py-4 text-primary hover:text-secondary hover:translate-x-2 text-lg transition-all duration-300"

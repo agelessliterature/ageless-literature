@@ -145,7 +145,8 @@ export default function AccountOrderDetailPage() {
             <div className="space-y-4">
               {order.items?.map((item: any) => {
                 const book = item.book || item.product;
-                const imageUrl = book?.imageUrl || book?.images?.[0]?.url;
+                const imageUrl =
+                  book?.media?.[0]?.imageUrl || book?.imageUrl || book?.images?.[0]?.url;
                 return (
                   <div
                     key={item.id}
