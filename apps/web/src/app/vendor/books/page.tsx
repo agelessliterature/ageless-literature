@@ -85,6 +85,33 @@ export default function VendorBooksPage() {
     enabled: !!session,
   });
 
+  // Fetch status counts for tabs
+  const { data: statusCounts } = useQuery({
+    queryKey: ['vendor-products-status-counts', session?.accessToken],
+    queryFn: async () => {
+      const statuses = ['published', 'draft', 'sold', 'archived'];
+      const [allRes, ...statusRes] = await Promise.all([
+        fetch(getApiUrl('api/vendor/products?page=1&limit=1'), {
+          headers: { Authorization: `Bearer ${session?.accessToken}` },
+        }).then((r) => r.json()),
+        ...statuses.map((s) =>
+          fetch(getApiUrl(`api/vendor/products?page=1&limit=1&status=${s}`), {
+            headers: { Authorization: `Bearer ${session?.accessToken}` },
+          }).then((r) => r.json()),
+        ),
+      ]);
+      return {
+        all: allRes.pagination?.total ?? 0,
+        published: statusRes[0].pagination?.total ?? 0,
+        draft: statusRes[1].pagination?.total ?? 0,
+        sold: statusRes[2].pagination?.total ?? 0,
+        archived: statusRes[3].pagination?.total ?? 0,
+      };
+    },
+    enabled: !!session,
+    staleTime: 30000,
+  });
+
   if (status === 'loading') {
     return <PageLoading message="Loading products..." fullPage={false} />;
   }
@@ -334,6 +361,37 @@ export default function VendorBooksPage() {
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Status Count Tabs */}
+      <div className="flex flex-wrap items-center gap-1 text-sm mb-4 border-b border-gray-200 pb-3">
+        {[
+          { key: 'all', label: 'All' },
+          { key: 'published', label: 'Published' },
+          { key: 'draft', label: 'Drafts' },
+          { key: 'sold', label: 'Sold' },
+          { key: 'archived', label: 'Archived' },
+        ].map((tab, i) => (
+          <span key={tab.key} className="flex items-center">
+            {i > 0 && <span className="text-gray-300 mx-1">|</span>}
+            <button
+              onClick={() => {
+                setStatusFilter(tab.key);
+                setPage(1);
+              }}
+              className={`px-1 py-1 transition-colors ${
+                statusFilter === tab.key
+                  ? 'font-semibold text-gray-900'
+                  : 'text-primary hover:underline'
+              }`}
+            >
+              {tab.label}
+              {statusCounts?.[tab.key as keyof typeof statusCounts] !== undefined
+                ? ` (${statusCounts[tab.key as keyof typeof statusCounts].toLocaleString()})`
+                : ''}
+            </button>
+          </span>
+        ))}
       </div>
 
       {/* Filters */}

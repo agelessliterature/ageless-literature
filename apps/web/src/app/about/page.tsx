@@ -38,8 +38,8 @@ const ASSETS = {
   },
 };
 
-// Page order: 1, 3(video), 4(video), 5, 6(video), 7, 8(video), 9(video)
-const PAGE_ORDER = [1, 3, 4, 5, 6, 7, 8, 9];
+// Page order: 1, 2, 3(video), 4(video), 5, 6(video), 7, 8(video), 9(video)
+const PAGE_ORDER = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 const INITIAL_PAGES = 4;
 
 interface VideoPlayerProps {

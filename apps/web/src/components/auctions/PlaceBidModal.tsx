@@ -276,34 +276,32 @@ function BidForm({
         </div>
 
         {/* Actions - Fixed at bottom */}
-        {bidAmount && isPaymentReady && (
-          <div className="p-6 pt-4 border-t border-gray-200 flex-shrink-0 bg-white">
-            <form onSubmit={handleSubmit} className="flex gap-3">
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex-1 px-6 py-3 border-2 border-gray-300 bg-white text-gray-700 font-semibold hover:bg-gray-100 transition-colors disabled:opacity-50"
-                disabled={placeBidMutation.isPending}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="flex-1 px-6 py-3 bg-black text-white font-semibold hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed border-2 border-black"
-                disabled={placeBidMutation.isPending}
-              >
-                {placeBidMutation.isPending ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <FontAwesomeIcon icon={['fal', 'spinner-third'] as [string, string]} spin />
-                    Placing Bid...
-                  </span>
-                ) : (
-                  'Place Bid'
-                )}
-              </button>
-            </form>
-          </div>
-        )}
+        <div className="p-6 pt-4 border-t border-gray-200 flex-shrink-0 bg-white">
+          <form onSubmit={handleSubmit} className="flex gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-6 py-3 border-2 border-gray-300 bg-white text-gray-700 font-semibold hover:bg-gray-100 transition-colors disabled:opacity-50"
+              disabled={placeBidMutation.isPending}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="flex-1 px-6 py-3 bg-black text-white font-semibold hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed border-2 border-black"
+              disabled={placeBidMutation.isPending || !bidAmount || !isPaymentReady}
+            >
+              {placeBidMutation.isPending ? (
+                <span className="flex items-center justify-center gap-2">
+                  <FontAwesomeIcon icon={['fal', 'spinner-third'] as [string, string]} spin />
+                  Placing Bid...
+                </span>
+              ) : (
+                'Place Bid'
+              )}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

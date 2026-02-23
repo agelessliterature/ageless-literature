@@ -89,6 +89,13 @@ export default function AdminProductsPage() {
   const [showImportWizard, setShowImportWizard] = useState(false);
   const [statusAction, setStatusAction] = useState<'published' | 'draft' | null>(null);
   const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [statusCounts, setStatusCounts] = useState<{
+    all: number;
+    published: number;
+    draft: number;
+    sold: number;
+    archived: number;
+  } | null>(null);
 
   // Get API URL using utility function
   const API_URL = getApiUrl();
@@ -97,6 +104,7 @@ export default function AdminProductsPage() {
   useEffect(() => {
     if (status === 'authenticated') {
       fetchVendors();
+      fetchStatusCounts();
     }
   }, [status]);
 
@@ -121,6 +129,37 @@ export default function AdminProductsPage() {
       }
     } catch (err) {
       console.error('Failed to load vendors:', err);
+    }
+  };
+
+  const fetchStatusCounts = async () => {
+    try {
+      const headers: HeadersInit = { 'Content-Type': 'application/json' };
+      if (session?.accessToken) {
+        headers['Authorization'] = `Bearer ${session.accessToken}`;
+      }
+      const statuses = ['published', 'draft', 'sold', 'archived'];
+      const [allRes, ...statusRes] = await Promise.all([
+        fetch(`${API_URL}/api/admin/products?page=1&limit=1`, {
+          headers,
+          credentials: 'include',
+        }).then((r) => r.json()),
+        ...statuses.map((s) =>
+          fetch(`${API_URL}/api/admin/products?page=1&limit=1&status=${s}`, {
+            headers,
+            credentials: 'include',
+          }).then((r) => r.json()),
+        ),
+      ]);
+      setStatusCounts({
+        all: allRes.pagination?.total ?? 0,
+        published: statusRes[0].pagination?.total ?? 0,
+        draft: statusRes[1].pagination?.total ?? 0,
+        sold: statusRes[2].pagination?.total ?? 0,
+        archived: statusRes[3].pagination?.total ?? 0,
+      });
+    } catch (err) {
+      console.error('Failed to fetch status counts:', err);
     }
   };
 
@@ -422,6 +461,41 @@ export default function AdminProductsPage() {
             Add Product
           </button>
         </div>
+      </div>
+
+      {/* Status Count Tabs */}
+      <div className="flex flex-wrap items-center gap-1 text-sm mb-4 border-b border-gray-200 pb-3">
+        {[
+          { key: '', label: 'All' },
+          { key: 'published', label: 'Published' },
+          { key: 'draft', label: 'Drafts' },
+          { key: 'sold', label: 'Sold' },
+          { key: 'archived', label: 'Archived' },
+        ].map((tab, i) => {
+          const countKey =
+            tab.key === '' ? 'all' : (tab.key as keyof NonNullable<typeof statusCounts>);
+          return (
+            <span key={tab.key} className="flex items-center">
+              {i > 0 && <span className="text-gray-300 mx-1">|</span>}
+              <button
+                onClick={() => {
+                  setStatusFilter(tab.key);
+                  setPagination((p) => ({ ...p, currentPage: 1 }));
+                }}
+                className={`px-1 py-1 transition-colors ${
+                  statusFilter === tab.key
+                    ? 'font-semibold text-gray-900'
+                    : 'text-blue-600 hover:underline'
+                }`}
+              >
+                {tab.label}
+                {statusCounts?.[countKey] !== undefined
+                  ? ` (${statusCounts[countKey].toLocaleString()})`
+                  : ''}
+              </button>
+            </span>
+          );
+        })}
       </div>
 
       {/* Search and Filters */}
