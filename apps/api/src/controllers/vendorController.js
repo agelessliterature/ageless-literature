@@ -826,7 +826,7 @@ export const getPublicVendors = async (req, res) => {
     const now = new Date();
 
     const where = {
-      status: { [Op.in]: ['approved', 'active'] },
+      status: 'approved', // Only show approved vendors
     };
 
     // Filter for featured vendors if requested
@@ -988,7 +988,7 @@ export const getVendorByShopUrl = async (req, res) => {
     const vendor = await Vendor.findOne({
       where: {
         shopUrl,
-        status: { [Op.in]: ['approved', 'active'] },
+        status: 'approved',
       },
       include: [
         {
@@ -1143,7 +1143,7 @@ export const getVendorStatus = async (req, res) => {
       });
     }
 
-    const isActive = ['approved', 'active'].includes(vendor.status);
+    const isActive = vendor.status === 'approved';
 
     return res.json({
       success: true,

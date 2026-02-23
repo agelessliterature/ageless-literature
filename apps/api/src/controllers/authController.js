@@ -64,7 +64,7 @@ export const register = [
         lastName,
         phoneNumber,
         defaultLanguage: language || 'en',
-        provider: 'credentials',
+        // provider: 'credentials', // REMOVED: Virtual field, can't be set directly
         emailVerified: false,
         status: 'active', // Normal signups are immediately active
       });
@@ -208,6 +208,7 @@ export const oauthCallback = async (req, res) => {
     }
 
     // Check if user exists with this OAuth provider
+    // TEMPORARILY DISABLED: provider/providerId columns don't exist in DB yet
     let user = await User.findByProviderId(provider, providerId);
 
     if (!user) {
@@ -216,8 +217,9 @@ export const oauthCallback = async (req, res) => {
 
       if (user) {
         // Link OAuth account to existing user
-        user.provider = provider;
-        user.providerId = providerId;
+        // TEMPORARILY DISABLED: Can't set provider/providerId (virtual fields)
+        // user.provider = provider;
+        // user.providerId = providerId;
         if (emailVerified) {
           user.emailVerified = true;
           user.emailVerifiedAt = new Date();
@@ -230,9 +232,9 @@ export const oauthCallback = async (req, res) => {
           email,
           firstName: names[0] || '',
           lastName: names.slice(1).join(' ') || '',
-          name,
-          provider,
-          providerId,
+          // name, // REMOVED: Not a database column
+          // provider, // REMOVED: Virtual field, can't be set
+          // providerId, // REMOVED: Virtual field, can't be set
           emailVerified: emailVerified || false,
           emailVerifiedAt: emailVerified ? new Date() : null,
           passwordHash: null, // OAuth users don't have passwords

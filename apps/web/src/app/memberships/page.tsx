@@ -31,7 +31,20 @@ interface UserSubscription {
 
 export default function MembershipPage() {
   const t = useTranslations('home');
-  const messages = useMessages() as any;
+  const messages = useMessages() as {
+    home?: {
+      memberships?: {
+        plans?: Record<
+          string,
+          {
+            features?: string[];
+            name?: string;
+            tagline?: string;
+          }
+        >;
+      };
+    };
+  };
 
   // Fetch membership plans
   const {

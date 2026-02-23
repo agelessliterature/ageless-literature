@@ -127,6 +127,11 @@ export default function AdminVendorEditPage() {
     }
   }, [vendorData]);
 
+  const getErrorMessage = (err: unknown, fallback: string) => {
+    const errorObj = err as { response?: { data?: { message?: string } }; message?: string };
+    return errorObj.response?.data?.message || errorObj.message || fallback;
+  };
+
   // Update mutation
   const updateMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
@@ -149,8 +154,26 @@ export default function AdminVendorEditPage() {
       queryClient.invalidateQueries({ queryKey: ['admin-vendors'] });
       router.push(`/admin/vendors/${id}`);
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to update vendor');
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, 'Failed to update vendor'));
+    },
+  });
+
+  const updateImagesMutation = useMutation({
+    mutationFn: async (data: Partial<typeof formData>) => {
+      const session = await getSession();
+      const response = await adminApi.put(`/admin/vendors/${id}`, data, {
+        headers: { Authorization: `Bearer ${session?.accessToken}` },
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success('Images updated successfully');
+      queryClient.invalidateQueries({ queryKey: ['admin-vendor', id] });
+      queryClient.invalidateQueries({ queryKey: ['admin-vendors'] });
+    },
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, 'Failed to update images'));
     },
   });
 
@@ -202,7 +225,7 @@ export default function AdminVendorEditPage() {
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Vendor</h2>
             <p className="text-gray-600 mb-4">
-              {(error as any)?.response?.data?.message || 'Failed to load vendor details'}
+              {getErrorMessage(error, 'Failed to load vendor details')}
             </p>
             <Link
               href="/admin/vendors"
@@ -389,8 +412,13 @@ export default function AdminVendorEditPage() {
                       <ImageUploader
                         currentImage={formData.logoUrl}
                         onUploadSuccess={(result) => {
-                          setFormData({
+                          const nextFormData = {
                             ...formData,
+                            logoUrl: result.url,
+                            logoPublicId: result.publicId,
+                          };
+                          setFormData(nextFormData);
+                          updateImagesMutation.mutate({
                             logoUrl: result.url,
                             logoPublicId: result.publicId,
                           });
@@ -410,8 +438,13 @@ export default function AdminVendorEditPage() {
                       <BannerUploader
                         currentBanner={formData.bannerUrl}
                         onUploadSuccess={(result) => {
-                          setFormData({
+                          const nextFormData = {
                             ...formData,
+                            bannerUrl: result.url,
+                            bannerPublicId: result.publicId,
+                          };
+                          setFormData(nextFormData);
+                          updateImagesMutation.mutate({
                             bannerUrl: result.url,
                             bannerPublicId: result.publicId,
                           });

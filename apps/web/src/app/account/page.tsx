@@ -78,25 +78,21 @@ export default function AccountPage() {
       title: t('profile'),
       href: '/account/profile',
       description: t('profileDescription'),
-      icon: ['fal', 'user'] as [string, string],
     },
     {
       title: t('membership'),
       href: '/account/membership',
       description: t('membershipDescription'),
-      icon: ['fal', 'crown'] as [string, string],
     },
     {
       title: t('preferences'),
       href: '/account/preferences',
       description: t('preferencesDescription'),
-      icon: ['fal', 'cog'] as [string, string],
     },
     {
       title: 'Notifications',
       href: '/account/notifications',
       description: 'View and manage your notifications',
-      icon: ['fal', 'bell'] as [string, string],
     },
     {
       title: 'Wishlist',
@@ -108,19 +104,16 @@ export default function AccountPage() {
       title: t('orders'),
       href: '/account/orders',
       description: t('ordersDescription'),
-      icon: ['fal', 'box'] as [string, string],
     },
     {
       title: t('bids'),
       href: '/account/bids',
       description: t('bidsDescription'),
-      icon: ['fal', 'gavel'] as [string, string],
     },
     {
       title: t('settings'),
       href: '/account/settings',
       description: t('settingsDescription'),
-      icon: ['fal', 'sliders'] as [string, string],
     },
   ];
 
@@ -130,7 +123,6 @@ export default function AccountPage() {
       title: 'Vendor Dashboard',
       href: '/vendor/dashboard',
       description: 'Manage your store, products, and earnings',
-      icon: ['fal', 'store'] as [string, string],
     });
   }
 
@@ -194,21 +186,18 @@ export default function AccountPage() {
       </div>
 
       {/* Clean Grid Layout */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-12 sm:mb-16">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10 mb-12 sm:mb-16">
         {menuItems.map((item) => (
           <Link
             key={item.href}
             href={item.href}
-            className="group relative bg-white border border-gray-200 p-8 hover:border-secondary transition-all duration-300"
+            className="group relative bg-white border border-[#8a8686] p-10 sm:p-12 hover:border-secondary transition-all duration-300"
           >
             {/* Content */}
-            <h3
-              className="text-xl font-semibold text-primary mb-2 group-hover:text-secondary transition-colors duration-300"
-              style={{ fontSize: '1.5rem' }}
-            >
+            <h3 className="text-2xl font-semibold text-primary mb-3 group-hover:text-secondary transition-colors duration-300">
               {item.title}
             </h3>
-            <p className="text-gray-600 text-sm">{item.description}</p>
+            <p className="text-gray-600 text-base">{item.description}</p>
 
             {/* Subtle hover indicator */}
             <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-secondary group-hover:w-full transition-all duration-300"></div>

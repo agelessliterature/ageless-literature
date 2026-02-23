@@ -99,12 +99,11 @@ export default function BookSellersPage() {
     <Link
       href={withBasePath(`/shop/${vendor.shopUrl}`)}
       className="relative overflow-hidden transition-all duration-300 group border border-gray-200 bg-white hover:shadow-xl hover:border-[#d4af37] h-full flex flex-col"
-      style={{ borderRadius: '1.5rem' }}
     >
       {/* Banner with overlay and shop name */}
-      <div className="relative overflow-hidden flex-shrink-0" style={{ height: '300px' }}>
+      <div className="relative w-full aspect-video overflow-hidden flex-shrink-0">
         <div
-          className="absolute inset-0 bg-cover bg-center"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage: vendor.bannerUrl
               ? `url(${vendor.bannerUrl})`

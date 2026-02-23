@@ -534,13 +534,13 @@ export default function Home() {
 
             {/* Content on Right */}
             <div className="flex flex-col justify-center">
-              <h2 className="text-4xl md:text-5xl lg:text-7xl font-serif italic text-gray-800 mb-6">
+              <h2 className="text-4xl text-center lg:text-start md:text-5xl lg:text-7xl font-serif italic text-gray-800 mb-6">
                 {t('highSpots.title')}
               </h2>
               <p className="text-lg md:text-base text-gray-600 leading-relaxed mb-8 max-w-[700px]">
                 {t('highSpots.description')}
               </p>
-              <div>
+              <div className="flex justify-center lg:justify-start">
                 <Link
                   href="/high-spots/"
                   className="inline-block bg-black text-white px-8 py-3 text-sm font-semibold hover:bg-[#d4af37] hover:text-black hover:-translate-y-1 transition-all duration-300"
@@ -659,7 +659,7 @@ export default function Home() {
             </span>
             <div className="flex flex-col sm:flex-row gap-4">
               <a
-                href="https://apps.apple.com/app/ageless-literature/id1234567890"
+                href="https://apps.apple.com/us/app/ageless-literature/id6747270974"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 bg-black hover:bg-gray-800 hover:-translate-y-1 text-white px-6 py-3 font-semibold transition-all duration-300 flex-1 sm:flex-none"

@@ -23,12 +23,16 @@ export default function AdminUserCreatePage() {
   });
   const [error, setError] = useState('');
 
+  const getErrorMessage = (err: unknown) => {
+    const errorObj = err as { response?: { data?: { message?: string } }; message?: string };
+    return errorObj.response?.data?.message || errorObj.message || 'Failed to create user';
+  };
+
   const createMutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: typeof formData) => {
       const session = await getSession();
 
       if (!session?.accessToken) {
-        console.error('No accessToken in session:', session);
         throw new Error('Authentication token not available. Please log in again.');
       }
 
@@ -45,12 +49,10 @@ export default function AdminUserCreatePage() {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
       router.push('/admin/users');
     },
-    onError: (error: any) => {
-      const errorMessage =
-        error.response?.data?.message || error.message || 'Failed to create user';
+    onError: (error: unknown) => {
+      const errorMessage = getErrorMessage(error);
       setError(errorMessage);
       toast.error(errorMessage);
-      console.error('[AdminUserCreate] Error:', error);
     },
   });
 
