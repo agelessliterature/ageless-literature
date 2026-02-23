@@ -231,7 +231,7 @@ export default function HighSpotsPage() {
             Your insight into the most captivating and significant moments in literature, art, and
             culture. Discover the stories behind the masterpieces, the historical contexts that
             shaped them, and the enduring impact they have on our world today. Each month, we delve
-            into a new "High Spot," offering you a deeper understanding and appreciation of the
+            into new High Spots, offering you a deeper understanding and appreciation of the
             treasures that have defined human creativity and expression throughout history.
           </p>
         </div>
