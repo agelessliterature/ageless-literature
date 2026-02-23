@@ -267,9 +267,6 @@ export const updateStagedRow = async (req, res) => {
     if (!row.title || !String(row.title).trim()) {
       rowErrors.push({ field: 'title', message: 'Title is required' });
     }
-    if (!row.author || !String(row.author).trim()) {
-      rowErrors.push({ field: 'author', message: 'Author is required' });
-    }
     if (row.price === null || row.price === undefined || row.price < 0) {
       rowErrors.push({ field: 'price', message: 'Price must be a valid positive number' });
     }

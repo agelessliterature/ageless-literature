@@ -163,7 +163,7 @@ export const getVendorOffers = async (req, res) => {
         {
           model: User,
           as: 'user',
-          attributes: ['id', 'name', 'email'],
+          attributes: ['id', 'firstName', 'lastName', 'email'],
         },
       ],
       order: [['createdAt', 'DESC']],
@@ -483,16 +483,27 @@ export const searchUsers = async (req, res) => {
 
     const users = await User.findAll({
       where: {
-        [Op.or]: [{ name: { [Op.iLike]: `%${q}%` } }, { email: { [Op.iLike]: `%${q}%` } }],
+        [Op.or]: [
+          { firstName: { [Op.iLike]: `%${q}%` } },
+          { lastName: { [Op.iLike]: `%${q}%` } },
+          { email: { [Op.iLike]: `%${q}%` } },
+        ],
         status: 'active',
       },
-      attributes: ['id', 'name', 'email', 'avatar'],
+      attributes: ['id', 'firstName', 'lastName', 'email', 'image'],
       limit: 10,
     });
 
     return res.json({
       success: true,
-      data: users,
+      data: users.map((u) => ({
+        id: u.id,
+        firstName: u.firstName,
+        lastName: u.lastName,
+        name: [u.firstName, u.lastName].filter(Boolean).join(' ') || u.email,
+        email: u.email,
+        image: u.image,
+      })),
     });
   } catch (error) {
     console.error('Error searching users:', error);
@@ -599,12 +610,12 @@ export const createBuyerOffer = async (req, res) => {
 
     // Notify the vendor
     if (Notification && item.vendor) {
-      const buyer = await User.findByPk(userId, { attributes: ['id', 'name'] });
+      const buyer = await User.findByPk(userId, { attributes: ['id', 'firstName', 'lastName'] });
       await Notification.create({
         userId: item.vendor.userId,
         type: 'buyer_offer',
         title: 'New Offer Received',
-        message: `${buyer?.name || 'A buyer'} made an offer of $${offerPrice} on "${item.title}"`,
+        message: `${buyer?.firstName || 'A buyer'} made an offer of $${offerPrice} on "${item.title}"`,
         data: {
           offerId: offer.id,
           itemType,

@@ -102,6 +102,8 @@ export function BookCard({ book }: BookCardProps) {
     addToCartMutation.mutate();
   };
 
+  const isSold = book.status === 'sold' || book.status === 'archived';
+
   return (
     <Link href={`/products/${book.slug}`} className="group block h-full">
       <div
@@ -117,26 +119,19 @@ export function BookCard({ book }: BookCardProps) {
               alt={book.title}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              className={`object-cover group-hover:scale-105 transition-transform duration-300 ${isSold ? 'opacity-60' : ''}`}
             />
           ) : (
             <div className="flex items-center justify-center h-full text-gray-400">
               <FontAwesomeIcon icon={['fal', 'book']} className="text-6xl" />
             </div>
           )}
-
-          {/* Wishlist Button */}
-          {session && (
-            <button
-              onClick={handleToggleWishlist}
-              className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md hover:bg-gray-50 transition-all z-10 hover:scale-110"
-              aria-label={isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
-            >
-              <FontAwesomeIcon
-                icon={isInWishlist ? ['fas', 'heart'] : ['fal', 'heart']}
-                className={`text-base ${isInWishlist ? 'text-red-500' : 'text-gray-600'}`}
-              />
-            </button>
+          {isSold && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="bg-red-600 text-white text-sm font-bold px-4 py-1.5 shadow-lg tracking-wider">
+                SOLD
+              </span>
+            </div>
           )}
         </div>
 
@@ -187,8 +182,8 @@ export function BookCard({ book }: BookCardProps) {
                   className="text-base"
                 />
               </button>
-              {/* Only show Add to Cart button if item is NOT in an auction */}
-              {!('hasActiveAuction' in book && book.hasActiveAuction) && (
+              {/* Only show Add to Cart button if item is NOT in an auction and NOT sold */}
+              {!('hasActiveAuction' in book && book.hasActiveAuction) && !isSold && (
                 <button
                   onClick={handleAddToCart}
                   disabled={addToCartMutation.isPending}

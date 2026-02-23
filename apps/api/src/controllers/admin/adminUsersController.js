@@ -302,7 +302,6 @@ export const deleteUser = async (req, res) => {
 export const getUser = async (req, res) => {
   try {
     const { id } = req.params;
-    console.log('[AdminUsersController] getUser called for ID:', id);
 
     const user = await db.User.findByPk(id, {
       attributes: { exclude: ['passwordHash'] },
@@ -336,14 +335,12 @@ export const getUser = async (req, res) => {
     });
 
     if (!user) {
-      console.log('[AdminUsersController] User not found for ID:', id);
       return res.status(404).json({
         success: false,
         message: 'User not found',
       });
     }
 
-    console.log('[AdminUsersController] Successfully retrieved user:', user.id);
     return res.json({
       success: true,
       data: user,

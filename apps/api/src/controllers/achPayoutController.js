@@ -89,7 +89,6 @@ export const setupACHAccount = async (req, res) => {
           vendor.stripeAccountId,
           vendor.achExternalAccountId,
         );
-        console.log('SUCCESS: Removed old ACH account:', vendor.achExternalAccountId);
       } catch (error) {
         console.error('Warning: Could not remove old ACH account:', error.message);
         // Continue anyway - old account may already be deleted
@@ -100,13 +99,6 @@ export const setupACHAccount = async (req, res) => {
     const bankAccount = await stripe.accounts.createExternalAccount(vendor.stripeAccountId, {
       external_account: stripeToken,
       default_for_currency: true, // Make this the default payout account
-    });
-
-    console.log('SUCCESS: ACH Bank Account Created:', {
-      id: bankAccount.id,
-      bank: bankAccount.bank_name,
-      last4: bankAccount.last4,
-      status: bankAccount.status,
     });
 
     // Update vendor with ONLY non-sensitive data
@@ -279,7 +271,6 @@ export const removeACHAccount = async (req, res) => {
           vendor.stripeAccountId,
           vendor.achExternalAccountId,
         );
-        console.log('SUCCESS: ACH account removed from Stripe:', vendor.achExternalAccountId);
       } catch (error) {
         console.error('Warning: Could not remove ACH from Stripe:', error.message);
         // Continue to clear from database anyway

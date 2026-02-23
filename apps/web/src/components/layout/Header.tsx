@@ -534,19 +534,48 @@ export default function Header() {
               >
                 <FontAwesomeIcon icon={['fal', 'search']} className="text-xl" />
               </button>
-              {session && (
+              {session ? (
+                <>
+                  <Link
+                    href="/account/notifications"
+                    className={`transition-all duration-300 hover:scale-110 relative ${getTextColor()} hover:text-secondary`}
+                    aria-label="Notifications"
+                  >
+                    <FontAwesomeIcon icon={['fal', 'bell']} className="text-xl" />
+                    <span className="sr-only">Notifications</span>
+                    {(unreadCount || 0) > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-secondary text-primary text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
+                        {unreadCount}
+                      </span>
+                    )}
+                  </Link>
+                  <Link
+                    href="/account"
+                    className={`transition-all duration-300 hover:scale-110 flex items-center justify-center ${getTextColor()} hover:text-secondary`}
+                    aria-label="Go to your account"
+                  >
+                    {(session.user as any)?.profilePhotoUrl || session.user?.image ? (
+                      <div className="w-7 h-7 rounded-full overflow-hidden">
+                        <img
+                          src={(session.user as any)?.profilePhotoUrl || session.user.image}
+                          alt={session.user?.name || 'User'}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <FontAwesomeIcon icon={['fal', 'user']} className="text-xl" />
+                    )}
+                    <span className="sr-only">Account</span>
+                  </Link>
+                </>
+              ) : (
                 <Link
-                  href="/account/notifications"
-                  className={`transition-all duration-300 hover:scale-110 relative ${getTextColor()} hover:text-secondary`}
-                  aria-label="Notifications"
+                  href="/auth/login"
+                  className={`transition-all duration-300 hover:scale-110 ${getTextColor()} hover:text-secondary`}
+                  aria-label="Sign in"
                 >
-                  <FontAwesomeIcon icon={['fal', 'bell']} className="text-xl" />
-                  <span className="sr-only">Notifications</span>
-                  {(unreadCount || 0) > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-secondary text-primary text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
-                      {unreadCount}
-                    </span>
-                  )}
+                  <FontAwesomeIcon icon={['fal', 'user']} className="text-xl" />
+                  <span className="sr-only">Sign in</span>
                 </Link>
               )}
               <Link

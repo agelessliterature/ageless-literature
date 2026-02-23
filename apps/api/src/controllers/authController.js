@@ -13,8 +13,7 @@ const { User } = db;
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
 const JWT_EXPIRATION = process.env.JWT_EXPIRES_IN || '30d';
 
-console.log('[Auth] JWT_SECRET configured:', JWT_SECRET ? 'Yes' : 'No');
-console.log('[Auth] JWT_SECRET length:', JWT_SECRET?.length || 0);
+// JWT config validated at startup
 
 /**
  * Register a new user
@@ -80,9 +79,6 @@ export const register = [
         JWT_SECRET,
         { expiresIn: JWT_EXPIRATION },
       );
-
-      console.log('[Register] User created successfully, ID:', user.id);
-      console.log('[Register] Token generated, length:', token?.length || 0);
 
       // Return user data (password excluded by toJSON)
       res.status(201).json({
@@ -252,8 +248,6 @@ export const oauthCallback = async (req, res) => {
         user.profilePhotoUrl.includes('appleid.apple.com'))
     ) {
       try {
-        console.log(`[OAuth] Uploading profile image to Cloudinary for user ${user.id}`);
-
         // Delete old Cloudinary image if it exists
         if (user.profilePhotoPublicId) {
           try {
@@ -271,10 +265,6 @@ export const oauthCallback = async (req, res) => {
         user.profilePhotoPublicId = uploadResult.publicId;
         user.image = uploadResult.secure_url; // Also update legacy image field
         await user.save();
-
-        console.log(
-          `[OAuth] Successfully uploaded profile image to Cloudinary: ${uploadResult.secure_url}`,
-        );
       } catch (uploadError) {
         console.error('[OAuth] Failed to upload profile image to Cloudinary:', uploadError.message);
         // Continue with OAuth login even if image upload fails

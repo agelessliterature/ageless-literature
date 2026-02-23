@@ -75,9 +75,12 @@ export interface BookListItem {
   title: string;
   author: string;
   price: number;
+  salePrice?: number | null;
   condition: string;
   shortDescription: string;
   primaryImage: string | null;
+  hasActiveAuction?: boolean;
+  quantity?: number;
   vendor: {
     id: number;
     shopName: string;

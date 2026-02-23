@@ -97,7 +97,7 @@ function BidForm({
     }
 
     if (amount < minBid) {
-      toast.error(`Bid must be at least $${minBid.toFixed(2)}`);
+      toast.error(`Bid must be at least $${Math.ceil(minBid)}`);
       return;
     }
 
@@ -172,12 +172,12 @@ function BidForm({
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-gray-600">Current Bid:</span>
                 <span className="text-lg font-bold text-secondary-900">
-                  ${currentBid.toFixed(2)}
+                  ${Math.floor(currentBid)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Minimum Bid:</span>
-                <span className="text-lg font-bold text-secondary-900">${minBid.toFixed(2)}</span>
+                <span className="text-lg font-bold text-secondary-900">${Math.ceil(minBid)}</span>
               </div>
             </div>
 
@@ -194,15 +194,15 @@ function BidForm({
                 value={bidAmount}
                 onChange={(e) => setBidAmount(e.target.value)}
                 min={minBid}
-                step="0.01"
-                placeholder={minBid.toFixed(2)}
+                step="1"
+                placeholder={Math.ceil(minBid).toString()}
                 className="w-full pl-8 pr-4 py-3 border-2 border-gray-300 focus:border-secondary-600 focus:outline-none text-lg font-semibold"
                 required
                 disabled={placeBidMutation.isPending}
               />
             </div>
             <p className="text-xs text-gray-500 mt-2">
-              Enter an amount of ${minBid.toFixed(2)} or higher
+              Enter an amount of ${Math.ceil(minBid)} or higher
             </p>
           </div>
 

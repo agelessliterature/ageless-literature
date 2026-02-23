@@ -15,7 +15,7 @@ import {
 // ─── TARGET FIELD DEFINITIONS ───
 export const TARGET_FIELDS = [
   { key: 'title', label: 'Title', required: true, type: 'string' },
-  { key: 'author', label: 'Author', required: true, type: 'string' },
+  { key: 'author', label: 'Author', required: false, type: 'string' },
   { key: 'isbn', label: 'ISBN', required: false, type: 'string' },
   { key: 'description', label: 'Description', required: false, type: 'text' },
   { key: 'shortDescription', label: 'Short Description', required: false, type: 'text' },
@@ -306,9 +306,6 @@ export function validateRows(normalizedRows) {
 
     if (!row.title || !String(row.title).trim()) {
       rowErrors.push({ field: 'title', message: 'Title is required' });
-    }
-    if (!row.author || !String(row.author).trim()) {
-      rowErrors.push({ field: 'author', message: 'Author is required' });
     }
     if (row.price === null || row.price === undefined || row.price < 0) {
       rowErrors.push({ field: 'price', message: 'Price must be a valid positive number' });

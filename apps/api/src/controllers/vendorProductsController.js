@@ -56,8 +56,6 @@ export const getVendorProducts = async (req, res) => {
       where.status = { [Op.ne]: 'archived' };
     }
 
-    console.log('[DEBUG] Fetching products for vendor:', vendor.id);
-
     // Fetch products
     const { count, rows: products } = await Book.findAndCountAll({
       where,
@@ -80,12 +78,6 @@ export const getVendorProducts = async (req, res) => {
       offset: (parseInt(page) - 1) * parseInt(limit),
     });
 
-    console.log('[DEBUG] Found', count, 'products');
-    if (products.length > 0) {
-      console.log('[DEBUG] First product:', products[0].title);
-      console.log('[DEBUG] First product media:', products[0].media);
-    }
-
     // Transform products to match frontend expectations
     const transformedProducts = products.map((product) => {
       const productData = product.toJSON();
@@ -94,19 +86,6 @@ export const getVendorProducts = async (req, res) => {
       const primaryImage = productData.media?.find((m) => m.isPrimary);
       const firstImage = productData.media?.[0];
       const imageSource = primaryImage || firstImage;
-
-      // Debug logging
-      if (productData.id === 394 || productData.id === 550) {
-        console.log(`[DEBUG] Product ${productData.id} - ${productData.title}`);
-        console.log(`[DEBUG] Media array length: ${productData.media?.length || 0}`);
-        console.log(`[DEBUG] First media:`, firstImage);
-        console.log(`[DEBUG] Primary image:`, primaryImage);
-        console.log(`[DEBUG] Image source:`, imageSource);
-        console.log(
-          `[DEBUG] Final imageUrl:`,
-          imageSource?.imageUrl || imageSource?.thumbnailUrl || null,
-        );
-      }
 
       return {
         ...productData,
@@ -226,6 +205,7 @@ export const createProduct = async (req, res) => {
       author,
       isbn,
       description,
+      shortDescription,
       price,
       salePrice,
       quantity,
@@ -249,10 +229,10 @@ export const createProduct = async (req, res) => {
     } = req.body;
 
     // Validation
-    if (!title || !author || !price || !condition) {
+    if (!title || !price || !condition) {
       return res.status(400).json({
         success: false,
-        message: 'Title, author, price, and condition are required',
+        message: 'Title, price, and condition are required',
       });
     }
 
@@ -276,20 +256,22 @@ export const createProduct = async (req, res) => {
       author,
       isbn,
       description: typeof description === 'string' ? { html: description } : description,
-      price,
-      salePrice,
+      shortDescription: shortDescription || null,
+      price: price || 0,
+      salePrice: salePrice === '' || salePrice === undefined ? null : salePrice,
       quantity: quantity || 1,
       condition,
       conditionNotes,
       category,
       publisher,
-      publicationYear,
+      publicationYear:
+        publicationYear === '' || publicationYear === undefined ? null : publicationYear,
       edition,
       language,
       binding,
       isSigned,
       status: dbStatus,
-      shippingWeight,
+      shippingWeight: shippingWeight === '' ? null : shippingWeight,
       shippingDimensions,
       sellerNotes,
       metaTitle,
@@ -297,8 +279,9 @@ export const createProduct = async (req, res) => {
     });
 
     // Handle category associations
-    if (categoryIds && Array.isArray(categoryIds) && categoryIds.length > 0) {
-      const categoryRecords = categoryIds.map((categoryId) => ({
+    const categoryIdArray = Array.isArray(categoryIds) ? categoryIds : [];
+    if (categoryIdArray.length > 0) {
+      const categoryRecords = categoryIdArray.map((categoryId) => ({
         bookId: product.id,
         categoryId: parseInt(categoryId),
       }));
@@ -308,8 +291,9 @@ export const createProduct = async (req, res) => {
     }
 
     // Handle image uploads if provided
-    if (images && images.length > 0) {
-      const mediaRecords = images.map((img, index) => ({
+    const imageArray = Array.isArray(images) ? images : [];
+    if (imageArray.length > 0) {
+      const mediaRecords = imageArray.map((img, index) => ({
         bookId: product.id,
         imageUrl: img.url,
         thumbnailUrl: img.thumbnail || img.url,
@@ -402,6 +386,22 @@ export const updateProduct = async (req, res) => {
     // Map frontend status values to valid DB enum values
     const statusMap = { active: 'published' };
 
+    // Fields that must be numeric (not empty strings)
+    const numericFields = [
+      'price',
+      'salePrice',
+      'quantity',
+      'publicationYear',
+      'shippingWeight',
+      'views',
+      'menuOrder',
+    ];
+    const sanitizeNumeric = (val) => {
+      if (val === '' || val === undefined || val === null) return null;
+      const num = Number(val);
+      return isNaN(num) ? null : num;
+    };
+
     const updates = {};
     allowedUpdates.forEach((field) => {
       if (req.body[field] !== undefined) {
@@ -410,6 +410,8 @@ export const updateProduct = async (req, res) => {
           updates[field] = { html: req.body[field] };
         } else if (field === 'status') {
           updates[field] = statusMap[req.body[field]] || req.body[field];
+        } else if (numericFields.includes(field)) {
+          updates[field] = sanitizeNumeric(req.body[field]);
         } else {
           updates[field] = req.body[field];
         }
@@ -419,13 +421,14 @@ export const updateProduct = async (req, res) => {
     await product.update(updates);
 
     // Handle image updates if provided
-    if (req.body.images) {
+    if (req.body.images !== undefined) {
       // Remove old images
       await BookMedia.destroy({ where: { bookId: id } });
 
       // Add new images
-      if (req.body.images.length > 0) {
-        const mediaRecords = req.body.images.map((img, index) => ({
+      const imageArray = Array.isArray(req.body.images) ? req.body.images : [];
+      if (imageArray.length > 0) {
+        const mediaRecords = imageArray.map((img, index) => ({
           bookId: id,
           imageUrl: img.url,
           thumbnailUrl: img.thumbnail || img.url,
@@ -441,8 +444,9 @@ export const updateProduct = async (req, res) => {
       await BookCategory.destroy({ where: { bookId: id } });
 
       // Add new category associations
-      if (req.body.categoryIds && req.body.categoryIds.length > 0) {
-        const categoryRecords = req.body.categoryIds.map((categoryId) => ({
+      const categoryIdArray = Array.isArray(req.body.categoryIds) ? req.body.categoryIds : [];
+      if (categoryIdArray.length > 0) {
+        const categoryRecords = categoryIdArray.map((categoryId) => ({
           bookId: parseInt(id),
           categoryId: parseInt(categoryId),
         }));
@@ -538,7 +542,7 @@ export const updateProductStatus = async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 
-    if (!['draft', 'active', 'archived'].includes(status)) {
+    if (!['draft', 'published', 'archived'].includes(status)) {
       return res.status(400).json({
         success: false,
         message: 'Invalid status value',

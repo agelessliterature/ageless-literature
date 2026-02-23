@@ -108,11 +108,23 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
       return;
     }
 
+    // Sanitize numeric fields: convert empty strings and NaN to null
+    const sanitizeNumeric = (val: any): number | null => {
+      if (val === '' || val === undefined || val === null) return null;
+      const num = typeof val === 'string' ? parseFloat(val) : val;
+      return isNaN(num) ? null : num;
+    };
+
     const dataToSubmit: ProductFormData = {
       ...(formData as ProductFormData),
+      price: String(sanitizeNumeric(formData.price) ?? 0),
+      quantity: sanitizeNumeric(formData.quantity) ?? 1,
+      tags: Array.isArray((formData as any).tags) ? (formData as any).tags : [],
       images,
       status,
       categoryIds,
+      isSigned: (formData as any).isSigned ?? false,
+      isAuthenticated: (formData as any).isAuthenticated ?? false,
       // Only include shortDescription if checkbox is checked
       shortDescription: includeShortDescription ? formData.shortDescription : undefined,
       // Only include condition if checkbox is checked
@@ -219,10 +231,7 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Images <span className="text-red-500">*</span>
             </label>
-            <ImageUploader images={images} onChange={setImages} maxImages={10} />
-            <p className="text-xs text-gray-500 mt-2">
-              Upload up to 10 images. The first image will be the primary image.
-            </p>
+            <ImageUploader images={images} onChange={setImages} />
           </div>
         </div>
       </div>
@@ -240,7 +249,7 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
               min="0"
               step="0.01"
               value={formData.price}
-              onChange={(e) => handleChange('price', parseFloat(e.target.value))}
+              onChange={(e) => handleChange('price', e.target.value)}
               className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
               required
             />
@@ -252,7 +261,7 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
               type="number"
               min="1"
               value={formData.quantity}
-              onChange={(e) => handleChange('quantity', parseInt(e.target.value))}
+              onChange={(e) => handleChange('quantity', e.target.value)}
               className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
             />
           </div>

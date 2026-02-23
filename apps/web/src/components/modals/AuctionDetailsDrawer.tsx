@@ -216,7 +216,9 @@ export default function AuctionDetailsDrawer({
                         </div>
                         <div>
                           <div className="font-medium text-sm">
-                            {bid.user?.name || 'Unknown User'}
+                            {bid.user?.name ||
+                              [bid.user?.firstName, bid.user?.lastName].filter(Boolean).join(' ') ||
+                              'Unknown User'}
                           </div>
                           <div className="text-xs text-gray-500">
                             {new Date(bid.createdAt).toLocaleString()}
@@ -243,7 +245,13 @@ export default function AuctionDetailsDrawer({
                       className="text-2xl text-yellow-500"
                     />
                     <div>
-                      <div className="font-bold text-gray-900">{auction.winner.name}</div>
+                      <div className="font-bold text-gray-900">
+                        {auction.winner.name ||
+                          [auction.winner.firstName, auction.winner.lastName]
+                            .filter(Boolean)
+                            .join(' ') ||
+                          'Winner'}
+                      </div>
                       <div className="text-sm text-gray-600">{auction.winner.email}</div>
                     </div>
                   </div>

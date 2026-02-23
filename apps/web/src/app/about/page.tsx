@@ -9,6 +9,7 @@ const ASSETS = {
   // Static image pages (SVG or PNG)
   images: {
     1: '/about-page/1.svg',
+    2: '/about-page/2.svg',
     5: '/about-page/5.svg',
     7: '/about-page/7.svg',
   },

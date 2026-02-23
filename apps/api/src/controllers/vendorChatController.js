@@ -242,8 +242,6 @@ export const markAsRead = async (req, res) => {
       });
     }
 
-    console.log(`Marking conversation ${conversationId} as read for vendor`);
-
     return res.status(200).json({
       success: true,
       message: 'Conversation marked as read',

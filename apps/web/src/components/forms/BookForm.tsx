@@ -73,7 +73,7 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
     edition: book?.edition || '',
     language: book?.language || 'English',
     binding: book?.binding || 'Hardcover',
-    status: (book?.status as 'draft' | 'active' | 'sold') || 'draft',
+    status: (book?.status as 'draft' | 'published' | 'sold') || 'published',
   });
 
   useEffect(() => {
@@ -117,11 +117,11 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
     },
   });
 
-  const handleSubmit = async (e: React.FormEvent, status: 'draft' | 'active') => {
+  const handleSubmit = async (e: React.FormEvent, statusOverride?: 'draft' | 'published') => {
     e.preventDefault();
 
     if (!formData.title || !formData.description || !formData.price) {
-      alert('Please fill in all required fields');
+      alert('Please fill in all required fields (Title, Description, Price)');
       return;
     }
 
@@ -130,11 +130,27 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
       return;
     }
 
+    // Sanitize numeric fields: convert empty strings to undefined so they won't be sent as ""
+    const sanitizeNumericStr = (val: any): string | undefined => {
+      if (val === '' || val === undefined || val === null) return undefined;
+      const num = typeof val === 'string' ? parseFloat(val) : val;
+      return isNaN(num) ? undefined : String(num);
+    };
+    const sanitizeNumericInt = (val: any): number | undefined => {
+      if (val === '' || val === undefined || val === null) return undefined;
+      const num = typeof val === 'string' ? parseInt(val, 10) : val;
+      return isNaN(num) ? undefined : num;
+    };
+
     const dataToSubmit: BookFormData = {
       ...(formData as BookFormData),
+      price: sanitizeNumericStr(formData.price) || '0',
+      salePrice: sanitizeNumericStr(formData.salePrice),
+      quantity: sanitizeNumericInt(formData.quantity) ?? 1,
+      publicationYear: sanitizeNumericInt(formData.publicationYear),
       categoryIds: selectedCategoryIds,
       images,
-      status,
+      status: statusOverride ?? (formData.status as 'draft' | 'published'),
       // Only include shortDescription if checkbox is checked
       shortDescription: includeShortDescription ? formData.shortDescription : undefined,
     };
@@ -250,10 +266,7 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Images <span className="text-red-500">*</span>
             </label>
-            <ImageUploader images={images} onChange={setImages} maxImages={10} />
-            <p className="text-xs text-gray-500 mt-2">
-              Upload up to 10 images. The first image will be the primary image.
-            </p>
+            <ImageUploader images={images} onChange={setImages} />
           </div>
         </div>
       </div>
@@ -343,7 +356,7 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
               min="0"
               step="0.01"
               value={formData.price}
-              onChange={(e) => handleChange('price', parseFloat(e.target.value))}
+              onChange={(e) => handleChange('price', e.target.value)}
               className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
               required
             />
@@ -355,10 +368,8 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
               type="number"
               min="0"
               step="0.01"
-              value={formData.salePrice || ''}
-              onChange={(e) =>
-                handleChange('salePrice', e.target.value ? parseFloat(e.target.value) : '')
-              }
+              value={formData.salePrice ?? ''}
+              onChange={(e) => handleChange('salePrice', e.target.value)}
               className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
               placeholder="Optional discounted price"
             />
@@ -376,7 +387,7 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
               type="number"
               min="1"
               value={formData.quantity}
-              onChange={(e) => handleChange('quantity', parseInt(e.target.value))}
+              onChange={(e) => handleChange('quantity', e.target.value)}
               className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
             />
           </div>
@@ -453,29 +464,76 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
         </div>
       </div>
 
+      {/* Listing Status */}
+      <div className="bg-white shadow p-6">
+        <h2 className="text-lg font-semibold mb-4">Listing Status</h2>
+        <div className="flex gap-4">
+          <label
+            className={`flex-1 flex items-center gap-3 border-2 rounded-lg p-4 cursor-pointer transition-colors ${
+              formData.status === 'published'
+                ? 'border-green-500 bg-green-50'
+                : 'border-gray-200 hover:border-gray-300'
+            }`}
+          >
+            <input
+              type="radio"
+              name="listing-status"
+              value="published"
+              checked={formData.status === 'published'}
+              onChange={() => handleChange('status', 'published')}
+              className="h-4 w-4 text-green-600 focus:ring-green-500"
+            />
+            <div>
+              <p className="font-semibold text-sm text-gray-900">Published</p>
+              <p className="text-xs text-gray-500">Visible in your shop immediately</p>
+            </div>
+          </label>
+          <label
+            className={`flex-1 flex items-center gap-3 border-2 rounded-lg p-4 cursor-pointer transition-colors ${
+              formData.status === 'draft'
+                ? 'border-yellow-400 bg-yellow-50'
+                : 'border-gray-200 hover:border-gray-300'
+            }`}
+          >
+            <input
+              type="radio"
+              name="listing-status"
+              value="draft"
+              checked={formData.status === 'draft'}
+              onChange={() => handleChange('status', 'draft')}
+              className="h-4 w-4 text-yellow-500 focus:ring-yellow-400"
+            />
+            <div>
+              <p className="font-semibold text-sm text-gray-900">Draft</p>
+              <p className="text-xs text-gray-500">Save privately — not shown in your shop</p>
+            </div>
+          </label>
+        </div>
+      </div>
+
       {/* Action Buttons */}
       <div className="flex justify-end gap-3">
         <button
           type="button"
-          onClick={(e) => handleSubmit(e, 'draft')}
+          onClick={(e) => handleSubmit(e)}
           disabled={mutation.isPending}
-          className="px-4 py-2 border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-        >
-          Save as Draft
-        </button>
-        <button
-          type="button"
-          onClick={(e) => handleSubmit(e, 'active')}
-          disabled={mutation.isPending}
-          className="px-4 py-2 bg-primary text-white text-sm font-medium hover:bg-primary-dark disabled:opacity-50"
+          className={`px-6 py-2 text-sm font-medium text-white disabled:opacity-50 transition-colors ${
+            formData.status === 'draft'
+              ? 'bg-yellow-500 hover:bg-yellow-600'
+              : 'bg-primary hover:bg-primary-dark'
+          }`}
         >
           {mutation.isPending
             ? isEdit
-              ? 'Updating...'
-              : 'Publishing...'
-            : isEdit
-              ? 'Update'
-              : 'Publish Now'}
+              ? 'Saving...'
+              : 'Creating...'
+            : formData.status === 'draft'
+              ? isEdit
+                ? 'Save as Draft'
+                : 'Create as Draft'
+              : isEdit
+                ? 'Save & Publish'
+                : 'Publish Now'}
         </button>
       </div>
     </form>

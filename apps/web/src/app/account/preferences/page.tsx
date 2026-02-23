@@ -131,11 +131,21 @@ export default function PreferencesPage() {
     setLoading(true);
 
     try {
-      // TODO: Call API to update preferences
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      toast.success('Preferences updated successfully!');
-    } catch (error) {
-      toast.error('Failed to update preferences');
+      const res = await api.patch(`/users/${(session?.user as any)?.id}`, {
+        emailNotifications: formData.emailNotifications,
+        metadata: {
+          bidAlerts: formData.bidAlerts,
+          auctionReminders: formData.auctionReminders,
+          newsletter: formData.newsletter,
+        },
+        currency: formData.currency,
+        defaultLanguage: formData.language,
+      });
+      if (res.data?.success) {
+        toast.success('Preferences updated successfully!');
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to update preferences');
     } finally {
       setLoading(false);
     }

@@ -58,7 +58,7 @@ export default function AdminOrdersPage() {
     },
     onSuccess: () => {
       toast.success('Tracking number added');
-      queryClient.invalidateQueries({ queryKey: ['vendor-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
       setSelectedOrder(null);
       setTrackingNumber('');
     },

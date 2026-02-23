@@ -299,6 +299,17 @@ export default function ProductDetailPage() {
         initialIndex={selectedImage}
       />
 
+      {/* Back to Shop */}
+      <div className="py-4">
+        <button
+          onClick={() => router.back()}
+          className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+        >
+          <FontAwesomeIcon icon={['fal', 'arrow-left'] as [string, string]} />
+          <span>Back</span>
+        </button>
+      </div>
+
       {/* Image Carousel Section */}
       <div className="relative mb-6 sm:mb-8">
         <div className="bg-gray-100 overflow-hidden">

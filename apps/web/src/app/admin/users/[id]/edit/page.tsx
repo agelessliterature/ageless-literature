@@ -51,7 +51,7 @@ export default function AdminUserEditPage() {
         firstName: userData.firstName || '',
         lastName: userData.lastName || '',
         email: userData.email || '',
-        role: userData.role || 'collector',
+        role: userData.role || 'customer',
         status: userData.status || 'active',
         phoneNumber: userData.phoneNumber || '',
         defaultLanguage: userData.defaultLanguage || 'en',
@@ -311,7 +311,7 @@ export default function AdminUserEditPage() {
                       onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                       className="w-full px-4 py-3 border border-gray-300 focus:ring-2 focus:ring-black focus:border-transparent"
                     >
-                      <option value="collector">Collector</option>
+                      <option value="customer">Collector</option>
                       <option value="vendor">Vendor</option>
                       <option value="admin">Admin</option>
                     </select>
@@ -325,7 +325,8 @@ export default function AdminUserEditPage() {
                     >
                       <option value="active">Active</option>
                       <option value="inactive">Inactive</option>
-                      <option value="suspended">Suspended</option>
+                      <option value="pending">Pending</option>
+                      <option value="revoked">Suspended</option>
                     </select>
                   </div>
                 </div>

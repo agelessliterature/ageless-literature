@@ -12,7 +12,32 @@ import { motion, useInView } from 'framer-motion';
 import { BASE_PATH } from '@/lib/basePath';
 import PageLoading from '@/components/ui/PageLoading';
 import EmptyState from '@/components/ui/EmptyState';
-// import CountUp from 'react-countup';
+
+// Custom count-up hook
+function useCountUp(end: number, duration: number = 2000, start: boolean = false) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    if (!start || end === 0) {
+      setCount(end);
+      return;
+    }
+    let startTime: number | null = null;
+    let animationFrame: number;
+    const step = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      // Ease out quad
+      const eased = 1 - (1 - progress) * (1 - progress);
+      setCount(Math.floor(eased * end));
+      if (progress < 1) {
+        animationFrame = requestAnimationFrame(step);
+      }
+    };
+    animationFrame = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(animationFrame);
+  }, [end, duration, start]);
+  return count;
+}
 
 // Stats Card Component with Count-Up Animation
 function StatsCard({
@@ -31,12 +56,14 @@ function StatsCard({
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true });
   const [hasAnimated, setHasAnimated] = useState(false);
+  const animatedValue = useCountUp(value, 2000, hasAnimated);
 
   useEffect(() => {
     if (isInView && !hasAnimated) {
-      setHasAnimated(true);
+      const timer = setTimeout(() => setHasAnimated(true), delay * 1000);
+      return () => clearTimeout(timer);
     }
-  }, [isInView, hasAnimated]);
+  }, [isInView, hasAnimated, delay]);
 
   return (
     <motion.div
@@ -54,7 +81,7 @@ function StatsCard({
         />
       </div>
       <div className="text-4xl font-bold text-primary mb-2">
-        {value.toLocaleString()}
+        {animatedValue.toLocaleString()}
         {suffix}
       </div>
       <p className="text-gray-600 font-medium">{label}</p>

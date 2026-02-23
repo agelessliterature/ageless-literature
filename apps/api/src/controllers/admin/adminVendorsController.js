@@ -63,14 +63,13 @@ export const listAll = async (req, res) => {
         {
           model: User,
           as: 'user',
-          attributes: ['id', 'email', 'firstName', 'lastName', 'name', 'provider', 'createdAt'],
+          attributes: ['id', 'email', 'firstName', 'lastName', 'provider', 'createdAt'],
           where: search
             ? {
                 [Op.or]: [
                   { email: { [Op.iLike]: `%${search}%` } },
                   { firstName: { [Op.iLike]: `%${search}%` } },
                   { lastName: { [Op.iLike]: `%${search}%` } },
-                  { name: { [Op.iLike]: `%${search}%` } },
                 ],
               }
             : undefined,
@@ -113,7 +112,6 @@ export const listAll = async (req, res) => {
 export const getVendorById = async (req, res) => {
   try {
     const { id } = req.params;
-    console.log('[AdminVendorsController] getVendorById called for ID:', id);
 
     const vendor = await Vendor.findByPk(id, {
       include: [
@@ -134,7 +132,6 @@ export const getVendorById = async (req, res) => {
     });
 
     if (!vendor) {
-      console.log('[AdminVendorsController] Vendor not found for ID:', id);
       return res.status(404).json({
         success: false,
         message: 'Vendor not found',
@@ -183,7 +180,6 @@ export const getVendorById = async (req, res) => {
       // Use default empty earnings summary
     }
 
-    console.log('[AdminVendorsController] Successfully retrieved vendor:', vendor.id);
     return res.json({
       success: true,
       data: {
@@ -734,7 +730,7 @@ export const getVendorOrders = async (req, res) => {
             {
               model: User,
               as: 'user',
-              attributes: ['id', 'email', 'name'],
+              attributes: ['id', 'email', 'firstName', 'lastName'],
             },
           ],
         },
@@ -951,7 +947,7 @@ export const createVendor = async (req, res) => {
         {
           model: User,
           as: 'user',
-          attributes: ['id', 'email', 'firstName', 'lastName', 'name'],
+          attributes: ['id', 'email', 'firstName', 'lastName'],
         },
       ],
     });
@@ -1103,7 +1099,7 @@ export const createVendorWithUser = async (req, res) => {
         {
           model: User,
           as: 'user',
-          attributes: ['id', 'email', 'firstName', 'lastName', 'name'],
+          attributes: ['id', 'email', 'firstName', 'lastName'],
         },
       ],
     });

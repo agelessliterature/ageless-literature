@@ -17,7 +17,7 @@ export default function AdminUserCreatePage() {
     password: '',
     firstName: '',
     lastName: '',
-    role: 'collector',
+    role: 'customer',
     status: 'active',
     defaultLanguage: 'en',
   });
@@ -31,11 +31,6 @@ export default function AdminUserCreatePage() {
         console.error('No accessToken in session:', session);
         throw new Error('Authentication token not available. Please log in again.');
       }
-
-      console.log(
-        '[AdminUserCreate] Using accessToken:',
-        session.accessToken.substring(0, 20) + '...',
-      );
 
       const response = await adminApi.post('/admin/users/create', data, {
         headers: {
@@ -150,7 +145,7 @@ export default function AdminUserCreatePage() {
                   onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-black"
                 >
-                  <option value="collector">Collector</option>
+                  <option value="customer">Collector</option>
                   <option value="vendor">Vendor</option>
                   <option value="admin">Admin</option>
                 </select>
@@ -164,7 +159,8 @@ export default function AdminUserCreatePage() {
                 >
                   <option value="active">Active</option>
                   <option value="inactive">Inactive</option>
-                  <option value="suspended">Suspended</option>
+                  <option value="pending">Pending</option>
+                  <option value="revoked">Suspended</option>
                 </select>
               </div>
               <div>

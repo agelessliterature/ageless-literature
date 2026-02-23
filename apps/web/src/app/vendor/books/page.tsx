@@ -30,6 +30,8 @@ export default function VendorBooksPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [conditionFilter, setConditionFilter] = useState('all');
+  const [sortOption, setSortOption] = useState('createdAt_DESC');
+  const [auctionFilter, setAuctionFilter] = useState<'all' | 'auction' | 'non-auction'>('all');
   const [page, setPage] = useState(1);
   const [showItemTypeModal, setShowItemTypeModal] = useState(false);
   const [showImportWizard, setShowImportWizard] = useState(false);
@@ -46,11 +48,14 @@ export default function VendorBooksPage() {
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: ['vendor-products', page, search, statusFilter, conditionFilter],
+    queryKey: ['vendor-products', page, search, statusFilter, conditionFilter, sortOption],
     queryFn: async () => {
+      const [sortBy, sortOrder] = sortOption.split('_');
       const params = new URLSearchParams({
         page: page.toString(),
         limit: '20',
+        sortBy,
+        sortOrder,
         ...(search && { search }),
         ...(statusFilter !== 'all' && { status: statusFilter }),
         ...(conditionFilter !== 'all' && { condition: conditionFilter }),
@@ -97,9 +102,15 @@ export default function VendorBooksPage() {
   const auctionMap = new Map();
   activeAuctions.forEach((auction: any) => {
     if (auction.auctionableType === 'book' && ['active', 'upcoming'].includes(auction.status)) {
-      // Convert to string to ensure consistent comparison
       auctionMap.set(String(auction.auctionableId), auction);
     }
+  });
+
+  // Apply auction filter client-side
+  const filteredProducts = products.filter((p: any) => {
+    if (auctionFilter === 'auction') return auctionMap.has(String(p.id));
+    if (auctionFilter === 'non-auction') return !auctionMap.has(String(p.id));
+    return true;
   });
 
   const handleBulkDelete = async () => {
@@ -126,12 +137,43 @@ export default function VendorBooksPage() {
     }
   };
 
+  const handleBulkStatusChange = async (newStatus: string) => {
+    if (selectedProducts.size === 0) return;
+    const count = selectedProducts.size;
+    const label = newStatus === 'published' ? 'publish' : 'set to draft';
+    if (
+      !confirm(
+        `${label.charAt(0).toUpperCase() + label.slice(1)} ${count} product${count > 1 ? 's' : ''}?`,
+      )
+    )
+      return;
+    try {
+      await Promise.all(
+        Array.from(selectedProducts).map((id) =>
+          fetch(getApiUrl(`api/vendor/products/${id}/status`), {
+            method: 'PATCH',
+            headers: {
+              Authorization: `Bearer ${session?.accessToken}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ status: newStatus }),
+          }),
+        ),
+      );
+      setSelectedProducts(new Set());
+      setSelectAll(false);
+      refetch();
+    } catch {
+      alert(`Failed to ${label} products`);
+    }
+  };
+
   const handleSelectAll = () => {
     if (selectAll) {
       setSelectedProducts(new Set());
       setSelectAll(false);
     } else {
-      const allIds = new Set<number>(products.map((p: any) => p.id));
+      const allIds = new Set<number>(filteredProducts.map((p: any) => p.id));
       setSelectedProducts(allIds);
       setSelectAll(true);
     }
@@ -145,7 +187,33 @@ export default function VendorBooksPage() {
       newSelected.add(id);
     }
     setSelectedProducts(newSelected);
-    setSelectAll(newSelected.size === products.length && products.length > 0);
+    setSelectAll(newSelected.size === filteredProducts.length && filteredProducts.length > 0);
+  };
+
+  const handleStatusChange = async (productId: number, newStatus: string) => {
+    if (
+      newStatus === 'archived' &&
+      !confirm('Archive this product? It will be hidden from your shop.')
+    )
+      return;
+    try {
+      const res = await fetch(getApiUrl(`api/vendor/products/${productId}/status`), {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${session?.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        alert(err.message || 'Failed to update status');
+      } else {
+        refetch();
+      }
+    } catch {
+      alert('Failed to update status');
+    }
   };
 
   const handleExportCSV = async () => {
@@ -214,15 +282,34 @@ export default function VendorBooksPage() {
             <h1 className="text-2xl sm:text-3xl font-bold text-primary">My Products</h1>
             <p className="text-gray-600 mt-2">Manage your book listings and inventory</p>
           </div>
-          <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
             {selectedProducts.size > 0 && (
-              <button
-                onClick={handleBulkDelete}
-                className="flex items-center justify-center gap-2 bg-red-600 text-white px-4 py-2 hover:bg-red-700 transition w-full sm:w-auto"
-              >
-                <FontAwesomeIcon icon={['fal', 'trash']} className="text-base" />
-                Delete Selected ({selectedProducts.size})
-              </button>
+              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto p-2 bg-primary/5 border border-primary/20 rounded">
+                <span className="text-sm font-medium text-primary pl-1">
+                  {selectedProducts.size} selected
+                </span>
+                <button
+                  onClick={() => handleBulkStatusChange('published')}
+                  className="flex items-center gap-1.5 bg-green-600 text-white px-3 py-1.5 text-sm hover:bg-green-700 transition rounded"
+                >
+                  <FontAwesomeIcon icon={['fal', 'check-circle']} className="text-sm" />
+                  Publish
+                </button>
+                <button
+                  onClick={() => handleBulkStatusChange('draft')}
+                  className="flex items-center gap-1.5 bg-yellow-500 text-white px-3 py-1.5 text-sm hover:bg-yellow-600 transition rounded"
+                >
+                  <FontAwesomeIcon icon={['fal', 'file-alt']} className="text-sm" />
+                  Set Draft
+                </button>
+                <button
+                  onClick={handleBulkDelete}
+                  className="flex items-center gap-1.5 bg-red-600 text-white px-3 py-1.5 text-sm hover:bg-red-700 transition rounded"
+                >
+                  <FontAwesomeIcon icon={['fal', 'trash']} className="text-sm" />
+                  Delete
+                </button>
+              </div>
             )}
             <button
               onClick={() => setShowImportWizard(true)}
@@ -251,7 +338,8 @@ export default function VendorBooksPage() {
 
       {/* Filters */}
       <div className="bg-white border border-gray-200 p-3 sm:p-4 mb-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {/* Search */}
           <div className="relative">
             <FontAwesomeIcon
               icon={['fal', 'search']}
@@ -266,6 +354,7 @@ export default function VendorBooksPage() {
             />
           </div>
 
+          {/* Status */}
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -275,28 +364,69 @@ export default function VendorBooksPage() {
             <option value="published">Published</option>
             <option value="draft">Draft</option>
             <option value="sold">Sold</option>
-            <option value="archived">Deleted</option>
+            <option value="archived">Archived</option>
           </select>
 
+          {/* Sort */}
+          <select
+            value={sortOption}
+            onChange={(e) => {
+              setSortOption(e.target.value);
+              setPage(1);
+            }}
+            className="px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black"
+          >
+            <option value="createdAt_DESC">Newest First</option>
+            <option value="createdAt_ASC">Oldest First</option>
+            <option value="price_DESC">Price: High → Low</option>
+            <option value="price_ASC">Price: Low → High</option>
+            <option value="title_ASC">Title: A → Z</option>
+            <option value="title_DESC">Title: Z → A</option>
+          </select>
+
+          {/* Condition */}
           <select
             value={conditionFilter}
             onChange={(e) => setConditionFilter(e.target.value)}
             className="px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black"
           >
             <option value="all">All Conditions</option>
-            <option value="new">New</option>
-            <option value="like-new">Like New</option>
-            <option value="very-good">Very Good</option>
-            <option value="good">Good</option>
-            <option value="acceptable">Acceptable</option>
+            <option value="Fine">Fine</option>
+            <option value="Near Fine">Near Fine</option>
+            <option value="Very Good">Very Good</option>
+            <option value="Good">Good</option>
+            <option value="Fair">Fair</option>
+            <option value="Poor">Poor</option>
           </select>
+        </div>
+
+        {/* Auction Toggle */}
+        <div className="flex items-center gap-2 mt-3">
+          <span className="text-sm text-gray-500 mr-1">Show:</span>
+          {(['all', 'auction', 'non-auction'] as const).map((opt) => (
+            <button
+              key={opt}
+              onClick={() => setAuctionFilter(opt)}
+              className={`px-3 py-1 text-sm rounded-full border transition-colors ${
+                auctionFilter === opt
+                  ? 'bg-primary text-white border-primary'
+                  : 'bg-white text-gray-600 border-gray-300 hover:border-gray-400'
+              }`}
+            >
+              {opt === 'all'
+                ? 'All Listings'
+                : opt === 'auction'
+                  ? '🔨 In Auction'
+                  : 'Not in Auction'}
+            </button>
+          ))}
         </div>
       </div>
 
       {/* Products Table */}
       {isLoading ? (
         <PageLoading message="Loading products..." fullPage={false} />
-      ) : products.length === 0 ? (
+      ) : filteredProducts.length === 0 ? (
         <EmptyState
           icon={['fal', 'books']}
           title="No products found"
@@ -310,7 +440,7 @@ export default function VendorBooksPage() {
             breakpoint="md"
             mobile={
               <MobileCardList gap="md">
-                {products.map((product: any) => {
+                {filteredProducts.map((product: any) => {
                   const hasActiveAuction = auctionMap.has(String(product.id));
                   const statusColors: Record<string, string> = {
                     published: 'bg-green-100 text-green-800',
@@ -377,6 +507,30 @@ export default function VendorBooksPage() {
                         {
                           label: 'Qty',
                           value: product.trackQuantity !== false ? product.quantity || 0 : '∞',
+                        },
+                        {
+                          label: 'Status',
+                          value: (
+                            <select
+                              value={product.status === 'sold' ? 'sold' : product.status}
+                              onChange={(e) => handleStatusChange(product.id, e.target.value)}
+                              onClick={(e) => e.stopPropagation()}
+                              className={`text-xs font-semibold px-2 py-1 rounded border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary ${
+                                product.status === 'published'
+                                  ? 'bg-green-100 text-green-800'
+                                  : product.status === 'draft'
+                                    ? 'bg-yellow-100 text-yellow-800'
+                                    : product.status === 'sold'
+                                      ? 'bg-red-100 text-red-800'
+                                      : 'bg-gray-200 text-gray-600'
+                              }`}
+                            >
+                              <option value="published">✓ Published</option>
+                              <option value="draft">◷ Draft</option>
+                              {product.status === 'sold' && <option value="sold">Sold</option>}
+                              <option value="archived">✕ Archive / Delete</option>
+                            </select>
+                          ),
                         },
                         {
                           label: 'Views',
@@ -471,7 +625,7 @@ export default function VendorBooksPage() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {products.map((product: any) => {
+                      {filteredProducts.map((product: any) => {
                         const hasActiveAuction = auctionMap.has(String(product.id));
                         return (
                           <tr
@@ -509,7 +663,7 @@ export default function VendorBooksPage() {
                                       {product.title}
                                     </div>
                                     {hasActiveAuction && (
-                                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+                                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold bg-secondary text-white">
                                         <FontAwesomeIcon
                                           icon={['fal', 'gavel']}
                                           className="text-xs"
@@ -544,22 +698,28 @@ export default function VendorBooksPage() {
                                 {product.trackQuantity !== false ? product.quantity || 0 : '∞'}
                               </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span
-                                className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            <td
+                              className="px-6 py-4 whitespace-nowrap"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <select
+                                value={product.status}
+                                onChange={(e) => handleStatusChange(product.id, e.target.value)}
+                                className={`text-xs font-semibold px-3 py-1.5 rounded-full border border-transparent cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary transition-colors ${
                                   product.status === 'published'
-                                    ? 'bg-green-100 text-green-800'
+                                    ? 'bg-green-100 text-green-800 hover:bg-green-200'
                                     : product.status === 'draft'
-                                      ? 'bg-yellow-100 text-yellow-800'
+                                      ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
                                       : product.status === 'sold'
                                         ? 'bg-red-100 text-red-800'
-                                        : product.status === 'archived'
-                                          ? 'bg-gray-200 text-gray-600'
-                                          : 'bg-gray-100 text-gray-800'
+                                        : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                                 }`}
                               >
-                                {product.status === 'archived' ? 'Deleted' : product.status}
-                              </span>
+                                <option value="published">✓ Published</option>
+                                <option value="draft">◷ Draft</option>
+                                {product.status === 'sold' && <option value="sold">Sold</option>}
+                                <option value="archived">✕ Archive / Delete</option>
+                              </select>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="flex items-center text-sm text-gray-500">

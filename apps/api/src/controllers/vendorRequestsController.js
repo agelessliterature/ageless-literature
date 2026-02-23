@@ -41,7 +41,7 @@ export const getRequests = async (req, res) => {
         {
           model: User,
           as: 'user',
-          attributes: ['id', 'name'],
+          attributes: ['id', 'firstName', 'lastName'],
         },
       ],
       order: [['createdAt', 'DESC']],
@@ -96,7 +96,7 @@ export const getRequestDetail = async (req, res) => {
         {
           model: User,
           as: 'user',
-          attributes: ['id', 'name', 'email'],
+          attributes: ['id', 'firstName', 'lastName', 'email'],
         },
       ],
     });
@@ -153,8 +153,6 @@ export const respondToRequest = async (req, res) => {
     // - Link to existing book
     // - Create notification for customer
     // - Start conversation
-    console.log('Processing request response:', { requestId: id, body: requestBody });
-
     return res.status(200).json({
       success: true,
       message: 'Response sent successfully',

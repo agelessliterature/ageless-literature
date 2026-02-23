@@ -57,7 +57,7 @@ export default function ImageUploader({ images, onChange, maxImages = 10 }: Imag
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 gap-3">
         {images.map((image, index) => (
           <div key={index} className="relative group border rounded overflow-hidden aspect-[4/3]">
             <img

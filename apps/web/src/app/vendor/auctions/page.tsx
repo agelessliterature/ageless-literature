@@ -380,9 +380,13 @@ export default function VendorAuctionsPage() {
                         },
                         {
                           label: 'Current Bid',
-                          value: auction.currentBid
-                            ? formatMoney(parseFloat(auction.currentBid), { fromCents: false })
-                            : '-',
+                          value:
+                            auction.currentBid && parseFloat(auction.currentBid) > 0
+                              ? formatMoney(parseFloat(auction.currentBid), { fromCents: false })
+                              : formatMoney(
+                                  parseFloat(auction.startingBid || auction.startingPrice || 0),
+                                  { fromCents: false },
+                                ),
                         },
                         { label: 'Bids', value: String(auction.bidCount || 0) },
                         {
@@ -552,11 +556,14 @@ export default function VendorAuctionsPage() {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="text-sm font-semibold text-primary">
-                                {auction.currentBid
+                                {auction.currentBid && parseFloat(auction.currentBid) > 0
                                   ? formatMoney(parseFloat(auction.currentBid), {
                                       fromCents: false,
                                     })
-                                  : '-'}
+                                  : formatMoney(
+                                      parseFloat(auction.startingBid || auction.startingPrice || 0),
+                                      { fromCents: false },
+                                    )}
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">

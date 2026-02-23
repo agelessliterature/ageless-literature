@@ -118,7 +118,7 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 overflow-x-hidden max-w-[100vw]">
+    <div className="min-h-screen bg-gray-100">
       {/* Top Header */}
       <header className="bg-white border-b border-gray-200 fixed top-0 left-0 right-0 z-30">
         <div className="px-4 sm:px-6 lg:px-8">
@@ -237,13 +237,13 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
           />
         )}
 
-        {/* Sidebar */}
+        {/* Sidebar — always fixed, never sticky */}
         <aside
-          className={`fixed top-16 bottom-0 left-0 z-20 w-20 shrink-0 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] ${
-            sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
+          className={`fixed top-16 bottom-0 left-0 z-20 w-20 bg-white border-r border-gray-200
+            transition-transform duration-300 ease-in-out
+            ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
         >
-          <nav className="flex-1 space-y-2 px-3 py-4 overflow-y-auto h-full">
+          <nav className="space-y-2 px-3 py-4 overflow-y-auto h-full">
             {navItems.map((item) => {
               const itemPath = withBasePath(item.href);
               const isActive =
@@ -275,9 +275,9 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
           </nav>
         </aside>
 
-        {/* Main content */}
-        <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mx-auto">{children}</div>
+        {/* Main content — offset by sidebar width on desktop */}
+        <main className="flex-1 min-w-0 w-full lg:pl-20 px-4 sm:px-6 lg:px-8 py-8">
+          <div className="max-w-full">{children}</div>
         </main>
       </div>
     </div>

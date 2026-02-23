@@ -7,15 +7,16 @@ export function formatMoney(
     fromCents?: boolean;
     currency?: string;
     showCurrency?: boolean;
+    decimals?: number;
   },
 ): string {
-  if (value === null || value === undefined || value === '') return '$0.00';
+  if (value === null || value === undefined || value === '') return '$0';
 
-  const { fromCents = false, currency = 'USD', showCurrency = true } = options || {};
+  const { fromCents = false, currency = 'USD', showCurrency = true, decimals = 0 } = options || {};
 
   let numValue = typeof value === 'string' ? parseFloat(value) : value;
 
-  if (isNaN(numValue)) return '$0.00';
+  if (isNaN(numValue)) return '$0';
 
   // Convert from cents to dollars if needed
   if (fromCents) {
@@ -23,8 +24,8 @@ export function formatMoney(
   }
 
   const formatted = numValue.toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
   });
 
   if (!showCurrency) return formatted;

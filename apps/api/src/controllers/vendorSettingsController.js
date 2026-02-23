@@ -21,7 +21,7 @@ export const getSettings = async (req, res) => {
         {
           model: User,
           as: 'user',
-          attributes: ['id', 'name', 'email'],
+          attributes: ['id', 'firstName', 'lastName', 'email'],
         },
       ],
     });

@@ -18,8 +18,6 @@ export const placeBid = async (req, res) => {
     const { userId } = req.user;
     const { amount, smsOptIn, phoneNumber } = req.body;
 
-    console.log('[Bid] Attempting to place bid:', { auctionId, userId, amount, smsOptIn });
-
     // Get current user
     const currentUser = await User.findByPk(userId);
 
@@ -32,15 +30,12 @@ export const placeBid = async (req, res) => {
         phoneNumber,
         metadata,
       });
-      console.log('[Bid] Updated user SMS preferences:', { userId, phoneNumber });
     }
 
     // Get auction with current bids
     const auction = await Auction.findByPk(auctionId, {
       include: [{ model: Book, as: 'book' }],
     });
-
-    console.log('[Bid] Auction found:', auction ? `ID ${auction.id}` : 'NOT FOUND');
 
     if (!auction) {
       return res.status(404).json({ success: false, message: 'Auction not found' });
@@ -67,11 +62,16 @@ export const placeBid = async (req, res) => {
       });
     }
 
-    // Check if user already has active bid on this auction
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const existingBid = await AuctionBid.findOne({
-      where: { auctionId, userId, status: ['active', 'winning'] },
+    // Prevent self-outbidding: check if user already has the highest (winning) bid
+    const existingWinningBid = await AuctionBid.findOne({
+      where: { auctionId, userId, status: 'winning' },
     });
+    if (existingWinningBid) {
+      return res.status(400).json({
+        success: false,
+        message: 'You already have the highest bid on this auction',
+      });
+    }
 
     // Create new bid
     const bid = await AuctionBid.create({
@@ -107,7 +107,7 @@ export const placeBid = async (req, res) => {
               correlationId: `auction_${auctionId}_bid_${bid.id}`,
             },
           );
-          console.log(`[Bid] SMS sent to outbid user ${outbidUser.id}`);
+          // SMS sent successfully
         } catch (smsError) {
           console.error(`[Bid] Failed to send SMS to user ${outbidUser.id}:`, smsError);
         }
@@ -163,7 +163,7 @@ export const getAuctionBids = async (req, res) => {
 
     const bids = await AuctionBid.findAndCountAll({
       where: { auctionId },
-      include: [{ model: User, as: 'user', attributes: ['id', 'name', 'image'] }],
+      include: [{ model: User, as: 'user', attributes: ['id', 'firstName', 'lastName', 'image'] }],
       order: [
         ['amount', 'DESC'],
         ['createdAt', 'DESC'],

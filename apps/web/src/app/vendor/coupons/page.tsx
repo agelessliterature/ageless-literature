@@ -135,7 +135,7 @@ export default function VendorCouponsPage() {
   };
 
   return (
-    <div>
+    <div className="w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">My Coupons</h1>
@@ -143,7 +143,7 @@ export default function VendorCouponsPage() {
         </div>
         <button
           onClick={() => router.push(withBasePath('/vendor/coupons/new'))}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors font-medium"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-white hover:bg-primary-dark transition-colors font-medium"
         >
           <FontAwesomeIcon icon={['fal', 'plus']} />
           Create Coupon
@@ -151,7 +151,7 @@ export default function VendorCouponsPage() {
       </div>
 
       {/* Search */}
-      <div className="bg-white rounded-lg shadow-md p-4 mb-6">
+      <div className="bg-white p-4 mb-6">
         <input
           type="text"
           placeholder="Search by code or name..."
@@ -165,7 +165,7 @@ export default function VendorCouponsPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      <div className="bg-white overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <FontAwesomeIcon

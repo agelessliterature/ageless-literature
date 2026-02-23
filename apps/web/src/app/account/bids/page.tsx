@@ -90,18 +90,22 @@ export default function AccountBidsPage() {
                 <div className="mt-2 sm:mt-0">
                   <span
                     className={`px-3 py-1 rounded-full text-sm font-medium ${
-                      bid.isWinning
+                      bid.status === 'winning'
                         ? 'bg-green-100 text-green-800'
                         : bid.auction?.status === 'ended'
                           ? 'bg-gray-100 text-gray-800'
-                          : 'bg-yellow-100 text-yellow-800'
+                          : bid.status === 'outbid'
+                            ? 'bg-red-100 text-red-800'
+                            : 'bg-yellow-100 text-yellow-800'
                     }`}
                   >
-                    {bid.isWinning
-                      ? 'Winning'
+                    {bid.status === 'winning'
+                      ? '✓ Highest Bid'
                       : bid.auction?.status === 'ended'
                         ? 'Ended'
-                        : 'Outbid'}
+                        : bid.status === 'outbid'
+                          ? 'Outbid'
+                          : 'Active'}
                   </span>
                 </div>
               </div>

@@ -66,8 +66,28 @@ export const addToWishlist = async (req, res) => {
 
 export const removeFromWishlist = async (req, res) => {
   try {
+    const { userId } = req.user;
     const { itemId } = req.params;
-    await WishlistItem.destroy({ where: { id: itemId } });
+
+    // Support removing by either WishlistItem ID or bookId
+    // First try to find by WishlistItem ID
+    let item = await WishlistItem.findByPk(itemId);
+
+    // If not found by itemId, try to find by bookId for the user's wishlist
+    if (!item) {
+      const wishlist = await Wishlist.findOne({ where: { userId } });
+      if (wishlist) {
+        item = await WishlistItem.findOne({
+          where: { wishlistId: wishlist.id, bookId: itemId },
+        });
+      }
+    }
+
+    if (!item) {
+      return res.status(404).json({ success: false, error: 'Wishlist item not found' });
+    }
+
+    await item.destroy();
     res.json({ success: true, message: 'Item removed from wishlist' });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });

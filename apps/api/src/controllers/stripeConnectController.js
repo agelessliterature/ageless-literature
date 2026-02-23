@@ -135,13 +135,6 @@ export const getOnboardingLink = async (req, res) => {
     const finalReturnUrl = returnUrl || defaultReturnUrl;
     const finalRefreshUrl = refreshUrl || defaultRefreshUrl;
 
-    console.log('=== Stripe Onboarding URL Generation ===');
-    console.log('Request body returnUrl:', returnUrl);
-    console.log('Request body refreshUrl:', refreshUrl);
-    console.log('Final return_url:', finalReturnUrl);
-    console.log('Final refresh_url:', finalRefreshUrl);
-    console.log('Account ID:', vendor.stripeAccountId);
-
     // Create account link for onboarding
     const accountLink = await stripe.accountLinks.create({
       account: vendor.stripeAccountId,

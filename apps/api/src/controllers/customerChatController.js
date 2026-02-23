@@ -104,7 +104,7 @@ export const getMessages = async (req, res) => {
         {
           model: User,
           as: 'sender',
-          attributes: ['id', 'name'],
+          attributes: ['id', 'firstName', 'lastName'],
         },
       ],
       order: [['createdAt', 'ASC']],

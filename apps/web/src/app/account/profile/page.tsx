@@ -12,6 +12,7 @@ import { useTranslations } from '@/lib/clientTranslations';
 import { ImageUploader } from '@/components/cloudinary';
 import { updateUserProfileImage } from '@/lib/cloudinary-api';
 import toast from 'react-hot-toast';
+import api from '@/lib/api';
 import PageLoading from '@/components/ui/PageLoading';
 
 export default function ProfilePage() {
@@ -20,39 +21,51 @@ export default function ProfilePage() {
   const t = useTranslations('profile');
   const tCommon = useTranslations('common');
   const [formData, setFormData] = useState({
-    name: '',
-    username: '',
+    firstName: '',
+    lastName: '',
     email: '',
-    bio: '',
-    location: '',
+    phoneNumber: '',
   });
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
+  const [initialLoading, setInitialLoading] = useState(true);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/auth/login');
     }
     if (session?.user) {
-      setFormData({
-        name: session.user.name || '',
-        username: '',
-        email: session.user.email || '',
-        bio: '',
-        location: '',
-      });
       // @ts-expect-error - profilePhotoUrl may exist on user object from database
       setProfileImage(session.user.profilePhotoUrl || session.user.image || null);
+      // Load full profile from API
+      loadProfile();
     }
   }, [status, router, session]);
+
+  const loadProfile = async () => {
+    try {
+      const res = await api.get('/users/me');
+      if (res.data?.success) {
+        const user = res.data.data;
+        setFormData({
+          firstName: user.firstName || '',
+          lastName: user.lastName || '',
+          email: user.email || '',
+          phoneNumber: user.phoneNumber || '',
+        });
+      }
+    } catch (error) {
+      console.error('Failed to load profile:', error);
+    } finally {
+      setInitialLoading(false);
+    }
+  };
 
   const handleProfileImageUpload = async (result: { url: string; publicId: string }) => {
     try {
       await updateUserProfileImage(result);
       setProfileImage(result.url);
       toast.success('Profile image updated successfully!');
-      // Update session to reflect new image
       await updateSession();
     } catch (error) {
       toast.error('Failed to update profile image');
@@ -62,20 +75,25 @@ export default function ProfilePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setMessage('');
 
     try {
-      // TODO: Call API to update profile
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setMessage('Profile updated successfully!');
-    } catch (error) {
-      setMessage('Failed to update profile');
+      const res = await api.patch(`/users/${session?.user?.id}`, {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        phoneNumber: formData.phoneNumber,
+      });
+      if (res.data?.success) {
+        toast.success('Profile updated successfully');
+        await updateSession();
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to update profile');
     } finally {
       setLoading(false);
     }
   };
 
-  if (status === 'loading') {
+  if (status === 'loading' || initialLoading) {
     return <PageLoading message={tCommon('loading')} fullPage={false} />;
   }
 
@@ -98,25 +116,25 @@ export default function ProfilePage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label className="block text-sm font-medium mb-2">{t('fullNameLabel')}</label>
-          <input
-            type="text"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">{t('usernameLabel')}</label>
-          <input
-            type="text"
-            value={formData.username}
-            onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-            placeholder={t('usernamePlaceholder')}
-          />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">First Name</label>
+            <input
+              type="text"
+              value={formData.firstName}
+              onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">Last Name</label>
+            <input
+              type="text"
+              value={formData.lastName}
+              onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+            />
+          </div>
         </div>
 
         <div>
@@ -124,40 +142,22 @@ export default function ProfilePage() {
           <input
             type="email"
             value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+            disabled
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
           />
+          <p className="text-xs text-gray-400 mt-1">Email cannot be changed here</p>
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2">{t('bioLabel')}</label>
-          <textarea
-            value={formData.bio}
-            onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-            rows={4}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-            placeholder={t('bioPlaceholder')}
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">{t('locationLabel')}</label>
+          <label className="block text-sm font-medium mb-2">Phone Number</label>
           <input
-            type="text"
-            value={formData.location}
-            onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+            type="tel"
+            value={formData.phoneNumber}
+            onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-            placeholder={t('locationPlaceholder')}
+            placeholder="+1 (555) 000-0000"
           />
         </div>
-
-        {message && (
-          <div
-            className={`p-4 rounded-lg ${message.includes('success') ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}
-          >
-            {message}
-          </div>
-        )}
 
         <div className="flex gap-4">
           <button

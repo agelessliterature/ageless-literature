@@ -174,10 +174,10 @@ export const createCollectible = async (req, res) => {
     } = req.body;
 
     // Validation
-    if (!title || !price || !condition) {
+    if (!title || !price) {
       return res.status(400).json({
         success: false,
-        message: 'Title, price, and condition are required',
+        message: 'Title and price are required',
       });
     }
 
@@ -200,12 +200,12 @@ export const createCollectible = async (req, res) => {
       price,
       salePrice: salePrice || null,
       quantity: quantity || 1,
-      condition,
+      condition: condition || null,
       conditionNotes: conditionNotes || null,
       category,
-      tags,
+      tags: Array.isArray(tags) ? tags : [],
       sku,
-      images,
+      images: Array.isArray(images) ? images : [],
       slug,
       status,
       yearMade: yearMade || null,
@@ -221,8 +221,9 @@ export const createCollectible = async (req, res) => {
     });
 
     // Handle category associations
-    if (categoryIds && categoryIds.length > 0) {
-      await product.setCategories(categoryIds);
+    const categoryIdArray = Array.isArray(categoryIds) ? categoryIds : [];
+    if (categoryIdArray.length > 0) {
+      await product.setCategories(categoryIdArray);
     }
 
     // Fetch complete product with categories
@@ -305,10 +306,35 @@ export const updateCollectible = async (req, res) => {
       'metadata',
     ];
 
+    // Fields that must be numeric (not empty strings)
+    const numericFields = [
+      'price',
+      'compareAtPrice',
+      'cost',
+      'quantity',
+      'weight',
+      'lowStockThreshold',
+    ];
+    const sanitizeNumeric = (val) => {
+      if (val === '' || val === undefined || val === null) return null;
+      const num = Number(val);
+      return isNaN(num) ? null : num;
+    };
+
+    // Fields that must be arrays (not non-array values)
+    const arrayFields = ['tags', 'images'];
+
     const updates = {};
     allowedUpdates.forEach((field) => {
       if (req.body[field] !== undefined) {
-        updates[field] = req.body[field];
+        if (numericFields.includes(field)) {
+          updates[field] = sanitizeNumeric(req.body[field]);
+        } else if (arrayFields.includes(field)) {
+          // Ensure ARRAY/JSONB array fields always receive proper arrays
+          updates[field] = Array.isArray(req.body[field]) ? req.body[field] : [];
+        } else {
+          updates[field] = req.body[field];
+        }
       }
     });
 
@@ -325,7 +351,8 @@ export const updateCollectible = async (req, res) => {
 
     // Handle category associations
     if (req.body.categoryIds !== undefined) {
-      await product.setCategories(req.body.categoryIds);
+      const categoryIdArray = Array.isArray(req.body.categoryIds) ? req.body.categoryIds : [];
+      await product.setCategories(categoryIdArray);
     }
 
     // Fetch complete product with categories

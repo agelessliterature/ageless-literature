@@ -7,8 +7,8 @@
 
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
 import { getApiUrl } from '@/lib/api';
@@ -16,6 +16,7 @@ import { withBasePath } from '@/lib/path-utils';
 import PageLoading from '@/components/ui/PageLoading';
 import EmptyState from '@/components/ui/EmptyState';
 import { formatMoney } from '@/lib/format';
+import toast from 'react-hot-toast';
 
 interface Winning {
   id: number;
@@ -48,6 +49,9 @@ interface Winning {
 export default function AccountWinningsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const [claimingId, setClaimingId] = useState<number | null>(null);
+  const [payingId, setPayingId] = useState<number | null>(null);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -67,6 +71,54 @@ export default function AccountWinningsPage() {
     },
     enabled: !!session,
   });
+
+  const handleClaim = async (auctionId: number) => {
+    setClaimingId(auctionId);
+    try {
+      const res = await fetch(getApiUrl(`api/user/winnings/${auctionId}/claim`), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.accessToken}`,
+        },
+      });
+      const result = await res.json();
+      if (result.success) {
+        toast.success('Winning claimed! You can now proceed to payment.');
+        queryClient.invalidateQueries({ queryKey: ['account-winnings'] });
+      } else {
+        toast.error(result.message || 'Failed to claim winning');
+      }
+    } catch {
+      toast.error('Failed to claim winning. Please try again.');
+    } finally {
+      setClaimingId(null);
+    }
+  };
+
+  const handlePay = async (auctionId: number) => {
+    setPayingId(auctionId);
+    try {
+      const res = await fetch(getApiUrl(`api/user/winnings/${auctionId}/pay`), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.accessToken}`,
+        },
+      });
+      const result = await res.json();
+      if (result.success) {
+        toast.success('Payment processed successfully!');
+        queryClient.invalidateQueries({ queryKey: ['account-winnings'] });
+      } else {
+        toast.error(result.message || 'Payment failed');
+      }
+    } catch {
+      toast.error('Payment failed. Please try again.');
+    } finally {
+      setPayingId(null);
+    }
+  };
 
   if (status === 'loading' || isLoading) {
     return (

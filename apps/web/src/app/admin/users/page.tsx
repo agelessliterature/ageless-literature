@@ -17,8 +17,8 @@ interface User {
   name: string;
   firstName: string;
   lastName: string;
-  role: 'admin' | 'vendor' | 'collector';
-  status: 'active' | 'inactive' | 'suspended';
+  role: 'admin' | 'vendor' | 'customer';
+  status: 'active' | 'inactive' | 'pending' | 'revoked';
   emailVerified: boolean;
   provider: 'credentials' | 'google' | 'apple';
   createdAt: string;
@@ -229,6 +229,20 @@ export default function UsersAdminPage() {
     }
   };
 
+  // Role display name mapping (DB stores 'customer', UI shows 'Collector')
+  const getRoleDisplayName = (role: string) => {
+    switch (role) {
+      case 'admin':
+        return 'Admin';
+      case 'vendor':
+        return 'Vendor';
+      case 'customer':
+        return 'Collector';
+      default:
+        return role;
+    }
+  };
+
   // Role badge colors
   const getRoleBadgeClass = (role: string) => {
     switch (role) {
@@ -236,7 +250,7 @@ export default function UsersAdminPage() {
         return 'bg-red-100 text-red-800 border-red-200';
       case 'vendor':
         return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'collector':
+      case 'customer':
         return 'bg-green-100 text-green-800 border-green-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
@@ -250,7 +264,9 @@ export default function UsersAdminPage() {
         return 'bg-green-100 text-green-800 border-green-200';
       case 'inactive':
         return 'bg-gray-100 text-gray-800 border-gray-200';
-      case 'suspended':
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'revoked':
         return 'bg-red-100 text-red-800 border-red-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
@@ -335,7 +351,7 @@ export default function UsersAdminPage() {
               <option value="">All Roles</option>
               <option value="admin">Admin</option>
               <option value="vendor">Vendor</option>
-              <option value="collector">Collector</option>
+              <option value="customer">Collector</option>
             </select>
           </div>
 
@@ -350,7 +366,8 @@ export default function UsersAdminPage() {
               <option value="">All Status</option>
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
-              <option value="suspended">Suspended</option>
+              <option value="pending">Pending</option>
+              <option value="revoked">Suspended</option>
             </select>
           </div>
 
@@ -438,7 +455,7 @@ export default function UsersAdminPage() {
                           <span
                             className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full border ${getRoleBadgeClass(user.role)}`}
                           >
-                            {user.role}
+                            {getRoleDisplayName(user.role)}
                           </span>
                           <span
                             className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full border ${getStatusBadgeClass(user.status)}`}
@@ -610,7 +627,7 @@ export default function UsersAdminPage() {
                           <span
                             className={`inline-flex px-2 py-1 text-xs font-semibold border ${getRoleBadgeClass(user.role)}`}
                           >
-                            {user.role}
+                            {getRoleDisplayName(user.role)}
                           </span>
                           {user.vendorProfile && (
                             <Link

@@ -158,8 +158,6 @@ export const listAuctions = async (req, res) => {
       where.auctionableType = type;
     }
 
-    console.log('Auctions where clause:', where);
-
     const auctions = await Auction.findAndCountAll({
       where,
       include: [
@@ -207,11 +205,11 @@ export const getAuctionById = async (req, res) => {
     const auction = await Auction.findByPk(id, {
       include: [
         { model: Vendor, as: 'vendor' },
-        { model: User, as: 'winner', attributes: ['id', 'name'] },
+        { model: User, as: 'winner', attributes: ['id', 'firstName', 'lastName', 'email'] },
         {
           model: AuctionBid,
           as: 'bids',
-          include: [{ model: User, as: 'user', attributes: ['id', 'name'] }],
+          include: [{ model: User, as: 'user', attributes: ['id', 'firstName', 'lastName'] }],
           order: [['amount', 'DESC']],
           limit: 10,
         },

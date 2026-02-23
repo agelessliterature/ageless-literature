@@ -2,7 +2,7 @@ export interface Book {
   id: number;
   vendorId: number;
   title: string;
-  author: string;
+  author?: string;
   isbn?: string;
   description: any; // JSONB
   shortDescription?: string;
@@ -61,7 +61,7 @@ export interface BookImage {
 
 export interface BookFormData {
   title: string;
-  author: string;
+  author?: string;
   isbn?: string;
   description: string;
   shortDescription?: string;
@@ -78,7 +78,7 @@ export interface BookFormData {
   language?: string;
   binding?: string;
   isSigned: boolean;
-  status: 'draft' | 'active' | 'sold';
+  status: 'draft' | 'published' | 'sold';
   images: BookImage[];
   metaTitle?: string;
   metaDescription?: string;
