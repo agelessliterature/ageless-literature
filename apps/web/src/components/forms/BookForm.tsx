@@ -164,6 +164,31 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
 
   return (
     <form className="space-y-6">
+      {/* Top Action Buttons */}
+      <div className="flex justify-end gap-3">
+        <button
+          type="button"
+          onClick={(e) => handleSubmit(e)}
+          disabled={mutation.isPending}
+          className={`px-6 py-2 text-sm font-medium text-white disabled:opacity-50 transition-colors ${
+            formData.status === 'draft'
+              ? 'bg-yellow-500 hover:bg-yellow-600'
+              : 'bg-primary hover:bg-primary-dark'
+          }`}
+        >
+          {mutation.isPending
+            ? isEdit
+              ? 'Saving...'
+              : 'Creating...'
+            : formData.status === 'draft'
+              ? isEdit
+                ? 'Save as Draft'
+                : 'Create as Draft'
+              : isEdit
+                ? 'Save & Publish'
+                : 'Publish Now'}
+        </button>
+      </div>
       {/* Top Section: Title, Author, Descriptions & Images */}
       <div className="bg-white shadow p-6">
         <div className="grid grid-cols-3 lg:grid-cols-4 gap-6">
@@ -184,7 +209,7 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Author</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Author <span className="text-gray-400 font-normal">(Optional)</span></label>
               <input
                 type="text"
                 value={formData.author}

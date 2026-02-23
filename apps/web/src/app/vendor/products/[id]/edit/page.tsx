@@ -62,7 +62,7 @@ export default function EditProductPage() {
           {!activeAuction && (
             <button
               onClick={() => setShowAuctionModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-medium hover:bg-primary-dark transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-black text-white text-sm font-medium hover:bg-gray-800 transition-colors"
             >
               <FontAwesomeIcon icon={['fal', 'gavel']} />
               <span>Create Auction</span>

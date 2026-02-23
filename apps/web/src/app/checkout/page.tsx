@@ -504,7 +504,7 @@ function CheckoutForm({ clientSecret }: CheckoutFormProps) {
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-sm sm:text-base font-semibold text-gray-900 truncate">
+                          <h3 className="text-sm sm:text-base font-semibold text-gray-900 break-words">
                             {product.title}
                           </h3>
                           <p className="text-sm text-gray-600 mt-1">Quantity: {item.quantity}</p>

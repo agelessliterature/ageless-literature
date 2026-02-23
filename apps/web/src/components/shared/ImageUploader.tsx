@@ -123,7 +123,7 @@ export default function ImageUploader({ images, onChange, maxImages = 10 }: Imag
               <p className="text-gray-600">
                 {uploading
                   ? 'Uploading...'
-                  : `Click to upload images (${images.length}/${maxImages})`}
+                  : 'Click to upload images'}
               </p>
             </button>
           )}

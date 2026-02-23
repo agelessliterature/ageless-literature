@@ -140,6 +140,31 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
 
   return (
     <form className="space-y-6">
+      {/* Top Action Buttons */}
+      <div className="flex justify-end gap-3">
+        <button
+          type="button"
+          onClick={(e) => handleSubmit(e, 'draft')}
+          disabled={mutation.isPending}
+          className="px-4 py-2 border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+        >
+          Save as Draft
+        </button>
+        <button
+          type="button"
+          onClick={(e) => handleSubmit(e, 'published')}
+          disabled={mutation.isPending}
+          className="px-4 py-2 bg-primary text-white text-sm font-medium hover:bg-primary-dark disabled:opacity-50"
+        >
+          {mutation.isPending
+            ? isEdit
+              ? 'Updating...'
+              : 'Publishing...'
+            : isEdit
+              ? 'Update'
+              : 'Publish Now'}
+        </button>
+      </div>
       {/* Top Section: Title, Descriptions & Images */}
       <div className="bg-white shadow p-6">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">

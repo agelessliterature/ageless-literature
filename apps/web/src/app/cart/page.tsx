@@ -170,7 +170,7 @@ export default function CartPage() {
                       {/* Product Details */}
                       <div className="flex-1 min-w-0">
                         <Link href={productUrl} className="hover:text-primary">
-                          <h3 className="text-lg font-semibold text-gray-900 truncate">
+                          <h3 className="text-lg font-semibold text-gray-900 break-words">
                             {product.title}
                           </h3>
                         </Link>
@@ -178,38 +178,8 @@ export default function CartPage() {
                           {formatMoney(product.price)}
                         </p>
 
-                        {/* Quantity Controls */}
-                        <div className="flex items-center gap-2 mt-4">
-                          <button
-                            onClick={() =>
-                              updateQuantityMutation.mutate({
-                                itemId: item.id,
-                                quantity: Math.max(1, item.quantity - 1),
-                              })
-                            }
-                            disabled={item.quantity <= 1 || updateQuantityMutation.isPending}
-                            className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            <FontAwesomeIcon icon={['fal', 'minus']} />
-                          </button>
-                          <span className="px-4 py-1 border border-gray-300 rounded min-w-[3rem] text-center">
-                            {item.quantity}
-                          </span>
-                          <button
-                            onClick={() =>
-                              updateQuantityMutation.mutate({
-                                itemId: item.id,
-                                quantity: Math.min(product.quantity, item.quantity + 1),
-                              })
-                            }
-                            disabled={
-                              item.quantity >= product.quantity || updateQuantityMutation.isPending
-                            }
-                            className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            <FontAwesomeIcon icon={['fal', 'plus']} />
-                          </button>
-                        </div>
+                        {/* Quantity Display */}
+                        <p className="text-sm text-gray-600 mt-4">Qty: {item.quantity}</p>
                       </div>
 
                       {/* Remove Button */}
