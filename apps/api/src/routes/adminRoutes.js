@@ -13,6 +13,7 @@ import * as adminGlossaryController from '../controllers/admin/adminGlossaryCont
 import * as adminEmailsController from '../controllers/admin/adminEmailsController.js';
 import * as adminProductsController from '../controllers/admin/adminProductsController.js';
 import * as adminCouponsController from '../controllers/admin/adminCouponsController.js';
+import * as adminCommissionsController from '../controllers/admin/adminCommissionsController.js';
 import { createAdminImportRouter } from './importRoutes.js';
 
 const router = express.Router();
@@ -39,6 +40,7 @@ router.get('/vendors/search-users', adminVendorsController.searchUsers);
 router.post('/vendors/create', adminVendorsController.createVendor);
 router.post('/vendors/create-with-user', adminVendorsController.createVendorWithUser);
 router.post('/vendors/expire-featured', adminVendorsController.expireFeaturedVendors);
+router.put('/vendors/menu-order', adminVendorsController.updateMenuOrder);
 router.get('/vendors/:id', adminVendorsController.getVendorById);
 router.put('/vendors/:id', adminVendorsController.updateVendor);
 router.put('/vendors/:id/featured', adminVendorsController.updateFeaturedStatus);
@@ -83,6 +85,8 @@ router.get('/orders', adminOrdersController.listAll);
 router.get('/orders/:id', adminOrdersController.getOne);
 router.put('/orders/:id/status', adminOrdersController.updateStatus);
 router.post('/orders/:id/refund', adminOrdersController.refundOrder);
+
+router.get('/commissions', adminCommissionsController.listCommissions);
 
 router.get('/memberships/plans', adminMembershipsController.listPlans);
 router.post('/memberships/plans', adminMembershipsController.createPlan);

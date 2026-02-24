@@ -252,7 +252,7 @@ async function processAuctionCommission(auction, winningAmount, transaction) {
       netAmount: vendorEarnings,
       commissionRateBps: Math.round(commissionRate * 10000),
       transactionType: 'auction_sale',
-      status: 'completed',
+      status: 'pending',
       completedAt: new Date(),
     };
 

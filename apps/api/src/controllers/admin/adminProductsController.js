@@ -68,8 +68,17 @@ export const listAll = async (req, res) => {
       ...filterConditions,
     };
 
-    // Determine order
-    const orderClause = [[sortBy, sortOrder]];
+    // Determine order - map camelCase/snake_case to Sequelize attribute names
+    const sortByMap = {
+      menuOrder: 'menuOrder',
+      menu_order: 'menuOrder',
+      title: 'title',
+      price: 'price',
+      createdAt: 'createdAt',
+      updatedAt: 'updatedAt',
+    };
+    const safeSortBy = sortByMap[sortBy] || 'createdAt';
+    const orderClause = [[safeSortBy, sortOrder]];
 
     // Fetch data based on type filter
     let products = [];
@@ -87,8 +96,8 @@ export const listAll = async (req, res) => {
           },
         ],
         order: orderClause,
-        limit: type === 'book' ? parseInt(limit) : 1000, // Get all if combining
-        offset: type === 'book' ? offset : 0,
+        limit: parseInt(limit),
+        offset: type === 'book' ? offset : offset,
       });
 
       const booksCount = await Book.count({ where: whereClause });
@@ -138,6 +147,7 @@ export const listAll = async (req, res) => {
         category: book.category,
         author: book.author,
         isbn: book.isbn,
+        menuOrder: book.menuOrder || 0,
         images: bookMediaMap[book.id] || [],
         createdAt: book.createdAt,
         updatedAt: book.updatedAt,
@@ -179,8 +189,8 @@ export const listAll = async (req, res) => {
           },
         ],
         order: orderClause,
-        limit: type === 'product' ? parseInt(limit) : 1000,
-        offset: type === 'product' ? offset : 0,
+        limit: parseInt(limit),
+        offset: type === 'product' ? offset : offset,
       });
 
       const productsCount = await Product.count({ where: productWhereClause });
@@ -202,6 +212,7 @@ export const listAll = async (req, res) => {
         category: prod.category,
         sku: prod.sku,
         quantity: prod.quantity,
+        menuOrder: prod.menuOrder || 0,
         images: prod.images || [],
         createdAt: prod.createdAt,
         updatedAt: prod.updatedAt,
@@ -216,9 +227,32 @@ export const listAll = async (req, res) => {
       }
     }
 
-    // If no type filter, sort combined results and paginate
+    // If no type filter, use actual DB counts and paginate the combined results
     if (!type) {
+      // Use the real DB counts, not the fetched array length
+      const booksTotal = await Book.count({ where: whereClause });
+      const productsTotal = await Product.count({
+        where: {
+          ...(search
+            ? {
+                [Op.or]: [
+                  { title: { [Op.iLike]: `%${search}%` } },
+                  { sku: { [Op.iLike]: `%${search}%` } },
+                ],
+              }
+            : {}),
+          ...filterConditions,
+          ...(status ? { status } : {}),
+        },
+      });
+      totalCount = booksTotal + productsTotal;
+
       products.sort((a, b) => {
+        if (sortBy === 'menuOrder' || sortBy === 'menu_order') {
+          const aVal = a.menuOrder || 0;
+          const bVal = b.menuOrder || 0;
+          return sortOrder === 'DESC' ? bVal - aVal : aVal - bVal;
+        }
         if (sortBy === 'createdAt' || sortBy === 'updatedAt') {
           const aVal = new Date(a[sortBy]).getTime();
           const bVal = new Date(b[sortBy]).getTime();
@@ -235,7 +269,6 @@ export const listAll = async (req, res) => {
         return 0;
       });
 
-      totalCount = products.length;
       products = products.slice(offset, offset + parseInt(limit));
     }
 

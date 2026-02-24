@@ -28,7 +28,6 @@ const navItems: NavItem[] = [
   { href: '/admin/memberships', label: 'Memberships', icon: ['fal', 'crown'] },
   { href: '/admin/orders', label: 'Orders', icon: ['fal', 'shopping-cart'] },
   { href: '/admin/products', label: 'Products', icon: ['fal', 'box'] },
-  { href: '/admin/books/sort', label: 'Sort Books', icon: ['fal', 'sort'] },
   { href: '/admin/auctions', label: 'Auctions', icon: ['fal', 'gavel'] },
   { href: '/admin/categories', label: 'Categories', icon: ['fal', 'folder'] },
   { href: '/admin/coupons', label: 'Coupons', icon: ['fal', 'ticket-alt'] },

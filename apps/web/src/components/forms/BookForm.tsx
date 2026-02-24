@@ -110,6 +110,7 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
       }
     },
     onSuccess: () => {
+      router.refresh();
       router.push('/vendor/books');
     },
     onError: (error: any) => {
@@ -163,7 +164,7 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
   };
 
   return (
-    <form className="space-y-6">
+    <form className="space-y-4 sm:space-y-6">
       {/* Top Action Buttons */}
       <div className="flex justify-end gap-3">
         <button
@@ -190,8 +191,8 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
         </button>
       </div>
       {/* Top Section: Title, Author, Descriptions & Images */}
-      <div className="bg-white shadow p-6">
-        <div className="grid grid-cols-3 lg:grid-cols-4 gap-6">
+      <div className="bg-white shadow p-4 sm:p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Left: Title, Author and Descriptions (3 columns on large screens) */}
           <div className="lg:col-span-3 space-y-4">
             <div>
@@ -209,7 +210,9 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Author <span className="text-gray-400 font-normal">(Optional)</span></label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Author <span className="text-gray-400 font-normal">(Optional)</span>
+              </label>
               <input
                 type="text"
                 value={formData.author}
@@ -287,7 +290,7 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
           </div>
 
           {/* Right: Images (1 column on large screens) */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 order-first lg:order-last">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Images <span className="text-red-500">*</span>
             </label>
@@ -297,10 +300,10 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
       </div>
 
       {/* Pricing & Basic Info */}
-      <div className="bg-white shadow p-6">
+      <div className="bg-white shadow p-4 sm:p-6">
         <h2 className="text-lg font-semibold mb-4">Pricing & Categories</h2>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Categories</label>
             <div className="border border-gray-300 rounded max-h-48 overflow-y-auto p-2">
@@ -371,7 +374,7 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Price (USD) <span className="text-red-500">*</span>
@@ -420,10 +423,10 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
       </div>
 
       {/* Book Details */}
-      <div className="bg-white shadow p-6 space-y-4">
+      <div className="bg-white shadow p-4 sm:p-6 space-y-4">
         <h2 className="text-lg font-semibold mb-4">Book Details</h2>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Publisher</label>
             <input
@@ -436,7 +439,7 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Publication Year</label>
             <input
@@ -471,7 +474,7 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Binding</label>
             <select
@@ -490,9 +493,9 @@ export default function BookForm({ book, isEdit = false }: BookFormProps) {
       </div>
 
       {/* Listing Status */}
-      <div className="bg-white shadow p-6">
+      <div className="bg-white shadow p-4 sm:p-6">
         <h2 className="text-lg font-semibold mb-4">Listing Status</h2>
-        <div className="flex gap-4">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
           <label
             className={`flex-1 flex items-center gap-3 border-2 rounded-lg p-4 cursor-pointer transition-colors ${
               formData.status === 'published'

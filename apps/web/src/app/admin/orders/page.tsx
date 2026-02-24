@@ -135,11 +135,14 @@ export default function AdminOrdersPage() {
             className="px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black"
           >
             <option value="all">All Status</option>
+            <option value="completed">Completed</option>
             <option value="pending">Pending</option>
             <option value="processing">Processing</option>
             <option value="shipped">Shipped</option>
             <option value="delivered">Delivered</option>
+            <option value="on_hold">On Hold</option>
             <option value="cancelled">Cancelled</option>
+            <option value="failed">Failed</option>
           </select>
         </div>
       </div>
@@ -153,7 +156,7 @@ export default function AdminOrdersPage() {
         <EmptyState
           icon={['fal', 'clipboard-list']}
           title="No orders found"
-          description="Orders containing your products will appear here."
+          description="No orders match the current filters."
         />
       ) : (
         <>
@@ -172,30 +175,40 @@ export default function AdminOrdersPage() {
                   <div className="text-right">
                     <span
                       className={`px-3 py-1 text-xs font-semibold rounded-full ${
-                        order.status === 'delivered'
+                        order.status === 'completed' || order.status === 'delivered'
                           ? 'bg-green-100 text-green-800'
                           : order.status === 'shipped'
                             ? 'bg-blue-100 text-blue-800'
-                            : order.status === 'processing'
+                            : order.status === 'processing' || order.status === 'on_hold'
                               ? 'bg-yellow-100 text-yellow-800'
-                              : order.status === 'cancelled'
+                              : order.status === 'cancelled' || order.status === 'failed'
                                 ? 'bg-red-100 text-red-800'
                                 : 'bg-gray-100 text-gray-800'
                       }`}
                     >
                       {order.status}
                     </span>
-                    <p className="text-sm font-bold text-gray-900 mt-2">
-                      Your Earnings: {formatMoney(order.vendorEarnings, { fromCents: false })}
+                    <p className="text-sm text-gray-500 mt-2">
+                      Order Total:{' '}
+                      <span className="font-semibold text-gray-900">
+                        {formatMoney(order.totalAmount ?? order.vendorEarnings, {
+                          fromCents: false,
+                        })}
+                      </span>
+                    </p>
+                    <p className="text-sm text-green-700 font-bold">
+                      Company Earns: {formatMoney(order.platformFee ?? 0, { fromCents: false })}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Vendor Earns:{' '}
+                      {formatMoney(order.vendorNet ?? order.vendorEarnings, { fromCents: false })}
                     </p>
                   </div>
                 </div>
 
                 {/* Order Items */}
                 <div className="border-t pt-4">
-                  <h4 className="text-sm font-medium text-gray-700 mb-3">
-                    Your Items in this Order:
-                  </h4>
+                  <h4 className="text-sm font-medium text-gray-700 mb-3">Vendor Items:</h4>
                   <div className="space-y-2">
                     {order.vendorItems?.map((item: any) => (
                       <div
@@ -214,7 +227,9 @@ export default function AdminOrdersPage() {
                             />
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-900">{item.book?.title}</p>
+                            <p className="text-sm font-medium text-gray-900">
+                              {item.title || item.book?.title}
+                            </p>
                             <p className="text-xs text-gray-500">Quantity: {item.quantity}</p>
                           </div>
                         </div>
@@ -249,7 +264,7 @@ export default function AdminOrdersPage() {
                     </button>
                   )}
                   <Link
-                    href={`/vendor/orders/${order.id}`}
+                    href={`/admin/orders/${order.id}`}
                     className="bg-gray-200 text-gray-700 px-4 py-2 text-sm hover:bg-gray-300 transition"
                   >
                     View Details

@@ -524,22 +524,24 @@ export default function ProductDetailPage() {
                     <span className="font-medium text-gray-900">Make Offer</span>
                   </button>
 
-                  <button
-                    onClick={() => {
-                      setShowOverflowMenu(false);
-                      addToWishlistMutation.mutate();
-                    }}
-                    disabled={addToWishlistMutation.isPending}
-                    className="w-full px-6 py-4 flex items-center gap-3 hover:bg-gray-50 transition-all text-left border-b border-gray-100 disabled:opacity-50"
-                  >
-                    <FontAwesomeIcon
-                      icon={['fal', 'heart'] as [string, string]}
-                      className="text-xl text-gray-700"
-                    />
-                    <span className="font-medium text-gray-900">
-                      {addToWishlistMutation.isPending ? 'Adding...' : 'Add to Wishlist'}
-                    </span>
-                  </button>
+                  {product.type !== 'product' && (
+                    <button
+                      onClick={() => {
+                        setShowOverflowMenu(false);
+                        addToWishlistMutation.mutate();
+                      }}
+                      disabled={addToWishlistMutation.isPending}
+                      className="w-full px-6 py-4 flex items-center gap-3 hover:bg-gray-50 transition-all text-left border-b border-gray-100 disabled:opacity-50"
+                    >
+                      <FontAwesomeIcon
+                        icon={['fal', 'heart'] as [string, string]}
+                        className="text-xl text-gray-700"
+                      />
+                      <span className="font-medium text-gray-900">
+                        {addToWishlistMutation.isPending ? 'Adding...' : 'Add to Wishlist'}
+                      </span>
+                    </button>
+                  )}
 
                   <button
                     onClick={() => {
@@ -659,18 +661,20 @@ export default function ProductDetailPage() {
                 <span>{session ? 'Send Offer' : 'Login to Send Offer'}</span>
               </button>
 
-              <button
-                onClick={() => addToWishlistMutation.mutate()}
-                disabled={addToWishlistMutation.isPending}
-                className="bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-secondary hover:text-black transition-colors text-base sm:text-lg font-medium flex-1 border-2 border-black hover:border-secondary"
-                style={{ borderRadius: '1.5rem' }}
-              >
-                <FontAwesomeIcon
-                  icon={['fal', 'heart'] as [string, string]}
-                  className="text-xl sm:text-2xl"
-                />
-                <span>{addToWishlistMutation.isPending ? 'Adding...' : 'Wishlist'}</span>
-              </button>
+              {product.type !== 'product' && (
+                <button
+                  onClick={() => addToWishlistMutation.mutate()}
+                  disabled={addToWishlistMutation.isPending}
+                  className="bg-black text-white py-4 px-6 flex items-center justify-center gap-2 hover:bg-secondary hover:text-black transition-colors text-base sm:text-lg font-medium flex-1 border-2 border-black hover:border-secondary"
+                  style={{ borderRadius: '1.5rem' }}
+                >
+                  <FontAwesomeIcon
+                    icon={['fal', 'heart'] as [string, string]}
+                    className="text-xl sm:text-2xl"
+                  />
+                  <span>{addToWishlistMutation.isPending ? 'Adding...' : 'Wishlist'}</span>
+                </button>
+              )}
 
               <button
                 onClick={handleShare}

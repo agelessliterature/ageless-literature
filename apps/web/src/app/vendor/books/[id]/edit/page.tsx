@@ -55,7 +55,7 @@ export default function EditBookPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
         <div className="max-w-4xl mx-auto">
           <PageLoading message="Loading product..." fullPage={false} />
         </div>
@@ -65,7 +65,7 @@ export default function EditBookPage() {
 
   if (error || !book) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
         <div className="max-w-4xl mx-auto">
           <InlineError
             message={`Product not found (ID: ${bookId}). This product may have been deleted or doesn't exist.`}
@@ -84,12 +84,12 @@ export default function EditBookPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
       <div className="mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold">Edit Book</h1>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-8 gap-3">
+          <h1 className="text-xl sm:text-3xl font-bold">Edit Book</h1>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 flex-wrap">
             {/* View Product Button */}
             <a
               href={`/shop/${book.slug || book.sid || book.id}`}

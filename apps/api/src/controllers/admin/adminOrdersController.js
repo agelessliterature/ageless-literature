@@ -4,32 +4,112 @@
  */
 
 import db from '../../models/index.js';
+import { Op } from 'sequelize';
+
+const { Order, OrderItem, Book, BookMedia, User } = db;
 
 /**
  * List all orders
- * Query params: page, limit, status, userId, vendorId
+ * Query params: page, limit, status, search
  */
 export const listAll = async (req, res) => {
   try {
-    const { page = 1, limit = 50 } = req.query;
+    const { page = 1, limit = 20, status, search } = req.query;
+    const offset = (parseInt(page) - 1) * parseInt(limit);
 
-    // TODO: Create Orders collection and implement actual database queries
-    const orders = [];
+    const where = {};
+    if (status && status !== 'all') where.status = status;
+    if (search) where.orderNumber = { [Op.iLike]: `%${search}%` };
+
+    const { count, rows: orders } = await Order.findAndCountAll({
+      where,
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: ['id', 'firstName', 'lastName', 'email'],
+        },
+        {
+          model: OrderItem,
+          as: 'items',
+          required: false,
+          include: [
+            {
+              model: Book,
+              as: 'book',
+              required: false,
+              attributes: ['id', 'title', 'author', 'price'],
+              include: BookMedia
+                ? [
+                    {
+                      model: BookMedia,
+                      as: 'media',
+                      required: false,
+                      attributes: ['imageUrl', 'thumbnailUrl', 'isPrimary', 'displayOrder'],
+                    },
+                  ]
+                : [],
+            },
+          ],
+        },
+      ],
+      order: [['createdAt', 'DESC']],
+      limit: parseInt(limit),
+      offset,
+      subQuery: false,
+      distinct: true,
+    });
+
+    const enriched = orders.map((order) => {
+      const o = order.toJSON();
+      const enrichedItems = (o.items || []).map((item) => {
+        const media = item.book?.media || [];
+        const primaryMedia =
+          media.find((m) => m.isPrimary) ||
+          [...media].sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))[0];
+        return {
+          ...item,
+          title: item.title || item.book?.title || '',
+          book: item.book
+            ? {
+                ...item.book,
+                imageUrl: primaryMedia?.thumbnailUrl || primaryMedia?.imageUrl || null,
+              }
+            : null,
+        };
+      });
+      const vendorTotal = enrichedItems.reduce(
+        (sum, item) => sum + parseFloat(item.price || 0) * (item.quantity || 1),
+        0,
+      );
+      const commissionRate = 0.08; // 8% standard platform rate
+      const platformFee = parseFloat((vendorTotal * commissionRate).toFixed(2));
+      const vendorNet = parseFloat((vendorTotal - platformFee).toFixed(2));
+      return {
+        ...o,
+        vendorItems: enrichedItems,
+        vendorTotal,
+        vendorEarnings: vendorTotal,
+        platformFee,
+        vendorNet,
+      };
+    });
 
     return res.json({
       success: true,
       data: {
-        orders,
+        orders: enriched,
         pagination: {
-          total: orders.length,
+          total: count,
           page: parseInt(page),
           limit: parseInt(limit),
-          totalPages: Math.ceil(orders.length / parseInt(limit)),
+          totalPages: Math.ceil(count / parseInt(limit)),
         },
       },
       message: 'Orders retrieved successfully',
     });
   } catch (error) {
+    console.error('Error listing admin orders:', error);
     return res.status(500).json({
       success: false,
       message: 'Failed to retrieve orders',

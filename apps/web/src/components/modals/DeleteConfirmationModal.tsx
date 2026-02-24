@@ -20,9 +20,10 @@ export default function DeleteConfirmationModal({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
       <div className="bg-white max-w-md w-full p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Confirm Deletion</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Archive Item</h3>
         <p className="text-gray-600 mb-6">
-          Are you sure you want to delete &quot;{itemName}&quot;? This action cannot be undone.
+          Are you sure you want to archive &quot;{itemName}&quot;? It will be moved to archived
+          status and hidden from the storefront.
         </p>
         <div className="flex gap-3 justify-end">
           <button
@@ -33,10 +34,10 @@ export default function DeleteConfirmationModal({
           </button>
           <button
             onClick={onConfirm}
-            className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 transition-colors"
+            className="px-4 py-2 bg-amber-600 text-white hover:bg-amber-700 transition-colors"
           >
-            <FontAwesomeIcon icon={['fal', 'trash']} className="mr-2 text-base" />
-            Delete
+            <FontAwesomeIcon icon={['fal', 'archive']} className="mr-2 text-base" />
+            Archive
           </button>
         </div>
       </div>

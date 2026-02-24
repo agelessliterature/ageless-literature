@@ -272,6 +272,7 @@ export default function EditProductPage() {
       if (data.success) {
         setSuccess('Product updated successfully!');
         setTimeout(() => {
+          router.refresh();
           router.push('/admin/products');
         }, 1500);
       } else {

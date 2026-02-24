@@ -777,7 +777,7 @@ async function processAuctionCommission(auction, winningAmount) {
       netAmount: vendorEarnings, // Vendor's share after commission
       commissionRateBps: Math.round(commissionRate * 10000), // Convert to basis points
       transactionType: 'auction_sale',
-      status: 'completed', // Auctions are completed immediately upon sale
+      status: 'pending', // Pending payout to vendor
       completedAt: new Date(),
     };
 

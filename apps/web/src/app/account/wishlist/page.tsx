@@ -36,11 +36,6 @@ export default function WishlistPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <div className="flex items-center gap-4 mb-4">
-          <Link href="/account" className="text-gray-600 hover:text-primary transition-colors">
-            ← Back to Account
-          </Link>
-        </div>
         <h1 className="text-4xl font-bold text-primary mb-2">My Wishlist</h1>
         <p className="text-gray-600 text-lg">
           {wishlistItems && wishlistItems.length > 0

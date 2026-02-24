@@ -10,7 +10,6 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
-import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
 import { getApiUrl } from '@/lib/api';
 import { withBasePath } from '@/lib/path-utils';
 import PageLoading from '@/components/ui/PageLoading';
@@ -57,13 +56,6 @@ export default function AccountBidsPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-6">
-        <Link
-          href={withBasePath('/account')}
-          className="text-primary hover:text-secondary mb-4 inline-block"
-        >
-          <FontAwesomeIcon icon={['fal', 'arrow-left']} className="mr-2" />
-          Back to Account
-        </Link>
         <h1 className="text-2xl sm:text-3xl font-bold text-primary">My Bids</h1>
         <p className="text-gray-600 mt-2">Track your auction bids and activity</p>
       </div>

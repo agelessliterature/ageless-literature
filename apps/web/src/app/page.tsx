@@ -551,26 +551,6 @@ export default function Home() {
             </div>
           </motion.div>
         </div>
-
-        {/* High Spots Bottom Section */}
-        <div className="bg-gray-100 py-8 md:py-12">
-          <div className="mx-auto px-8 md:px-16 lg:px-24">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-              className="text-center"
-            >
-              <h3 className="text-3xl md:text-4xl py-4 font-bold text-primary tracking-wider">
-                {t('highSpots.sectionTitle')}
-              </h3>
-              <p className="text-sm md:text-base text-gray-600 mb-4">
-                {t('highSpots.sectionSubtitle')}
-              </p>
-            </motion.div>
-          </div>
-        </div>
       </section>
 
       {/* Download Mobile App Section */}

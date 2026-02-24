@@ -16,6 +16,11 @@ module.exports = {
       acquire: 30000,
       idle: 10000,
     },
+    dialectOptions: {
+      ssl: process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('localhost')
+        ? { require: true, rejectUnauthorized: false }
+        : false,
+    },
   },
   test: {
     use_env_variable: 'DATABASE_URL',

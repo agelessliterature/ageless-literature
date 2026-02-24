@@ -82,6 +82,7 @@ const allowedModels = [
   'RareBookRequest.cjs',
   'Coupon.js',
   'CouponRedemption.js',
+  'PasswordResetToken.js',
 ];
 
 // Load all model files using dynamic import (they use module.exports, which works with import)

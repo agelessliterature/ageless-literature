@@ -4,12 +4,15 @@
  */
 
 import jwt from 'jsonwebtoken';
+import crypto from 'node:crypto';
 import { body, validationResult } from 'express-validator';
 import db from '../models/index.js';
 import { passwordComplexityValidator } from '../utils/passwordValidation.js';
 import { uploadOAuthProfileImage, deleteImage } from '../utils/cloudinary.js';
+import { verifyLegacyPassword } from '../utils/legacyPassword.js';
+import { isLegacyWindowOpen } from '../utils/legacyAuthWindow.js';
 
-const { User } = db;
+const { User, PasswordResetToken } = db;
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
 const JWT_EXPIRATION = process.env.JWT_EXPIRES_IN || '30d';
 
@@ -150,8 +153,42 @@ export const login = [
         });
       }
 
-      // Verify password
-      const isPasswordValid = await user.comparePassword(password);
+      // Verify password — bcrypt first, then legacy WP hash if window is open
+      let isPasswordValid = await user.comparePassword(password);
+
+      if (!isPasswordValid) {
+        if (isLegacyWindowOpen() && user.legacyPasswordHash) {
+          isPasswordValid = verifyLegacyPassword(password, user.legacyPasswordHash);
+
+          if (isPasswordValid) {
+            // Opportunistic upgrade: replace WP hash with bcrypt silently
+            try {
+              const bcrypt = (await import('bcrypt')).default;
+              const BCRYPT_ROUNDS = parseInt(process.env.BCRYPT_ROUNDS || '12', 10);
+              user.passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+              user.legacyPasswordHash = null;
+              user.legacyHashType = null;
+              user.passwordMigratedAt = new Date();
+              await user.save();
+            } catch (upgradeErr) {
+              console.error(
+                '[Login] bcrypt upgrade failed — continuing anyway:',
+                upgradeErr.message,
+              );
+            }
+          }
+        }
+      }
+
+      // Legacy window closed and user still has no bcrypt hash — must reset password
+      if (!isPasswordValid && user.passwordResetRequired) {
+        return res.status(401).json({
+          success: false,
+          message: 'Password reset required. Please use the forgot-password flow.',
+          passwordResetRequired: true,
+        });
+      }
+
       if (!isPasswordValid) {
         return res.status(401).json({
           success: false,
@@ -417,6 +454,141 @@ export const getOnlineUsers = async (req, res) => {
     });
   }
 };
+
+/**
+ * Forgot Password
+ * POST /api/auth/forgot-password
+ * Generates a short-lived token and sends a reset link.
+ * Always returns 200 to avoid leaking whether an email exists.
+ */
+export const forgotPassword = [
+  body('email')
+    .isEmail()
+    .normalizeEmail({ gmail_remove_dots: false })
+    .withMessage('Valid email is required'),
+
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res
+          .status(400)
+          .json({ success: false, message: 'Invalid email', errors: errors.array() });
+      }
+
+      const { email } = req.body;
+      const user = await User.findByEmail(email);
+
+      // Always 200 — never reveal whether email is in the system
+      if (!user) {
+        return res.json({
+          success: true,
+          message: 'If that email exists a reset link has been sent.',
+        });
+      }
+
+      // Invalidate any existing unexpired tokens for this user
+      await PasswordResetToken.destroy({ where: { userId: user.id, usedAt: null } });
+
+      // Generate raw token (sent to user) and stored hash
+      const rawToken = crypto.randomBytes(32).toString('hex');
+      const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+      await PasswordResetToken.create({ userId: user.id, tokenHash, expiresAt });
+
+      const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/reset-password?token=${rawToken}`;
+
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`[ForgotPassword] Reset URL for ${email}: ${resetUrl}`);
+      } else {
+        // Send email via SendGrid
+        try {
+          const sgMail = (await import('@sendgrid/mail')).default;
+          sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+          await sgMail.send({
+            to: email,
+            from: process.env.SENDGRID_FROM_EMAIL || 'noreply@agelessliterature.com',
+            subject: 'Reset your Ageless Literature password',
+            text: `Click the link below to reset your password (expires in 1 hour):\n\n${resetUrl}`,
+            html: `<p>Click the link below to reset your password (expires in 1 hour):</p><p><a href="${resetUrl}">${resetUrl}</a></p>`,
+          });
+        } catch (mailErr) {
+          console.error('[ForgotPassword] SendGrid error:', mailErr.message);
+          // Don't expose mail errors to client
+        }
+      }
+
+      res.json({ success: true, message: 'If that email exists a reset link has been sent.' });
+    } catch (error) {
+      console.error('[ForgotPassword] Error:', error);
+      res
+        .status(500)
+        .json({ success: false, message: 'Failed to process request', error: error.message });
+    }
+  },
+];
+
+/**
+ * Reset Password
+ * POST /api/auth/reset-password
+ * Validates token, sets new bcrypt password, clears legacy hash.
+ */
+export const resetPassword = [
+  body('token').trim().notEmpty().withMessage('Token is required'),
+  body('newPassword')
+    .custom(passwordComplexityValidator())
+    .withMessage('Password does not meet security requirements'),
+
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res
+          .status(400)
+          .json({ success: false, message: 'Validation failed', errors: errors.array() });
+      }
+
+      const { token, newPassword } = req.body;
+      const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+      const resetToken = await PasswordResetToken.findOne({
+        where: {
+          tokenHash,
+          usedAt: null,
+        },
+      });
+
+      if (!resetToken || new Date() > resetToken.expiresAt) {
+        return res.status(400).json({ success: false, message: 'Invalid or expired reset token.' });
+      }
+
+      const user = await User.findByPk(resetToken.userId);
+      if (!user) {
+        return res.status(400).json({ success: false, message: 'User not found.' });
+      }
+
+      // Set new bcrypt password via virtual 'password' field (triggers beforeUpdate hook)
+      user.password = newPassword;
+      user.legacyPasswordHash = null;
+      user.legacyHashType = null;
+      user.passwordResetRequired = false;
+      if (!user.passwordMigratedAt) user.passwordMigratedAt = new Date();
+      await user.save();
+
+      // Mark token as used
+      resetToken.usedAt = new Date();
+      await resetToken.save();
+
+      res.json({ success: true, message: 'Password reset successfully. You can now log in.' });
+    } catch (error) {
+      console.error('[ResetPassword] Error:', error);
+      res
+        .status(500)
+        .json({ success: false, message: 'Password reset failed', error: error.message });
+    }
+  },
+];
 
 /**
  * Verify JWT token middleware

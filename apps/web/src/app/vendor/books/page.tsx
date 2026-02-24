@@ -28,15 +28,16 @@ export default function VendorBooksPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('published');
   const [conditionFilter, setConditionFilter] = useState('all');
-  const [sortOption, setSortOption] = useState('createdAt_DESC');
+  const [sortOption, setSortOption] = useState('menuOrder_ASC');
   const [auctionFilter, setAuctionFilter] = useState<'all' | 'auction' | 'non-auction'>('all');
   const [page, setPage] = useState(1);
   const [showItemTypeModal, setShowItemTypeModal] = useState(false);
   const [showImportWizard, setShowImportWizard] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState<Set<number>>(new Set());
   const [selectAll, setSelectAll] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
 
   // Scroll to top when page changes
   useEffect(() => {
@@ -144,23 +145,27 @@ export default function VendorBooksPage() {
     if (selectedProducts.size === 0) return;
 
     const count = selectedProducts.size;
-    if (!confirm(`Are you sure you want to delete ${count} product${count > 1 ? 's' : ''}?`))
+    if (!confirm(`Are you sure you want to archive ${count} product${count > 1 ? 's' : ''}?`))
       return;
 
     try {
-      const deletePromises = Array.from(selectedProducts).map((id) =>
-        fetch(getApiUrl(`api/vendor/products/${id}`), {
-          method: 'DELETE',
-          headers: { Authorization: `Bearer ${session?.accessToken}` },
+      const archivePromises = Array.from(selectedProducts).map((id) =>
+        fetch(getApiUrl(`api/vendor/products/${id}/status`), {
+          method: 'PATCH',
+          headers: {
+            Authorization: `Bearer ${session?.accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ status: 'archived' }),
         }),
       );
 
-      await Promise.all(deletePromises);
+      await Promise.all(archivePromises);
       setSelectedProducts(new Set());
       setSelectAll(false);
       refetch();
     } catch (error) {
-      console.error('Bulk delete failed:', error);
+      console.error('Bulk archive failed:', error);
     }
   };
 
@@ -331,10 +336,10 @@ export default function VendorBooksPage() {
                 </button>
                 <button
                   onClick={handleBulkDelete}
-                  className="flex items-center gap-1.5 bg-red-600 text-white px-3 py-1.5 text-sm hover:bg-red-700 transition rounded"
+                  className="flex items-center gap-1.5 bg-amber-600 text-white px-3 py-1.5 text-sm hover:bg-amber-700 transition rounded"
                 >
-                  <FontAwesomeIcon icon={['fal', 'trash']} className="text-sm" />
-                  Delete
+                  <FontAwesomeIcon icon={['fal', 'archive']} className="text-sm" />
+                  Archive
                 </button>
               </div>
             )}
@@ -434,6 +439,7 @@ export default function VendorBooksPage() {
             }}
             className="px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black"
           >
+            <option value="menuOrder_ASC">Shop Order</option>
             <option value="createdAt_DESC">Newest First</option>
             <option value="createdAt_ASC">Oldest First</option>
             <option value="price_DESC">Price: High → Low</option>
@@ -458,30 +464,57 @@ export default function VendorBooksPage() {
           </select>
         </div>
 
-        {/* Auction Toggle */}
-        <div className="flex items-center gap-2 mt-3">
-          <span className="text-sm text-gray-500 mr-1">Show:</span>
-          {(['all', 'auction', 'non-auction'] as const).map((opt) => (
+        {/* Auction Toggle + View Mode */}
+        <div className="flex items-center justify-between gap-2 mt-3">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-500 mr-1">Show:</span>
+            {(['all', 'auction', 'non-auction'] as const).map((opt) => (
+              <button
+                key={opt}
+                onClick={() => setAuctionFilter(opt)}
+                className={`px-3 py-1 text-sm rounded-full border transition-colors ${
+                  auctionFilter === opt
+                    ? 'bg-primary text-white border-primary'
+                    : 'bg-white text-gray-600 border-gray-300 hover:border-gray-400'
+                }`}
+              >
+                {opt === 'all'
+                  ? 'All Listings'
+                  : opt === 'auction'
+                    ? '🔨 In Auction'
+                    : 'Not in Auction'}
+              </button>
+            ))}
+          </div>
+          {/* View Mode Toggle */}
+          <div className="flex items-center border border-gray-300 rounded overflow-hidden">
             <button
-              key={opt}
-              onClick={() => setAuctionFilter(opt)}
-              className={`px-3 py-1 text-sm rounded-full border transition-colors ${
-                auctionFilter === opt
-                  ? 'bg-primary text-white border-primary'
-                  : 'bg-white text-gray-600 border-gray-300 hover:border-gray-400'
+              onClick={() => setViewMode('grid')}
+              title="Grid view"
+              className={`px-3 py-1.5 text-sm transition-colors ${
+                viewMode === 'grid'
+                  ? 'bg-primary text-white'
+                  : 'bg-white text-gray-600 hover:bg-gray-50'
               }`}
             >
-              {opt === 'all'
-                ? 'All Listings'
-                : opt === 'auction'
-                  ? '🔨 In Auction'
-                  : 'Not in Auction'}
+              <FontAwesomeIcon icon={['fal', 'grid-2']} />
             </button>
-          ))}
+            <button
+              onClick={() => setViewMode('table')}
+              title="Table view"
+              className={`px-3 py-1.5 text-sm transition-colors border-l border-gray-300 ${
+                viewMode === 'table'
+                  ? 'bg-primary text-white'
+                  : 'bg-white text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              <FontAwesomeIcon icon={['fal', 'list']} />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Products Table */}
+      {/* Products Display */}
       {isLoading ? (
         <PageLoading message="Loading products..." fullPage={false} />
       ) : filteredProducts.length === 0 ? (
@@ -492,7 +525,184 @@ export default function VendorBooksPage() {
           actionLabel="Add Your First Product"
           actionHref="/vendor/books/new"
         />
+      ) : viewMode === 'grid' ? (
+        /* ── Grid Card View ── */
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredProducts.map((product: any) => {
+              const hasActiveAuction = auctionMap.has(String(product.id));
+              const auction = auctionMap.get(String(product.id));
+              const isSold = product.status === 'sold' || product.status === 'archived';
+              const statusColors: Record<string, string> = {
+                published: 'bg-green-500 text-white',
+                draft: 'bg-yellow-400 text-black',
+                sold: 'bg-red-600 text-white',
+                archived: 'bg-gray-500 text-white',
+              };
+              let coverImg = product.imageUrl || null;
+              if (
+                coverImg &&
+                coverImg.includes('cloudinary.com') &&
+                !coverImg.includes('/upload/c_fill')
+              ) {
+                coverImg = coverImg.replace(
+                  '/upload/',
+                  '/upload/c_fill,w_600,h_800,q_auto,f_auto/',
+                );
+              }
+              return (
+                <div
+                  key={product.id}
+                  className="group relative bg-black border border-gray-700 hover:shadow-2xl hover:border-[#d4af37] transition-all duration-300 overflow-hidden flex flex-col"
+                  style={{ borderRadius: '1.5rem' }}
+                >
+                  {/* Image */}
+                  <div className="relative aspect-[3/4] bg-gray-900 overflow-hidden">
+                    {coverImg ? (
+                      <img
+                        src={coverImg}
+                        alt={product.title}
+                        className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${
+                          isSold ? 'opacity-50' : ''
+                        }`}
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-gray-600">
+                        <FontAwesomeIcon icon={['fal', 'book']} className="text-6xl" />
+                      </div>
+                    )}
+                    {/* Status badge */}
+                    <div className="absolute top-3 left-3">
+                      <span
+                        className={`px-2 py-0.5 text-xs font-bold rounded-full ${statusColors[product.status] || 'bg-gray-400 text-white'}`}
+                      >
+                        {product.status.charAt(0).toUpperCase() + product.status.slice(1)}
+                      </span>
+                    </div>
+                    {/* Auction badge */}
+                    {hasActiveAuction && (
+                      <div className="absolute top-3 right-3">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded">
+                          <FontAwesomeIcon icon={['fal', 'gavel']} className="text-[10px]" />
+                          AUCTION
+                        </span>
+                      </div>
+                    )}
+                    {/* Sold overlay */}
+                    {isSold && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="bg-red-600 text-white text-sm font-bold px-4 py-1.5 shadow-lg tracking-wider">
+                          {product.status === 'archived' ? 'ARCHIVED' : 'SOLD'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Info */}
+                  <div className="p-4 flex flex-col flex-grow">
+                    <h3 className="text-sm font-semibold text-white line-clamp-2 mb-1 group-hover:text-[#d4af37] transition-colors h-10">
+                      {product.title}
+                    </h3>
+                    {product.author && (
+                      <p className="text-xs text-gray-400 mb-2 truncate">{product.author}</p>
+                    )}
+
+                    <div className="mt-auto">
+                      {/* Price */}
+                      <div className="flex items-center gap-2 mb-3 pb-3 border-b border-gray-700">
+                        <span className="text-xl font-bold text-white">
+                          {hasActiveAuction
+                            ? formatMoney(
+                                parseFloat(auction?.startingBid || auction?.startingPrice || 0),
+                                { fromCents: false },
+                              )
+                            : formatMoney(product.price, { fromCents: false })}
+                        </span>
+                        {hasActiveAuction && (
+                          <span className="text-xs text-purple-400">starting bid</span>
+                        )}
+                        {product.salePrice &&
+                          Number(product.salePrice) < Number(product.price) &&
+                          !hasActiveAuction && (
+                            <span className="text-sm text-gray-400 line-through">
+                              {formatMoney(product.price, { fromCents: false })}
+                            </span>
+                          )}
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex gap-2">
+                        <Link
+                          href={`/vendor/books/${product.id}/edit`}
+                          className="flex-1 bg-secondary hover:bg-secondary/90 text-black text-center py-2 text-sm font-semibold transition-all duration-300 border-2 border-black hover:border-secondary flex items-center justify-center gap-1"
+                          style={{ borderRadius: '1.5rem' }}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <FontAwesomeIcon icon={['fal', 'edit']} className="text-xs" />
+                          EDIT
+                        </Link>
+                        {product.status !== 'sold' && (
+                          <select
+                            value={product.status}
+                            onChange={(e) => handleStatusChange(product.id, e.target.value)}
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-xs font-semibold px-2 rounded-full bg-gray-800 text-white border border-gray-600 cursor-pointer focus:outline-none hover:border-gray-400 transition-colors"
+                            style={{ borderRadius: '1.5rem' }}
+                          >
+                            <option value="published">✓ Published</option>
+                            <option value="draft">◷ Draft</option>
+                            <option value="archived">Archive</option>
+                          </select>
+                        )}
+                        {product.status === 'sold' && product.quantity > 0 && (
+                          <button
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              if (confirm('Relist this product as available for purchase?')) {
+                                try {
+                                  const res = await fetch(
+                                    getApiUrl(`api/vendor/products/${product.id}/relist`),
+                                    {
+                                      method: 'POST',
+                                      headers: { Authorization: `Bearer ${session?.accessToken}` },
+                                    },
+                                  );
+                                  if (res.ok) refetch();
+                                  else {
+                                    const err = await res.json();
+                                    alert(err.message || 'Failed to relist');
+                                  }
+                                } catch {
+                                  alert('Failed to relist product');
+                                }
+                              }
+                            }}
+                            className="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-3 py-2 transition-colors"
+                            style={{ borderRadius: '1.5rem' }}
+                            title="Relist product"
+                          >
+                            <FontAwesomeIcon icon={['fal', 'redo']} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <Pagination
+            currentPage={page}
+            totalPages={pagination.totalPages || 1}
+            totalItems={pagination.total || 0}
+            itemsPerPage={20}
+            onPageChange={setPage}
+            className="mt-6"
+          />
+        </>
       ) : (
+        /* ── Table View ── */
         <>
           <ResponsiveDataView
             breakpoint="md"
@@ -544,7 +754,7 @@ export default function VendorBooksPage() {
                           <span
                             className={`px-2 py-0.5 text-xs font-semibold rounded-full ${statusColors[product.status] || 'bg-gray-100 text-gray-800'}`}
                           >
-                            {product.status === 'archived' ? 'Deleted' : product.status}
+                            {product.status === 'archived' ? 'Archived' : product.status}
                           </span>
                         </div>
                       }
@@ -586,7 +796,7 @@ export default function VendorBooksPage() {
                               <option value="published">✓ Published</option>
                               <option value="draft">◷ Draft</option>
                               {product.status === 'sold' && <option value="sold">Sold</option>}
-                              <option value="archived">✕ Archive / Delete</option>
+                              <option value="archived">Archive</option>
                             </select>
                           ),
                         },
@@ -776,7 +986,7 @@ export default function VendorBooksPage() {
                                 <option value="published">✓ Published</option>
                                 <option value="draft">◷ Draft</option>
                                 {product.status === 'sold' && <option value="sold">Sold</option>}
-                                <option value="archived">✕ Archive / Delete</option>
+                                <option value="archived">Archive</option>
                               </select>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">

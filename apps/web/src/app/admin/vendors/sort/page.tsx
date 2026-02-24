@@ -5,91 +5,63 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
 import api from '@/lib/api';
 
-interface Book {
+interface Vendor {
   id: number;
-  title: string;
-  author: string;
-  price: string | number;
+  shopName: string;
+  shopUrl: string;
   menuOrder: number;
   status: string;
-  media?: Array<{ url: string; type: string }>;
-  vendor?: { id: number; storeName: string };
-  categories?: Array<{ id: number; name: string; slug: string }>;
+  logoUrl?: string | null;
+  user?: { email: string; firstName?: string; lastName?: string };
 }
 
-interface BooksResponse {
+interface VendorsResponse {
   success: boolean;
-  data: Book[];
-  pagination: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
+  data: {
+    vendors: Vendor[];
+    pagination: { total: number; page: number; limit: number; totalPages: number };
   };
 }
 
-interface Category {
-  id: number;
-  name: string;
-  slug: string;
-}
-
-export default function SortBooksPage() {
+export default function SortVendorsPage() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [limit] = useState(100);
   const [search, setSearch] = useState('');
-  const [category, setCategory] = useState('');
-  const [status, setStatus] = useState('published');
   const [searchInput, setSearchInput] = useState('');
+  const [status, setStatus] = useState('');
   const searchTimeout = useRef<NodeJS.Timeout>();
 
-  // Track local reorder state
-  const [localBooks, setLocalBooks] = useState<Book[]>([]);
+  const [localVendors, setLocalVendors] = useState<Vendor[]>([]);
   const [hasChanges, setHasChanges] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
-  // Fetch books
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ['admin-books-sort', page, limit, search, category, status],
+    queryKey: ['admin-vendors-sort', page, limit, search, status],
     queryFn: async () => {
       const params: Record<string, string | number> = {
         page,
         limit,
-        sortBy: 'menu_order',
+        sortBy: 'menuOrder',
         sortOrder: 'ASC',
       };
       if (search) params.search = search;
-      if (category) params.category = category;
       if (status) params.status = status;
-
-      const { data } = await api.get<BooksResponse>('/admin/books', { params });
-      return data;
+      const res = await api.get<VendorsResponse>('/admin/vendors', { params });
+      return res.data;
     },
     staleTime: 0,
   });
 
-  // Fetch categories
-  const { data: categoriesData } = useQuery({
-    queryKey: ['categories'],
-    queryFn: async () => {
-      const { data } = await api.get<{ success: boolean; data: Category[] }>('/categories');
-      return data.data;
-    },
-    staleTime: 60000,
-  });
-
-  // Update local state when data changes
   useEffect(() => {
-    if (data?.data) {
-      setLocalBooks(data.data);
+    if (data?.data?.vendors) {
+      setLocalVendors(data.data.vendors);
       setHasChanges(false);
     }
   }, [data]);
 
-  // Debounced search
   const handleSearchInput = (value: string) => {
     setSearchInput(value);
     if (searchTimeout.current) clearTimeout(searchTimeout.current);
@@ -99,16 +71,15 @@ export default function SortBooksPage() {
     }, 400);
   };
 
-  // Save mutation
   const saveMutation = useMutation({
     mutationFn: async (items: Array<{ id: number; menuOrder: number }>) => {
-      const { data } = await api.put('/admin/books/menu-order', { items });
-      return data;
+      const res = await api.put('/admin/vendors/menu-order', { items });
+      return res.data;
     },
     onSuccess: () => {
       setSaveStatus('success');
       setHasChanges(false);
-      queryClient.invalidateQueries({ queryKey: ['admin-books-sort'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-vendors-sort'] });
       setTimeout(() => setSaveStatus('idle'), 3000);
     },
     onError: () => {
@@ -117,10 +88,7 @@ export default function SortBooksPage() {
     },
   });
 
-  // DRAG & DROP handlers
-  const handleDragStart = (index: number) => {
-    setDraggedIndex(index);
-  };
+  const handleDragStart = (index: number) => setDraggedIndex(index);
 
   const handleDragOver = (e: React.DragEvent, index: number) => {
     e.preventDefault();
@@ -131,20 +99,11 @@ export default function SortBooksPage() {
   const handleDrop = (e: React.DragEvent, dropIndex: number) => {
     e.preventDefault();
     if (draggedIndex === null || draggedIndex === dropIndex) return;
-
-    const newBooks = [...localBooks];
-    const [draggedItem] = newBooks.splice(draggedIndex, 1);
-    newBooks.splice(dropIndex, 0, draggedItem);
-
-    // Recalculate menu_order based on position
-    // Use the page offset to maintain global ordering
-    const baseOrder = (page - 1) * limit;
-    const updated = newBooks.map((book, idx) => ({
-      ...book,
-      menuOrder: baseOrder + idx + 1,
-    }));
-
-    setLocalBooks(updated);
+    const updated = [...localVendors];
+    const [dragged] = updated.splice(draggedIndex, 1);
+    updated.splice(dropIndex, 0, dragged);
+    const base = (page - 1) * limit;
+    setLocalVendors(updated.map((v, i) => ({ ...v, menuOrder: base + i + 1 })));
     setHasChanges(true);
     setDraggedIndex(null);
     setDragOverIndex(null);
@@ -155,58 +114,45 @@ export default function SortBooksPage() {
     setDragOverIndex(null);
   };
 
-  // Move item up/down with buttons
   const moveItem = (index: number, direction: 'up' | 'down') => {
     const newIndex = direction === 'up' ? index - 1 : index + 1;
-    if (newIndex < 0 || newIndex >= localBooks.length) return;
-
-    const newBooks = [...localBooks];
-    [newBooks[index], newBooks[newIndex]] = [newBooks[newIndex], newBooks[index]];
-
-    const baseOrder = (page - 1) * limit;
-    const updated = newBooks.map((book, idx) => ({
-      ...book,
-      menuOrder: baseOrder + idx + 1,
-    }));
-
-    setLocalBooks(updated);
+    if (newIndex < 0 || newIndex >= localVendors.length) return;
+    const updated = [...localVendors];
+    [updated[index], updated[newIndex]] = [updated[newIndex], updated[index]];
+    const base = (page - 1) * limit;
+    setLocalVendors(updated.map((v, i) => ({ ...v, menuOrder: base + i + 1 })));
     setHasChanges(true);
   };
 
-  // Save order
   const handleSave = () => {
     setSaveStatus('saving');
-    const items = localBooks.map((book) => ({
-      id: book.id,
-      menuOrder: book.menuOrder,
-    }));
-    saveMutation.mutate(items);
+    saveMutation.mutate(localVendors.map((v) => ({ id: v.id, menuOrder: v.menuOrder })));
   };
 
-  // Reset to original
   const handleReset = () => {
-    if (data?.data) {
-      setLocalBooks(data.data);
+    if (data?.data?.vendors) {
+      setLocalVendors(data.data.vendors);
       setHasChanges(false);
     }
   };
 
-  const pagination = data?.pagination ?? { total: 0, page: 1, limit, totalPages: 1 };
-  const categories = categoriesData ?? [];
-
-  const getImageUrl = (book: Book) => {
-    const img = book.media?.find((m) => m.type === 'image');
-    return img?.url || '';
-  };
+  const pagination = data?.data?.pagination ?? { total: 0, page: 1, limit, totalPages: 1 };
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Sort Books (Menu Order)</h1>
+          <a
+            href="/admin/vendors"
+            className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1 mb-1"
+          >
+            <FontAwesomeIcon icon={['fal', 'chevron-left']} className="text-xs" />
+            Back to Vendors
+          </a>
+          <h1 className="text-2xl font-bold text-gray-900">Sort Vendors (Menu Order)</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Drag and drop to reorder books. Changes are saved per page batch.
+            Drag and drop to reorder vendors. Order controls display priority in shop listings.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -237,11 +183,10 @@ export default function SortBooksPage() {
         </div>
       </div>
 
-      {/* Status notices */}
       {saveStatus === 'success' && (
         <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded flex items-center gap-2">
           <FontAwesomeIcon icon={['fal', 'check-circle']} />
-          Menu order saved successfully!
+          Vendor menu order saved successfully!
         </div>
       )}
       {saveStatus === 'error' && (
@@ -252,7 +197,7 @@ export default function SortBooksPage() {
       )}
 
       {/* Filters */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="bg-white p-4 rounded-lg shadow-sm border grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <label className="block text-xs font-medium text-gray-600 mb-1">Search</label>
           <div className="relative">
@@ -264,28 +209,10 @@ export default function SortBooksPage() {
               type="text"
               value={searchInput}
               onChange={(e) => handleSearchInput(e.target.value)}
-              placeholder="Title or author..."
+              placeholder="Store name or URL..."
               className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
             />
           </div>
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1">Category</label>
-          <select
-            value={category}
-            onChange={(e) => {
-              setCategory(e.target.value);
-              setPage(1);
-            }}
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">All Categories</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.slug}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
         </div>
         <div>
           <label className="block text-xs font-medium text-gray-600 mb-1">Status</label>
@@ -298,22 +225,20 @@ export default function SortBooksPage() {
             className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
           >
             <option value="">All</option>
-            <option value="published">Published</option>
-            <option value="draft">Draft</option>
+            <option value="active">Active</option>
+            <option value="approved">Approved</option>
             <option value="pending">Pending</option>
-            <option value="sold">Sold</option>
-            <option value="archived">Archived</option>
+            <option value="suspended">Suspended</option>
           </select>
         </div>
         <div className="flex items-end">
           <p className="text-sm text-gray-500">
-            Showing {localBooks.length} of {pagination.total.toLocaleString()} books
+            Showing {localVendors.length} of {pagination.total.toLocaleString()} vendors
             {pagination.totalPages > 1 && ` (Page ${page} of ${pagination.totalPages})`}
           </p>
         </div>
       </div>
 
-      {/* Loading */}
       {isLoading && (
         <div className="flex items-center justify-center py-20">
           <FontAwesomeIcon
@@ -323,38 +248,34 @@ export default function SortBooksPage() {
           />
         </div>
       )}
-
-      {/* Error */}
       {isError && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error instanceof Error ? error.message : 'Failed to load books'}
+          {error instanceof Error ? error.message : 'Failed to load vendors'}
         </div>
       )}
 
       {/* Sortable List */}
-      {!isLoading && !isError && localBooks.length > 0 && (
+      {!isLoading && !isError && localVendors.length > 0 && (
         <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
           {/* Table Header */}
-          <div className="grid grid-cols-[52px_48px_1fr_140px_90px_90px_72px] gap-2 px-3 py-2 bg-gray-50 border-b text-xs font-medium text-gray-500 uppercase tracking-wider">
+          <div className="grid grid-cols-[52px_48px_1fr_160px_90px_72px] gap-2 px-3 py-2 bg-gray-50 border-b text-xs font-medium text-gray-500 uppercase tracking-wider">
             <div>Order</div>
             <div></div>
-            <div>Title / Author</div>
-            <div>Category</div>
-            <div>Price</div>
+            <div>Store</div>
+            <div>Email</div>
             <div>Status</div>
             <div>Move</div>
           </div>
 
-          {/* Sortable Items */}
-          {localBooks.map((book, index) => (
+          {localVendors.map((vendor, index) => (
             <div
-              key={book.id}
+              key={vendor.id}
               draggable
               onDragStart={() => handleDragStart(index)}
               onDragOver={(e) => handleDragOver(e, index)}
               onDrop={(e) => handleDrop(e, index)}
               onDragEnd={handleDragEnd}
-              className={`grid grid-cols-[52px_48px_1fr_140px_90px_90px_72px] gap-2 px-3 py-1.5 border-b items-center transition-colors cursor-grab active:cursor-grabbing ${
+              className={`grid grid-cols-[52px_48px_1fr_160px_90px_72px] gap-2 px-3 py-1.5 border-b items-center transition-colors cursor-grab active:cursor-grabbing ${
                 draggedIndex === index
                   ? 'bg-blue-50 opacity-50'
                   : dragOverIndex === index
@@ -365,52 +286,43 @@ export default function SortBooksPage() {
               {/* Order Number */}
               <div className="flex items-center gap-2">
                 <FontAwesomeIcon icon={['fal', 'grip-vertical']} className="text-gray-400" />
-                <span className="text-sm font-mono text-gray-500">{book.menuOrder}</span>
+                <span className="text-sm font-mono text-gray-500">{vendor.menuOrder}</span>
               </div>
 
-              {/* Image */}
+              {/* Logo */}
               <div className="w-10 h-10 bg-gray-100 rounded overflow-hidden flex-shrink-0">
-                {getImageUrl(book) ? (
-                  <img src={getImageUrl(book)} alt="" className="w-full h-full object-cover" />
+                {vendor.logoUrl ? (
+                  <img src={vendor.logoUrl} alt="" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <FontAwesomeIcon icon={['fal', 'book']} className="text-gray-300 text-xs" />
+                    <FontAwesomeIcon icon={['fal', 'store']} className="text-gray-300 text-xs" />
                   </div>
                 )}
               </div>
 
-              {/* Title & Author */}
+              {/* Store Name & URL */}
               <div className="min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">{book.title}</p>
-                <p className="text-xs text-gray-500 truncate">{book.author}</p>
+                <p className="text-sm font-medium text-gray-900 truncate">{vendor.shopName}</p>
+                <p className="text-xs text-gray-400 truncate">/{vendor.shopUrl}</p>
               </div>
 
-              {/* Category */}
-              <div className="text-xs text-gray-500 truncate">
-                {book.categories?.map((c) => c.name).join(', ') || '—'}
-              </div>
-
-              {/* Price */}
-              <div className="text-sm font-medium text-gray-900">
-                ${Number(book.price).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-              </div>
+              {/* Email */}
+              <div className="text-xs text-gray-500 truncate">{vendor.user?.email ?? '—'}</div>
 
               {/* Status */}
               <div>
                 <span
                   className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full ${
-                    book.status === 'published'
+                    vendor.status === 'active' || vendor.status === 'approved'
                       ? 'bg-green-100 text-green-800'
-                      : book.status === 'sold'
-                        ? 'bg-blue-100 text-blue-800'
-                        : book.status === 'archived'
+                      : vendor.status === 'pending'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : vendor.status === 'suspended'
                           ? 'bg-red-100 text-red-800'
-                          : book.status === 'draft'
-                            ? 'bg-gray-100 text-gray-800'
-                            : 'bg-yellow-100 text-yellow-800'
+                          : 'bg-gray-100 text-gray-800'
                   }`}
                 >
-                  {book.status}
+                  {vendor.status}
                 </span>
               </div>
 
@@ -426,7 +338,7 @@ export default function SortBooksPage() {
                 </button>
                 <button
                   onClick={() => moveItem(index, 'down')}
-                  disabled={index === localBooks.length - 1}
+                  disabled={index === localVendors.length - 1}
                   className="p-1.5 text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
                   title="Move down"
                 >
@@ -438,11 +350,17 @@ export default function SortBooksPage() {
         </div>
       )}
 
+      {!isLoading && !isError && localVendors.length === 0 && (
+        <div className="bg-white rounded-lg border p-12 text-center text-gray-500">
+          No vendors found.
+        </div>
+      )}
+
       {/* Pagination */}
       {pagination.totalPages > 1 && (
         <div className="flex items-center justify-between bg-white px-4 py-3 rounded-lg shadow-sm border">
           <p className="text-sm text-gray-600">
-            Page {page} of {pagination.totalPages} ({pagination.total.toLocaleString()} books)
+            Page {page} of {pagination.totalPages} ({pagination.total.toLocaleString()} vendors)
           </p>
           <div className="flex gap-2">
             <button
@@ -462,86 +380,6 @@ export default function SortBooksPage() {
               <FontAwesomeIcon icon={['fal', 'chevron-right']} className="ml-1" />
             </button>
           </div>
-        </div>
-      )}
-
-      {/* Sync from PROD section */}
-      <SyncFromProd />
-    </div>
-  );
-}
-
-// ─── Sync from PROD Component ────────────────────────────────────────────
-
-function SyncFromProd() {
-  const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle');
-  const [syncOutput, setSyncOutput] = useState('');
-  const queryClient = useQueryClient();
-
-  const handleSync = async () => {
-    if (!confirm('This will sync menu_order from PROD (read-only). Continue?')) return;
-
-    setSyncStatus('syncing');
-    setSyncOutput('');
-
-    try {
-      const { data } = await api.post('/admin/books/sync-menu-order');
-      setSyncStatus('success');
-      setSyncOutput(data.output || data.message || 'Sync completed');
-      queryClient.invalidateQueries({ queryKey: ['admin-books-sort'] });
-    } catch (err: any) {
-      setSyncStatus('error');
-      setSyncOutput(err.response?.data?.details || err.message || 'Sync failed');
-    }
-  };
-
-  return (
-    <div className="bg-white rounded-lg shadow-sm border p-6">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h2 className="text-lg font-bold text-gray-900">Sync from Production</h2>
-          <p className="text-sm text-gray-500">
-            Pull menu_order values from the production WordPress site (read-only). Only updates DEV.
-          </p>
-        </div>
-        <button
-          onClick={handleSync}
-          disabled={syncStatus === 'syncing'}
-          className={`px-5 py-2.5 rounded font-medium text-sm text-white transition-colors ${
-            syncStatus === 'syncing'
-              ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-orange-600 hover:bg-orange-700'
-          }`}
-        >
-          {syncStatus === 'syncing' ? (
-            <>
-              <FontAwesomeIcon icon={['fal', 'spinner-third']} spin className="mr-2" />
-              Syncing...
-            </>
-          ) : (
-            <>
-              <FontAwesomeIcon icon={['fal', 'sync']} className="mr-2" />
-              Sync Menu Order from PROD
-            </>
-          )}
-        </button>
-      </div>
-
-      {syncStatus === 'success' && (
-        <div className="bg-green-50 border border-green-200 rounded p-4 mt-4">
-          <p className="text-sm font-medium text-green-800 mb-2">Sync completed successfully</p>
-          <pre className="text-xs text-green-700 whitespace-pre-wrap max-h-60 overflow-y-auto font-mono">
-            {syncOutput}
-          </pre>
-        </div>
-      )}
-
-      {syncStatus === 'error' && (
-        <div className="bg-red-50 border border-red-200 rounded p-4 mt-4">
-          <p className="text-sm font-medium text-red-800 mb-2">Sync failed</p>
-          <pre className="text-xs text-red-700 whitespace-pre-wrap max-h-60 overflow-y-auto font-mono">
-            {syncOutput}
-          </pre>
         </div>
       )}
     </div>

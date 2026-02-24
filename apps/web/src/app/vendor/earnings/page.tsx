@@ -110,9 +110,10 @@ export default function VendorEarningsPage() {
           className="px-3 py-1 border border-gray-300 text-sm focus:ring-2 focus:ring-black focus:border-transparent"
         >
           <option value="all">All Status</option>
-          <option value="completed">Completed</option>
           <option value="pending">Pending</option>
-          <option value="failed">Failed</option>
+          <option value="paid">Paid</option>
+          <option value="processing">Processing</option>
+          <option value="cancelled">Cancelled</option>
         </select>
       </div>
 
@@ -124,15 +125,16 @@ export default function VendorEarningsPage() {
             <MobileCardList gap="md">
               {earnings.map((earning: any) => {
                 const statusColors: Record<string, string> = {
-                  completed: 'bg-green-100 text-green-800',
+                  paid: 'bg-green-100 text-green-800',
                   pending: 'bg-yellow-100 text-yellow-800',
-                  failed: 'bg-red-100 text-red-800',
+                  processing: 'bg-blue-100 text-blue-800',
+                  cancelled: 'bg-red-100 text-red-800',
                 };
                 return (
                   <MobileCard
                     key={earning.id}
-                    title={earning.orderItem?.book?.title || 'N/A'}
-                    subtitle={earning.orderItem?.book?.author || ''}
+                    title={earning.description || earning.orderItem?.book?.title || 'N/A'}
+                    subtitle={earning.transactionType === 'auction' ? 'Auction' : 'Sale'}
                     badge={
                       <span
                         className={`px-2 py-0.5 text-xs font-semibold rounded-full ${statusColors[earning.status] || 'bg-gray-100 text-gray-800'}`}
@@ -156,6 +158,12 @@ export default function VendorEarningsPage() {
                             {earning.order?.orderNumber || 'Auction'}
                           </span>
                         ),
+                      },
+                      {
+                        label: 'Rate',
+                        value: earning.commissionRateBps
+                          ? `${(earning.commissionRateBps / 100).toFixed(0)}%`
+                          : '8%',
                       },
                       { label: 'Gross', value: formatMoney(earning.amount, { fromCents: false }) },
                       {
@@ -190,21 +198,22 @@ export default function VendorEarningsPage() {
                         Date
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Book
+                        Item
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Type
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Order
+                      </th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Rate
                       </th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Gross
                       </th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        {(() => {
-                          const rate = earnings[0]?.commissionRateBps;
-                          return rate
-                            ? `Commission (${(rate / 100).toFixed(rate % 100 === 0 ? 0 : 1)}%)`
-                            : 'Commission';
-                        })()}
+                        Commission
                       </th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Your Earnings
@@ -225,17 +234,28 @@ export default function VendorEarningsPage() {
                           })}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-900">
-                          <div className="max-w-xs">
-                            <p className="font-medium truncate">
-                              {earning.orderItem?.book?.title || 'N/A'}
-                            </p>
-                            <p className="text-xs text-gray-500 truncate">
-                              {earning.orderItem?.book?.author || ''}
-                            </p>
-                          </div>
+                          <p className="font-medium truncate max-w-[180px]">
+                            {earning.description || earning.orderItem?.book?.title || 'N/A'}
+                          </p>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span
+                            className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
+                              earning.transactionType === 'auction'
+                                ? 'bg-blue-100 text-blue-800'
+                                : 'bg-gray-100 text-gray-700'
+                            }`}
+                          >
+                            {earning.transactionType === 'auction' ? 'Auction' : 'Sale'}
+                          </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-mono">
-                          {earning.order?.orderNumber || 'Auction'}
+                          {earning.order?.orderNumber || '—'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-700 font-medium">
+                          {earning.commissionRateBps
+                            ? `${(earning.commissionRateBps / 100).toFixed(0)}%`
+                            : '8%'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-right">
                           {formatMoney(earning.amount, { fromCents: false })}
@@ -248,7 +268,7 @@ export default function VendorEarningsPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
-                            className={`px-2 py-1 text-xs ${earning.status === 'completed' ? 'bg-green-100 text-green-800' : earning.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}
+                            className={`px-2 py-1 text-xs ${earning.status === 'paid' ? 'bg-green-100 text-green-800' : earning.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : earning.status === 'processing' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}
                           >
                             {earning.status}
                           </span>

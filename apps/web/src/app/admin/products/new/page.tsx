@@ -225,6 +225,7 @@ export default function NewProductPage() {
       if (updateData.success) {
         setSuccess(`${productType === 'book' ? 'Book' : 'Product'} created successfully!`);
         setTimeout(() => {
+          router.refresh();
           router.push('/admin/products');
         }, 1500);
       } else {

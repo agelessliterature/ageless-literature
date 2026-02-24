@@ -231,6 +231,49 @@ export default (sequelize, DataTypes) => {
         field: 'metadata',
         comment: 'Additional user metadata and preferences',
       },
+      // ── Legacy WP auth fields (Phase C cutover) ──────────────────
+      wpUserId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: null,
+        field: 'wp_user_id',
+        comment: 'Original WordPress user ID',
+      },
+      legacyPasswordHash: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+        defaultValue: null,
+        field: 'legacy_password_hash',
+        comment: 'WP password hash; cleared once bcrypt upgrade completes',
+      },
+      legacyHashType: {
+        type: DataTypes.STRING(20),
+        allowNull: true,
+        defaultValue: null,
+        field: 'legacy_hash_type',
+        comment: 'phpass | md5 | null',
+      },
+      passwordMigratedAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        defaultValue: null,
+        field: 'password_migrated_at',
+        comment: 'Timestamp of bcrypt upgrade from legacy hash',
+      },
+      wpRolesRaw: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: null,
+        field: 'wp_roles_raw',
+        comment: 'Raw WP capabilities PHP-serialized string',
+      },
+      passwordResetRequired: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+        field: 'password_reset_required',
+        comment: 'True when user must reset password before logging in',
+      },
     },
     {
       tableName: 'users',
@@ -289,6 +332,8 @@ export default (sequelize, DataTypes) => {
     const values = Object.assign({}, this.get());
     delete values.passwordHash;
     delete values.password;
+    delete values.legacyPasswordHash; // never expose WP hashes to clients
+    delete values.wpRolesRaw; // internal audit field only
     return values;
   };
 

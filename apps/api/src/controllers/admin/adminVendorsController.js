@@ -53,6 +53,7 @@ export const listAll = async (req, res) => {
       'lifetimeGrossSales',
       'lifetimeVendorEarnings',
       'balanceAvailable',
+      'menuOrder',
     ];
     const sortField = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
     const sortDirection = sortOrder.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
@@ -1297,5 +1298,47 @@ export const expireFeaturedVendors = async (req, res) => {
       message: 'Failed to expire featured vendors',
       error: error.message,
     });
+  }
+};
+
+/**
+ * Batch update menu_order for multiple vendors
+ * PUT /api/admin/vendors/menu-order
+ * Body: { items: [{ id: number, menuOrder: number }] }
+ */
+export const updateMenuOrder = async (req, res) => {
+  try {
+    const { items } = req.body;
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ success: false, error: 'items array is required' });
+    }
+
+    for (const item of items) {
+      if (!item.id || typeof item.menuOrder !== 'number') {
+        return res.status(400).json({
+          success: false,
+          error: `Invalid item: each must have 'id' (number) and 'menuOrder' (number)`,
+        });
+      }
+    }
+
+    const cases = items
+      .map((i) => `WHEN ${parseInt(i.id)} THEN ${parseInt(i.menuOrder)}`)
+      .join(' ');
+    const ids = items.map((i) => parseInt(i.id)).join(',');
+
+    await db.sequelize.query(
+      `UPDATE vendors SET menu_order = CASE id ${cases} END WHERE id IN (${ids})`,
+    );
+
+    return res.json({
+      success: true,
+      message: `Updated menu_order for ${items.length} vendors`,
+      count: items.length,
+    });
+  } catch (error) {
+    console.error('Admin vendor updateMenuOrder error:', error);
+    return res.status(500).json({ success: false, error: error.message });
   }
 };
