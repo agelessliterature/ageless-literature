@@ -713,10 +713,8 @@ export default function ProductDetailPage() {
 
             // Process the description text - reduce excessive spacing
             const processedHtml = descText
-              .replace(/\\n\\n+/g, '</p><p class="mt-3">') // Double newlines become paragraph breaks with reduced spacing
-              .replace(/\\n/g, '<br>') // Single newlines become line breaks
-              .replace(/\n\n+/g, '</p><p class="mt-3">') // Handle regular double newlines
-              .replace(/\n/g, '<br>'); // Single newlines
+              .replace(/\n\n+/g, '<br><br>') // Multiple newlines become double br for paragraph breaks
+              .replace(/\n/g, '<br>'); // Single newlines become single br
 
             return (
               <>

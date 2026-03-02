@@ -566,7 +566,7 @@ export default function Home() {
             {featuredCategories.map((category) => (
               <Link
                 key={category.id}
-                href={`/shop?category=${category.slug}`}
+                href={category.slug === 'curated' ? '/shop' : `/shop?category=${category.slug}`}
                 className="group block text-center"
               >
                 {/* Category Name Above Image */}
@@ -616,7 +616,7 @@ export default function Home() {
             <div
               className="relative w-full max-w-sm aspect-[12/16] z-10"
               style={{
-                backgroundImage: `url(${BASE_PATH}/home-page/al-mobile-phone.png)`,
+                backgroundImage: `url(${BASE_PATH}/home-page/al-mobile-phone2.png)`,
                 backgroundSize: 'contain',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',
