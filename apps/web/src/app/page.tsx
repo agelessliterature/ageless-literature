@@ -73,21 +73,21 @@ export default function Home() {
     {
       id: 1,
       name: 'CURATED',
-      slug: 'curated',
+      href: '/shop',
       imageUrl:
         'https://res.cloudinary.com/dvohtcqvi/image/upload/v1767984844/categories/african-american.jpg',
     },
     {
       id: 2,
       name: 'AUCTIONS',
-      slug: 'auctions',
+      href: '/auctions',
       imageUrl:
         'https://res.cloudinary.com/dvohtcqvi/image/upload/v1767984846/categories/americana.jpg',
     },
     {
       id: 3,
       name: 'SIGNED + ASSOCIATION COPIES',
-      slug: 'signed',
+      href: '/shop?category=signed',
       imageUrl:
         'https://res.cloudinary.com/dvohtcqvi/image/upload/v1767984886/categories/first-editions.jpg',
     },
@@ -524,88 +524,10 @@ export default function Home() {
             </div>
           </motion.div>
         </div>
-
-        {/* High Spots Bottom Section */}
-        <div className="bg-gray-100 py-8 md:py-12">
-          <div className="max-w-7xl mx-auto px-8 md:px-16 lg:px-24">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-              className="text-center"
-            >
-              <h3 className="text-3xl md:text-4xl py-4 font-bold text-primary tracking-wider">
-                {t('highSpots.sectionTitle')}
-              </h3>
-              <p className="text-sm md:text-base text-gray-600 mb-4">
-                {t('highSpots.sectionSubtitle')}
-              </p>
-              <Link
-                href="/shop"
-                className="inline-block bg-black text-white px-8 py-3 text-sm font-semibold hover:bg-[#d4af37] hover:text-black hover:-translate-y-1 transition-all duration-300"
-              >
-                {t('highSpots.viewAll')}
-              </Link>
-            </motion.div>
-          </div>
-        </div>
       </section>
 
-      {/* Explore Categories Section */}
-      <section className="py-10 sm:py-12 lg:py-16 bg-white">
-        <div className="mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-primary tracking-wider">
-              {t('categories.title')}
-            </h2>
-          </div>
-
-          {/* Categories Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-6 gap-8 lg:gap-12">
-            {featuredCategories.map((category) => (
-              <Link
-                key={category.id}
-                href={category.slug === 'curated' ? '/shop' : `/shop?category=${category.slug}`}
-                className="group block text-center"
-              >
-                {/* Category Name Above Image */}
-                <h3
-                  className="font-bold text-primary mb-6 tracking-wide uppercase"
-                  style={{ fontSize: '0.9rem' }}
-                >
-                  {category.name}
-                </h3>
-
-                {/* Category Image */}
-                <div className="relative overflow-hidden bg-white shadow-md hover:shadow-xl transition-all duration-300">
-                  <div className="aspect-[3/4] relative overflow-hidden">
-                    <img
-                      src={category.imageUrl || '/placeholder.jpg'}
-                      alt={category.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-
-          {/* View All Categories Link */}
-          <div className="text-center mt-12 px-4 sm:px-0">
-            <Link
-              href="/categories"
-              className="inline-flex items-center justify-center gap-3 bg-black hover:bg-secondary text-white hover:text-black font-bold transition-all duration-300 border-2 border-black hover:border-secondary hover:scale-105 w-full sm:w-auto px-8 py-4 sm:px-12 sm:py-5 text-lg sm:text-xl shadow-lg hover:shadow-xl"
-              style={{ borderRadius: '1.5rem' }}
-            >
-              <span>{t('categories.viewAll')}</span>
-              <FontAwesomeIcon icon={['fal', 'arrow-right']} className="text-xl sm:text-2xl" />
-            </Link>
-          </div>
-        </div>
-      </section>
+      {/* Download Mobile App Section */}
       <section className="bg-white py-12">
-        {/* Download Mobile App Section */}
         <div className="grid bg-gradient-to-b from-[#ffffff] to-[#c39e25] grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center shadow-sm px-8 lg:px-12 py-12">
           <div className="flex justify-center relative py-12">
             {/* Black Circle Backdrop */}
@@ -640,6 +562,7 @@ export default function Home() {
                 <FontAwesomeIcon icon={['fab', 'apple']} className="text-xl" />
                 <span>App Store</span>
               </a>
+              {/*
               <a
                 href="https://play.google.com/store/apps/details?id=com.agelessliterature"
                 target="_blank"
@@ -649,7 +572,57 @@ export default function Home() {
                 <FontAwesomeIcon icon={['fab', 'google-play']} className="text-xl" />
                 <span>Google Play</span>
               </a>
+              */}
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Explore Categories Section */}
+      <section className="py-10 sm:py-12 lg:py-16 bg-white">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-primary tracking-wider">
+              {t('categories.title')}
+            </h2>
+          </div>
+
+          {/* Categories Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-8 lg:gap-12">
+            {featuredCategories.map((category) => (
+              <Link key={category.id} href={category.href} className="group block text-center">
+                {/* Category Name Above Image */}
+                <h3
+                  className="font-bold text-primary mb-6 tracking-wide uppercase"
+                  style={{ fontSize: '0.9rem' }}
+                >
+                  {category.name}
+                </h3>
+
+                {/* Category Image */}
+                <div className="relative overflow-hidden bg-white shadow-md hover:shadow-xl transition-all duration-300">
+                  <div className="aspect-[3/4] relative overflow-hidden">
+                    <img
+                      src={category.imageUrl || '/placeholder.jpg'}
+                      alt={category.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          {/* View All Categories Link */}
+          <div className="text-center mt-12 px-4 sm:px-0">
+            <Link
+              href="/categories"
+              className="inline-flex items-center justify-center gap-3 bg-black hover:bg-secondary text-white hover:text-black font-bold transition-all duration-300 border-2 border-black hover:border-secondary hover:scale-105 w-full sm:w-auto px-8 py-4 sm:px-12 sm:py-5 text-lg sm:text-xl shadow-lg hover:shadow-xl"
+              style={{ borderRadius: '1.5rem' }}
+            >
+              <span>{t('categories.viewAll')}</span>
+              <FontAwesomeIcon icon={['fal', 'arrow-right']} className="text-xl sm:text-2xl" />
+            </Link>
           </div>
         </div>
       </section>
