@@ -3,17 +3,15 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { FontAwesomeIcon } from '@/components/FontAwesomeIcon';
-import { getApiUrl } from '@/lib/api';
 import api from '@/lib/api';
 import { debounce } from 'lodash';
 import Image from 'next/image';
 
 interface SearchResult {
   id: number;
-  type: 'book' | 'product';
+  type: 'product';
   title: string;
   author?: string;
-  artist?: string;
   price: string;
   salePrice?: string;
   condition: string;
@@ -41,7 +39,6 @@ interface FilterState {
   author: string;
   minPrice: string;
   maxPrice: string;
-  type: string;
   sortBy: string;
 }
 
@@ -57,7 +54,6 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
     author: '',
     minPrice: '',
     maxPrice: '',
-    type: '',
     sortBy: 'relevance',
   });
   const router = useRouter();
@@ -100,31 +96,55 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
       try {
         setLoading(true);
 
-        // Build query parameters
-        const params = new URLSearchParams();
-        params.append('q', searchQuery);
-        params.append('limit', '30');
-        params.append('status', 'published');
+        const commonParams: Record<string, string> = {
+          search: searchQuery,
+          limit: '30',
+        };
 
-        if (currentFilters.category) params.append('category', currentFilters.category);
-        if (currentFilters.author) params.append('author', currentFilters.author);
-        if (currentFilters.minPrice) params.append('minPrice', currentFilters.minPrice);
-        if (currentFilters.maxPrice) params.append('maxPrice', currentFilters.maxPrice);
-        if (currentFilters.type) params.append('type', currentFilters.type);
-        if (currentFilters.sortBy) params.append('sortBy', currentFilters.sortBy);
+        if (currentFilters.category) commonParams.category = currentFilters.category;
+        if (currentFilters.author) commonParams.author = currentFilters.author;
+        if (currentFilters.minPrice) commonParams.minPrice = currentFilters.minPrice;
+        if (currentFilters.maxPrice) commonParams.maxPrice = currentFilters.maxPrice;
 
-        const response = await fetch(getApiUrl(`api/search?${params.toString()}`));
-        const data = await response.json();
-
-        if (data.success) {
-          // Combine books and products from search API response
-          const books = (data.data.books || []).map((b: any) => ({ ...b, type: 'book' as const }));
-          const products = (data.data.products || []).map((p: any) => ({
-            ...p,
-            type: 'product' as const,
-          }));
-          setResults([...books, ...products]);
+        if (currentFilters.sortBy === 'price-low') {
+          commonParams.sortBy = 'price';
+          commonParams.sortOrder = 'ASC';
+        } else if (currentFilters.sortBy === 'price-high') {
+          commonParams.sortBy = 'price';
+          commonParams.sortOrder = 'DESC';
+        } else if (currentFilters.sortBy === 'title') {
+          commonParams.sortBy = 'title';
+          commonParams.sortOrder = 'ASC';
+        } else if (currentFilters.sortBy === 'newest') {
+          commonParams.sortBy = 'createdAt';
+          commonParams.sortOrder = 'DESC';
+        } else {
+          // Match shop page default ordering for perceived relevance.
+          commonParams.sortBy = 'menu_order';
+          commonParams.sortOrder = 'ASC';
         }
+
+        const booksResponse = await api.get('/books', {
+          params: commonParams,
+        });
+
+        const products = ((booksResponse.data?.data as any[]) || []).map((b: any) => ({
+          id: b.id,
+          sid: b.sid,
+          slug: b.slug,
+          title: b.title,
+          author: b.author,
+          price: b.price,
+          salePrice: b.salePrice,
+          condition: b.condition,
+          images: b.images,
+          primaryImage: b.primaryImage,
+          category: b.category,
+          shortDescription: b.shortDescription,
+          type: 'product' as const,
+        }));
+
+        setResults(products);
       } catch (error) {
         console.error('Search error:', error);
         setResults([]);
@@ -169,7 +189,6 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
       author: '',
       minPrice: '',
       maxPrice: '',
-      type: '',
       sortBy: 'relevance',
     };
     setFilters(clearedFilters);
@@ -181,7 +200,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
   };
 
   const hasActiveFilters =
-    filters.category || filters.author || filters.minPrice || filters.maxPrice || filters.type;
+    filters.category || filters.author || filters.minPrice || filters.maxPrice;
 
   // Handle keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -201,10 +220,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
   // Navigate to result
   const handleResultClick = (result: SearchResult) => {
-    const path =
-      result.type === 'book'
-        ? `/shop/${result.sid || result.id}`
-        : `/collectibles/${result.slug || result.id}`;
+    const path = `/products/${result.slug || result.sid || result.id}`;
 
     router.push(path);
     onClose();
@@ -215,7 +231,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
   // View all results
   const viewAllResults = () => {
     const params = new URLSearchParams();
-    if (query) params.append('q', query);
+    if (query) params.append('search', query);
     if (filters.category) params.append('category', filters.category);
     if (filters.author) params.append('author', filters.author);
     if (filters.minPrice) params.append('minPrice', filters.minPrice);
@@ -334,22 +350,6 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
         {showFilters && (
           <div className="border-b border-gray-200 bg-white px-6 py-4 animate-in slide-in-from-top duration-200">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Type Filter */}
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wide">
-                  Type
-                </label>
-                <select
-                  value={filters.type}
-                  onChange={(e) => handleFilterChange({ type: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary text-sm"
-                >
-                  <option value="">All Types</option>
-                  <option value="book">Books</option>
-                  <option value="product">Collectibles</option>
-                </select>
-              </div>
-
               {/* Category Filter */}
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wide">
@@ -518,7 +518,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <FontAwesomeIcon
-                            icon={['fal', result.type === 'book' ? 'book' : 'box']}
+                            icon={['fal', 'book']}
                             className="text-2xl text-gray-300"
                           />
                         </div>
@@ -532,10 +532,8 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                           <h4 className="font-semibold text-primary truncate mb-1">
                             {result.title}
                           </h4>
-                          {(result.author || result.artist) && (
-                            <p className="text-sm text-gray-600 truncate">
-                              {result.author || result.artist}
-                            </p>
+                          {result.author && (
+                            <p className="text-sm text-gray-600 truncate">{result.author}</p>
                           )}
                         </div>
                         <div className="flex-shrink-0 text-right">
@@ -553,9 +551,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                       </div>
 
                       <div className="flex items-center gap-3 mt-2 text-xs text-gray-500 uppercase tracking-wide">
-                        <span className="font-medium">
-                          {result.type === 'book' ? 'Book' : 'Collectible'}
-                        </span>
+                        <span className="font-medium">Product</span>
                         {result.condition && <span>• {result.condition}</span>}
                         {result.category && <span>• {result.category}</span>}
                       </div>
