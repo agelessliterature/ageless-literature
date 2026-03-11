@@ -89,7 +89,7 @@ const sections = [
     image: '/high-spots/1550-chaucers-works.jpeg',
     button: {
       text: 'View Product',
-      href: '/products/1550-chaucer-s-works-definitive-edition/vj8xcd-2vr2a0',
+      href: '/products/1550-chaucer-s-works-definitive-edition/b68ce3-8df56b',
     },
   },
   {
@@ -228,11 +228,9 @@ export default function HighSpotsPage() {
 
         <div className="h-full flex items-center justify-center text-center px-4">
           <p className="max-w-[48rem] text-[1.25rem] leading-[1.6] text-gray-200 -mt-3">
-            Your insight into the most captivating and significant moments in literature, art, and
-            culture. Discover the stories behind the masterpieces, the historical contexts that
-            shaped them, and the enduring impact they have on our world today. Each month, we delve
-            into new High Spots, offering you a deeper understanding and appreciation of the
-            treasures that have defined human creativity and expression throughout history.
+            Each month, we delve into new High Spots, offering you a deeper understanding and
+            appreciation of the treasures that have defined human creativity and expression
+            throughout history.
           </p>
         </div>
       </div>
