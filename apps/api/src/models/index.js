@@ -79,6 +79,7 @@ const allowedModels = [
   'CollectorProfile.js',
   'GlossaryTerm.js',
   'CustomOffer.js',
+  'HighSpot.js',
   'RareBookRequest.cjs',
 ];
 

@@ -12,6 +12,7 @@ import * as adminMembershipsController from '../controllers/admin/adminMembershi
 import * as adminGlossaryController from '../controllers/admin/adminGlossaryController.js';
 import * as adminEmailsController from '../controllers/admin/adminEmailsController.js';
 import * as adminProductsController from '../controllers/admin/adminProductsController.js';
+import * as adminHighSpotsController from '../controllers/admin/adminHighSpotsController.js';
 
 const router = express.Router();
 
@@ -69,6 +70,7 @@ router.get('/books', adminBooksController.listAll);
 router.post('/books', adminBooksController.create);
 router.put('/books/menu-order', adminBooksController.updateMenuOrder);
 router.post('/books/sync-menu-order', adminBooksController.syncMenuOrderFromProd);
+router.get('/books/:id', adminBooksController.getById);
 router.put('/books/:id', adminBooksController.update);
 router.delete('/books/:id', adminBooksController.deleteBook);
 
@@ -97,6 +99,9 @@ router.get('/products/stats', adminProductsController.getProductStats);
 router.get('/products/:id', adminProductsController.getProduct);
 router.put('/products/:id', adminProductsController.updateProduct);
 router.delete('/products/:id', adminProductsController.deleteProduct);
+
+router.get('/high-spots', adminHighSpotsController.getHighSpots);
+router.put('/high-spots', adminHighSpotsController.updateHighSpots);
 
 router.get('/glossary', adminGlossaryController.listAll);
 router.get('/glossary/:slug', adminGlossaryController.getBySlug);

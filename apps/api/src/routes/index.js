@@ -22,6 +22,7 @@ import * as productsController from '../controllers/productsController.js';
 import * as booksController from '../controllers/booksController.js';
 import * as categoriesController from '../controllers/categoriesController.js';
 import * as vendorController from '../controllers/vendorController.js';
+import * as highSpotsController from '../controllers/highSpotsController.js';
 import * as notificationsController from '../controllers/notificationsController.js';
 import * as usersController from '../controllers/usersController.js';
 import * as stripeController from '../controllers/stripeController.js';
@@ -152,6 +153,8 @@ router.get('/stats', async (req, res) => {
     return res.json({ success: true, data: { booksCount: 0, vendorsCount: 0, auctionsCount: 0 } });
   }
 });
+
+router.get('/high-spots', highSpotsController.getHighSpots);
 
 router.get('/books', booksController.getAllBooks);
 router.get('/books/:id', booksController.getBookById);
